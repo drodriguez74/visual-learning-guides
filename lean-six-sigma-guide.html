@@ -340,7 +340,7 @@
   }
   .belt-row p { font-size: 13px; color: var(--muted); line-height: 1.5; }
 
-  /* INTERVIEW SECTION */
+  /* INTERVIEW — ACCORDION */
   .qa-block {
     border: 1px solid var(--border);
     border-radius: 10px;
@@ -358,7 +358,6 @@
     align-items: center;
     transition: background 0.2s;
     user-select: none;
-    /* button reset */
     width: 100%;
     border: none;
     border-radius: 0;
@@ -440,6 +439,343 @@
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ═══════════════════ QUIZ MODE ═══════════════════ */
+
+  .quiz-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .quiz-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .quiz-toggle-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .quiz-toggle-btn.active {
+    background: rgba(167,139,250,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .quiz-toggle-btn .qtb-icon { font-size: 14px; line-height: 1; }
+  .quiz-toggle-hint {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* Quiz outer container */
+  .quiz-ui {
+    display: none;
+    margin-bottom: 0;
+  }
+  .quiz-ui.visible { display: block; }
+
+  /* Progress bar */
+  .quiz-progress-bar-track {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .quiz-progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--sixsigma));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* Header row */
+  .quiz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .quiz-back-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .quiz-back-btn:hover { color: var(--text); }
+  .quiz-counter {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  .quiz-counter strong { color: var(--text); font-size: 15px; }
+
+  /* Dot trail */
+  .quiz-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 20px;
+  }
+  .quiz-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.3s, transform 0.2s;
+  }
+  .quiz-dot.current  { background: var(--accent); transform: scale(1.35); }
+  .quiz-dot.got      { background: var(--lean); }
+  .quiz-dot.almost   { background: var(--gold); }
+  .quiz-dot.missed   { background: var(--red); }
+
+  /* Card */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 40px;
+    min-height: 200px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 0;
+  }
+  .quiz-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--sixsigma));
+    border-radius: 16px 16px 0 0;
+  }
+  .quiz-card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  .quiz-question-text {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 28px;
+  }
+  .quiz-reveal-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(167,139,250,0.1);
+    border: 1px solid rgba(167,139,250,0.3);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 11px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .quiz-reveal-btn:hover {
+    background: rgba(167,139,250,0.2);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  /* Answer reveal */
+  .quiz-answer-wrap {
+    display: none;
+    animation: revealDown 0.28s ease;
+  }
+  .quiz-answer-wrap.visible { display: block; }
+
+  @keyframes revealDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .quiz-answer-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+  .quiz-answer-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--lean);
+    margin-bottom: 12px;
+  }
+  .quiz-answer-body {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 28px;
+  }
+  .quiz-answer-body strong { color: var(--text); }
+
+  /* Rating buttons */
+  .quiz-rating {
+    display: flex;
+    gap: 10px;
+  }
+  @media (max-width: 480px) { .quiz-rating { flex-direction: column; } }
+
+  .qr-btn {
+    flex: 1;
+    padding: 12px 8px;
+    border-radius: 8px;
+    border: 1px solid;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .qr-btn:hover { transform: translateY(-2px); }
+
+  .qr-got    { background: rgba(0,217,163,0.08);  border-color: rgba(0,217,163,0.3);  color: var(--lean); }
+  .qr-almost { background: rgba(245,197,66,0.08); border-color: rgba(245,197,66,0.3); color: var(--gold); }
+  .qr-missed { background: rgba(255,92,92,0.08);  border-color: rgba(255,92,92,0.3);  color: var(--red);  }
+
+  .qr-got:hover    { background: rgba(0,217,163,0.18);  border-color: var(--lean); }
+  .qr-almost:hover { background: rgba(245,197,66,0.18); border-color: var(--gold); }
+  .qr-missed:hover { background: rgba(255,92,92,0.18);  border-color: var(--red);  }
+
+  /* Card transition animations */
+  @keyframes slideOut {
+    to { opacity: 0; transform: translateX(-32px); }
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(32px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .quiz-card.anim-out { animation: slideOut 0.22s ease forwards; }
+  .quiz-card.anim-in  { animation: slideIn  0.22s ease forwards; }
+
+  /* Results screen */
+  .quiz-results {
+    display: none;
+    text-align: center;
+    padding: 52px 32px 44px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    animation: revealDown 0.35s ease;
+  }
+  .quiz-results::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--lean), var(--accent), var(--sixsigma));
+  }
+  .quiz-results.visible { display: block; }
+
+  .qres-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    letter-spacing: 0.04em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .qres-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 36px;
+  }
+  .qres-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 36px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .qres-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .qres-n {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+  }
+  .qres-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .qres-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .qres-btn {
+    padding: 11px 22px;
+    border-radius: 7px;
+    border: 1px solid;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+  .qres-btn:hover { transform: translateY(-1px); }
+  .qres-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+  .qres-retry   { background: rgba(255,92,92,0.1);  border-color: rgba(255,92,92,0.4);  color: var(--red);    }
+  .qres-restart { background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.4); color: var(--accent); }
+  .qres-exit    { background: none;                  border-color: var(--border);          color: var(--muted);  }
+
+  .qres-retry:not(:disabled):hover   { background: rgba(255,92,92,0.2);  border-color: var(--red);    }
+  .qres-restart:hover { background: rgba(167,139,250,0.2); border-color: var(--accent); }
+  .qres-exit:hover    { color: var(--text); border-color: #3a4050; }
 </style>
 </head>
 <body>
@@ -962,52 +1298,129 @@
     <p>Common questions, model answers, and key phrases to signal fluency in Lean Six Sigma thinking.</p>
   </div>
 
-  <div class="sec-title">Common Questions</div>
-  <div class="sec-sub">Click each question to reveal a model answer structure</div>
-
-  <div id="qa-container"></div>
-
-  <div class="divider">Power Phrases</div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="tag tag-lean">Lean Language</div>
-      <h3>Use These Terms</h3>
-      <p style="margin-bottom:10px">• "Reduce waste and non-value-add activities"<br>• "Pull-based system vs push-based"<br>• "Identify bottlenecks in the value stream"<br>• "Kaizen mindset — continuous incremental improvement"<br>• "Gemba — go see the actual work"<br>• "Takt time alignment with customer demand"</p>
-    </div>
-    <div class="card">
-      <div class="tag tag-sigma">Six Sigma Language</div>
-      <h3>Use These Terms</h3>
-      <p style="margin-bottom:10px">• "Data-driven root cause analysis"<br>• "Reduce variation and defects"<br>• "DMAIC framework — structured problem solving"<br>• "Voice of Customer → CTQ translation"<br>• "Statistical process control (SPC)"<br>• "Sustain gains through control plans"</p>
-    </div>
+  <!-- Quiz mode toggle -->
+  <div class="quiz-toggle-row">
+    <button class="quiz-toggle-btn" id="quiz-toggle-btn" onclick="toggleQuizMode()">
+      <span class="qtb-icon">◈</span> Quiz Mode
+    </button>
+    <span class="quiz-toggle-hint">Test yourself card by card</span>
   </div>
 
-  <div class="divider">Quick Reference</div>
+  <!-- ── Quiz UI ── -->
+  <div class="quiz-ui" id="quiz-ui">
 
-  <table class="compare-table">
-    <thead>
-      <tr><th>Topic</th><th>One-Liner to Remember</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Lean vs Six Sigma</td><td>Lean = eliminate waste (speed); Six Sigma = reduce variation (quality)</td></tr>
-      <tr><td>Worst Lean waste</td><td>Overproduction — it generates all other wastes</td></tr>
-      <tr><td>TIMWOODS</td><td>Transport, Inventory, Motion, Waiting, Overproduction, Over-processing, Defects, Skills</td></tr>
-      <tr><td>3 MU's</td><td>Muda (waste), Mura (unevenness), Muri (overburden)</td></tr>
-      <tr><td>DMAIC order</td><td>Define → Measure → Analyze → Improve → Control</td></tr>
-      <tr><td>Six Sigma target</td><td>3.4 DPMO — assumes a 1.5σ long-term process shift</td></tr>
-      <tr><td>Y = f(X)</td><td>Output quality is a function of process inputs — find and control the X's</td></tr>
-      <tr><td>Cpk vs Ppk</td><td>Cpk = short-term potential (within-subgroup); Ppk = long-term actual performance (overall)</td></tr>
-      <tr><td>Control chart</td><td>UCL/LCL at ±3σ — anything outside is special-cause variation</td></tr>
-      <tr><td>Poka-Yoke</td><td>Design the process so mistakes are impossible or immediately visible</td></tr>
-      <tr><td>FMEA</td><td>Risk = Severity × Occurrence × Detection (RPN score)</td></tr>
-      <tr><td>Gage R&amp;R</td><td>Validate the measurement system before drawing conclusions from data</td></tr>
-      <tr><td>5S</td><td>Sort, Set in order, Shine, Standardize, Sustain</td></tr>
-      <tr><td>Tollgate</td><td>Formal phase-end review — Champion must approve before team advances</td></tr>
-    </tbody>
-  </table>
+    <!-- thin progress bar -->
+    <div class="quiz-progress-bar-track">
+      <div class="quiz-progress-bar-fill" id="quiz-progress-fill" style="width:0%"></div>
+    </div>
+
+    <!-- header: back + counter -->
+    <div class="quiz-header">
+      <button class="quiz-back-btn" onclick="exitQuizMode()">← Reference</button>
+      <div class="quiz-counter">
+        <strong id="quiz-num">1</strong> / <span id="quiz-of">11</span>
+      </div>
+    </div>
+
+    <!-- dot trail -->
+    <div class="quiz-dots" id="quiz-dots" role="list" aria-label="Question progress"></div>
+
+    <!-- flashcard -->
+    <div id="quiz-card-outer">
+      <div class="quiz-card" id="quiz-card">
+        <div class="quiz-card-label">// Question</div>
+        <p class="quiz-question-text" id="quiz-question"></p>
+        <button class="quiz-reveal-btn" id="quiz-reveal-btn" onclick="revealAnswer()">
+          Reveal Answer →
+        </button>
+        <div class="quiz-answer-wrap" id="quiz-answer-wrap">
+          <div class="quiz-answer-divider"></div>
+          <div class="quiz-answer-label">// Answer</div>
+          <div class="quiz-answer-body" id="quiz-answer-body"></div>
+          <div class="quiz-rating">
+            <button class="qr-btn qr-got"    onclick="rateCard('got')">✓ Got it</button>
+            <button class="qr-btn qr-almost" onclick="rateCard('almost')">~ Almost</button>
+            <button class="qr-btn qr-missed" onclick="rateCard('missed')">✗ Missed it</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- results screen -->
+    <div class="quiz-results" id="quiz-results">
+      <div class="qres-title">Round Complete</div>
+      <div class="qres-sub" id="qres-sub"></div>
+      <div class="qres-stats">
+        <div class="qres-stat">
+          <span class="qres-n" id="n-got"    style="color:var(--lean)">0</span>
+          <span class="qres-label">Got it</span>
+        </div>
+        <div class="qres-stat">
+          <span class="qres-n" id="n-almost" style="color:var(--gold)">0</span>
+          <span class="qres-label">Almost</span>
+        </div>
+        <div class="qres-stat">
+          <span class="qres-n" id="n-missed" style="color:var(--red)">0</span>
+          <span class="qres-label">Missed</span>
+        </div>
+      </div>
+      <div class="qres-actions">
+        <button class="qres-btn qres-retry"   id="qres-retry-btn" onclick="retryMissed()">Retry Missed</button>
+        <button class="qres-btn qres-restart" onclick="restartAll()">Restart All</button>
+        <button class="qres-btn qres-exit"    onclick="exitQuizMode()">Exit Quiz</button>
+      </div>
+    </div>
+
+  </div><!-- /quiz-ui -->
+
+  <!-- ── Normal accordion (hidden during quiz) ── -->
+  <div id="accordion-mode">
+    <div class="sec-title">Common Questions</div>
+    <div class="sec-sub">Click each question to reveal a model answer structure</div>
+    <div id="qa-container"></div>
+
+    <div class="divider">Power Phrases</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="tag tag-lean">Lean Language</div>
+        <h3>Use These Terms</h3>
+        <p style="margin-bottom:10px">• "Reduce waste and non-value-add activities"<br>• "Pull-based system vs push-based"<br>• "Identify bottlenecks in the value stream"<br>• "Kaizen mindset — continuous incremental improvement"<br>• "Gemba — go see the actual work"<br>• "Takt time alignment with customer demand"</p>
+      </div>
+      <div class="card">
+        <div class="tag tag-sigma">Six Sigma Language</div>
+        <h3>Use These Terms</h3>
+        <p style="margin-bottom:10px">• "Data-driven root cause analysis"<br>• "Reduce variation and defects"<br>• "DMAIC framework — structured problem solving"<br>• "Voice of Customer → CTQ translation"<br>• "Statistical process control (SPC)"<br>• "Sustain gains through control plans"</p>
+      </div>
+    </div>
+
+    <div class="divider">Quick Reference</div>
+    <table class="compare-table">
+      <thead>
+        <tr><th>Topic</th><th>One-Liner to Remember</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Lean vs Six Sigma</td><td>Lean = eliminate waste (speed); Six Sigma = reduce variation (quality)</td></tr>
+        <tr><td>Worst Lean waste</td><td>Overproduction — it generates all other wastes</td></tr>
+        <tr><td>TIMWOODS</td><td>Transport, Inventory, Motion, Waiting, Overproduction, Over-processing, Defects, Skills</td></tr>
+        <tr><td>3 MU's</td><td>Muda (waste), Mura (unevenness), Muri (overburden)</td></tr>
+        <tr><td>DMAIC order</td><td>Define → Measure → Analyze → Improve → Control</td></tr>
+        <tr><td>Six Sigma target</td><td>3.4 DPMO — assumes a 1.5σ long-term process shift</td></tr>
+        <tr><td>Y = f(X)</td><td>Output quality is a function of process inputs — find and control the X's</td></tr>
+        <tr><td>Cpk vs Ppk</td><td>Cpk = short-term potential (within-subgroup); Ppk = long-term actual performance (overall)</td></tr>
+        <tr><td>Control chart</td><td>UCL/LCL at ±3σ — anything outside is special-cause variation</td></tr>
+        <tr><td>Poka-Yoke</td><td>Design the process so mistakes are impossible or immediately visible</td></tr>
+        <tr><td>FMEA</td><td>Risk = Severity × Occurrence × Detection (RPN score)</td></tr>
+        <tr><td>Gage R&amp;R</td><td>Validate the measurement system before drawing conclusions from data</td></tr>
+        <tr><td>5S</td><td>Sort, Set in order, Shine, Standardize, Sustain</td></tr>
+        <tr><td>Tollgate</td><td>Formal phase-end review — Champion must approve before team advances</td></tr>
+      </tbody>
+    </table>
+  </div><!-- /accordion-mode -->
+
 </section>
 
 <script>
+// ── NAV ──
 function show(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
   document.querySelectorAll('nav button').forEach(b => {
@@ -1020,14 +1433,14 @@ function show(id, btn) {
   window.scrollTo(0, 0);
 }
 
-// SIGMA BARS
+// ── SIGMA BARS ──
 const sigmaData = [
   { level: '1σ', dpmo: 690000 },
   { level: '2σ', dpmo: 308537 },
-  { level: '3σ', dpmo: 66807 },
-  { level: '4σ', dpmo: 6210 },
-  { level: '5σ', dpmo: 233 },
-  { level: '6σ', dpmo: 3.4 },
+  { level: '3σ', dpmo: 66807  },
+  { level: '4σ', dpmo: 6210   },
+  { level: '5σ', dpmo: 233    },
+  { level: '6σ', dpmo: 3.4    },
 ];
 
 document.getElementById('sigma-bars').innerHTML = sigmaData.map(d => {
@@ -1044,7 +1457,7 @@ document.getElementById('sigma-bars').innerHTML = sigmaData.map(d => {
     </div>`;
 }).join('');
 
-// Q&A
+// ── Q&A DATA ──
 const qas = [
   {
     q: "What is the difference between Lean and Six Sigma?",
@@ -1152,6 +1565,7 @@ const qas = [
   },
 ];
 
+// ── ACCORDION ──
 document.getElementById('qa-container').innerHTML = qas.map((item, i) => `
   <div class="qa-block">
     <button class="qa-q" aria-expanded="false" onclick="toggleQA(${i}, this)">
@@ -1167,6 +1581,131 @@ function toggleQA(i, el) {
   ans.classList.toggle('open', !isOpen);
   el.classList.toggle('open', !isOpen);
   el.setAttribute('aria-expanded', String(!isOpen));
+}
+
+// ── QUIZ MODE ──
+let quizQueue   = [];   // indices into qas[]
+let quizCurrent = 0;
+let quizRatings = [];   // 'got' | 'almost' | 'missed' | null
+
+function toggleQuizMode() {
+  const ui = document.getElementById('quiz-ui');
+  if (ui.classList.contains('visible')) {
+    exitQuizMode();
+  } else {
+    document.getElementById('quiz-toggle-btn').classList.add('active');
+    document.getElementById('accordion-mode').style.display = 'none';
+    ui.classList.add('visible');
+    startQuiz([...Array(qas.length).keys()]);
+  }
+}
+
+function exitQuizMode() {
+  document.getElementById('quiz-toggle-btn').classList.remove('active');
+  document.getElementById('accordion-mode').style.display = '';
+  document.getElementById('quiz-ui').classList.remove('visible');
+}
+
+function startQuiz(queue) {
+  quizQueue   = queue;
+  quizCurrent = 0;
+  quizRatings = new Array(queue.length).fill(null);
+
+  document.getElementById('quiz-card-outer').style.display = 'block';
+  document.getElementById('quiz-results').classList.remove('visible');
+  document.getElementById('quiz-of').textContent = queue.length;
+
+  renderDots();
+  renderCard();
+}
+
+function renderDots() {
+  document.getElementById('quiz-dots').innerHTML = quizQueue.map((_, i) => {
+    const r = quizRatings[i];
+    let cls = 'quiz-dot';
+    if (i === quizCurrent)  cls += ' current';
+    else if (r === 'got')    cls += ' got';
+    else if (r === 'almost') cls += ' almost';
+    else if (r === 'missed') cls += ' missed';
+    return `<div class="${cls}" role="listitem" title="Q${i + 1}"></div>`;
+  }).join('');
+
+  const pct = quizQueue.length ? (quizCurrent / quizQueue.length) * 100 : 0;
+  document.getElementById('quiz-progress-fill').style.width = pct + '%';
+}
+
+function renderCard() {
+  const qa = qas[quizQueue[quizCurrent]];
+  document.getElementById('quiz-num').textContent          = quizCurrent + 1;
+  document.getElementById('quiz-question').textContent     = qa.q;
+  document.getElementById('quiz-answer-body').innerHTML    = qa.a;
+  document.getElementById('quiz-answer-wrap').classList.remove('visible');
+  document.getElementById('quiz-reveal-btn').style.display = 'inline-flex';
+  renderDots();
+}
+
+function revealAnswer() {
+  document.getElementById('quiz-answer-wrap').classList.add('visible');
+  document.getElementById('quiz-reveal-btn').style.display = 'none';
+}
+
+function rateCard(rating) {
+  quizRatings[quizCurrent] = rating;
+
+  if (quizCurrent < quizQueue.length - 1) {
+    const card = document.getElementById('quiz-card');
+    card.classList.add('anim-out');
+    setTimeout(() => {
+      card.classList.remove('anim-out');
+      quizCurrent++;
+      renderCard();
+      card.classList.add('anim-in');
+      setTimeout(() => card.classList.remove('anim-in'), 220);
+    }, 220);
+  } else {
+    showResults();
+  }
+}
+
+function showResults() {
+  document.getElementById('quiz-card-outer').style.display = 'none';
+
+  const got    = quizRatings.filter(r => r === 'got').length;
+  const almost = quizRatings.filter(r => r === 'almost').length;
+  const missed = quizRatings.filter(r => r === 'missed').length;
+  const total  = quizQueue.length;
+  const pct    = Math.round(got / total * 100);
+
+  document.getElementById('n-got').textContent    = got;
+  document.getElementById('n-almost').textContent = almost;
+  document.getElementById('n-missed').textContent = missed;
+  document.getElementById('qres-sub').textContent =
+    `${got} of ${total} solid (${pct}%)${missed === 0 ? ' — no gaps!' : ` · ${missed} to review`}`;
+
+  document.getElementById('qres-retry-btn').disabled = missed === 0;
+
+  // fill bar to 100% on completion
+  document.getElementById('quiz-progress-fill').style.width = '100%';
+
+  // update dots to final state
+  renderDots();
+  document.querySelectorAll('.quiz-dot').forEach(d => d.classList.remove('current'));
+
+  document.getElementById('quiz-results').classList.add('visible');
+}
+
+function retryMissed() {
+  const missedQueue = quizQueue.filter((_, i) => quizRatings[i] === 'missed');
+  if (!missedQueue.length) return;
+  document.getElementById('quiz-results').classList.remove('visible');
+  document.getElementById('quiz-card-outer').style.display = 'block';
+  startQuiz(missedQueue);
+}
+
+function restartAll() {
+  document.getElementById('quiz-results').classList.remove('visible');
+  document.getElementById('quiz-card-outer').style.display = 'block';
+  startQuiz([...Array(qas.length).keys()]);
 }
 </script>
 </body>
