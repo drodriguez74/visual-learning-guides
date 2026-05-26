@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lean / Six Sigma — Visual Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #232830;
+    --lean: #00d9a3;
+    --sixsigma: #4a9eff;
+    --gold: #f5c542;
+    --red: #ff5c5c;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --accent: #a78bfa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,12,15,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 4px;
+    padding: 0 24px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 14px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--lean); border-bottom-color: var(--lean); }
+
+  /* SECTIONS */
+  .section {
+    display: none;
+    animation: fadeUp 0.4s ease;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+  .section.visible { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* HERO HEADER */
+  .hero {
+    margin-bottom: 48px;
+  }
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--lean);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 96px);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+  .hero h1 span { color: var(--lean); }
+  .hero p {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #3a4050; }
+  .card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+  .card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* SECTION TITLE */
+  .sec-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .sec-sub {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  /* TAG */
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+  .tag-lean { background: rgba(0,217,163,0.12); color: var(--lean); }
+  .tag-sigma { background: rgba(74,158,255,0.12); color: var(--sixsigma); }
+  .tag-both { background: rgba(167,139,250,0.12); color: var(--accent); }
+  .tag-tool { background: rgba(245,197,66,0.12); color: var(--gold); }
+
+  /* COMPARE TABLE */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .compare-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    text-align: left;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+  }
+  .compare-table td {
+    padding: 11px 16px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .compare-table td:first-child { color: var(--text); font-weight: 500; }
+  .compare-table tr:hover td { background: var(--surface); }
+
+  /* DMAIC */
+  .dmaic-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .dmaic-step {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    position: relative;
+  }
+  .dmaic-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 28px;
+    top: 64px;
+    width: 2px;
+    height: calc(100% - 32px);
+    background: var(--border);
+  }
+  .dmaic-letter {
+    width: 56px;
+    min-width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    margin: 4px 0;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  .dmaic-body {
+    padding: 8px 20px 32px;
+    flex: 1;
+  }
+  .dmaic-body h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .dmaic-body p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
+  .dmaic-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .dmaic-tool-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  /* 8 WASTES */
+  .wastes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 640px) { .wastes-grid { grid-template-columns: 1fr 1fr; } }
+  .waste-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 16px;
+    text-align: center;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .waste-card:hover {
+    border-color: var(--lean);
+    transform: translateY(-2px);
+  }
+  .waste-icon { font-size: 28px; margin-bottom: 10px; }
+  .waste-card h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    color: var(--lean);
+  }
+  .waste-card p { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* SIGMA LEVELS */
+  .sigma-bar-wrap { margin-bottom: 12px; }
+  .sigma-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .sigma-bar-label span:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--sixsigma);
+  }
+  .sigma-bar-label span:last-child { color: var(--muted); }
+  .sigma-bar-track {
+    height: 10px;
+    background: var(--surface2);
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .sigma-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 1s ease;
+    background: linear-gradient(90deg, var(--sixsigma), #7ac3ff);
+  }
+
+  /* TOOLS GRID */
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px;
+    transition: all 0.2s;
+  }
+  .tool-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+  .tool-card h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .tool-card p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .tool-card .use-case {
+    margin-top: 10px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent);
+    background: rgba(167,139,250,0.08);
+    border-radius: 4px;
+    padding: 4px 8px;
+    display: inline-block;
+  }
+
+  /* BELTS */
+  .belt-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+  }
+  .belt-row:hover { border-color: #3a4050; }
+  .belt-icon {
+    width: 40px;
+    height: 14px;
+    border-radius: 7px;
+    flex-shrink: 0;
+  }
+  .belt-row h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    width: 160px;
+    flex-shrink: 0;
+  }
+  .belt-row p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* INTERVIEW SECTION */
+  .qa-block {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .qa-q {
+    background: var(--surface);
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+    user-select: none;
+  }
+  .qa-q:hover { background: var(--surface2); }
+  .qa-q .arrow {
+    font-size: 18px;
+    color: var(--muted);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .qa-q.open .arrow { transform: rotate(90deg); }
+  .qa-a {
+    display: none;
+    padding: 16px 20px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .qa-a.open { display: block; }
+  .qa-a strong { color: var(--text); }
+
+  /* PILL DIVIDER */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0;
+    color: var(--muted);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* CALLOUT */
+  .callout {
+    border-left: 3px solid var(--lean);
+    background: rgba(0,217,163,0.05);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .callout.sigma { border-color: var(--sixsigma); background: rgba(74,158,255,0.05); }
+  .callout.gold  { border-color: var(--gold);     background: rgba(245,197,66,0.05); }
+
+  /* SCATTER VIS */
+  canvas { display: block; }
+  .vis-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .vis-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <button class="active" onclick="show('overview')">Overview</button>
+  <button onclick="show('lean')">Lean Principles</button>
+  <button onclick="show('wastes')">8 Wastes</button>
+  <button onclick="show('sixsigma')">Six Sigma</button>
+  <button onclick="show('dmaic')">DMAIC</button>
+  <button onclick="show('tools')">Key Tools</button>
+  <button onclick="show('belts')">Belt Levels</button>
+  <button onclick="show('interview')">Interview Prep</button>
+</nav>
+
+<!-- ═══════════════════ OVERVIEW ═══════════════════ -->
+<section id="overview" class="section visible">
+  <div class="hero">
+    <div class="hero-label">// Process Improvement Framework</div>
+    <h1>Lean &<br><span>Six Sigma</span></h1>
+    <p>Two of the most powerful methodologies for eliminating waste, reducing variation, and delivering consistent quality at scale.</p>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:32px">
+    <div class="card">
+      <div class="tag tag-lean">Lean</div>
+      <h3 style="color:var(--lean)">Eliminate Waste</h3>
+      <p>Originating from the Toyota Production System, Lean focuses on delivering maximum value to the customer by systematically identifying and removing non-value-adding activities (waste) from every process.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-sigma">Six Sigma</div>
+      <h3 style="color:var(--sixsigma)">Reduce Variation</h3>
+      <p>Developed at Motorola and refined by GE, Six Sigma uses statistical methods and a structured problem-solving approach (DMAIC) to reduce defects and process variation to near-perfect levels.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Lean Six Sigma</strong> combines both: Lean speeds up processes by removing waste, Six Sigma improves quality by reducing variation. Together they deliver <strong>fast, consistent, high-quality</strong> outcomes.
+  </div>
+
+  <div class="divider">Key Difference</div>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Dimension</th>
+        <th style="color:var(--lean)">Lean</th>
+        <th style="color:var(--sixsigma)">Six Sigma</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Primary Goal</td><td>Eliminate waste & speed up flow</td><td>Reduce defects & variation</td></tr>
+      <tr><td>Core Question</td><td>Why does this step even exist?</td><td>Why does this step produce errors?</td></tr>
+      <tr><td>Approach</td><td>Visual, intuitive, continuous</td><td>Data-driven, statistical, project-based</td></tr>
+      <tr><td>Key Metric</td><td>Cycle time, lead time, throughput</td><td>DPMO, Sigma level, Cp/Cpk</td></tr>
+      <tr><td>Problem-solving</td><td>Kaizen, 5S, Value Stream Map</td><td>DMAIC / DMADV</td></tr>
+      <tr><td>Origin</td><td>Toyota (1950s–70s)</td><td>Motorola (1986), GE (1990s)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════ LEAN PRINCIPLES ═══════════════════ -->
+<section id="lean" class="section">
+  <div class="hero">
+    <div class="hero-label">// Toyota Production System</div>
+    <h1><span>Lean</span><br>Principles</h1>
+    <p>The 5 core principles of Lean define a cycle of continuous improvement focused entirely on customer value.</p>
+  </div>
+
+  <div class="dmaic-flow" id="lean-flow">
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(0,217,163,0.15);color:var(--lean)">1</div>
+      <div class="dmaic-body">
+        <h4 style="color:var(--lean)">Identify Value</h4>
+        <p>Define value strictly from the <strong>customer's perspective</strong>. Value is anything the customer is willing to pay for. Everything else is waste.</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">Voice of Customer (VOC)</span>
+          <span class="dmaic-tool-tag">CTQ Trees</span>
+          <span class="dmaic-tool-tag">Kano Model</span>
+        </div>
+      </div>
+    </div>
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(0,217,163,0.12);color:var(--lean)">2</div>
+      <div class="dmaic-body">
+        <h4 style="color:var(--lean)">Map the Value Stream</h4>
+        <p>Chart every step in the process from raw material to customer delivery. Identify which steps add value, which are necessary waste, and which are pure waste to eliminate.</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">Value Stream Map (VSM)</span>
+          <span class="dmaic-tool-tag">Swimlane Diagrams</span>
+          <span class="dmaic-tool-tag">SIPOC</span>
+        </div>
+      </div>
+    </div>
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(0,217,163,0.10);color:var(--lean)">3</div>
+      <div class="dmaic-body">
+        <h4 style="color:var(--lean)">Create Flow</h4>
+        <p>Remove bottlenecks and interruptions so that the remaining value-creating steps flow smoothly and continuously. Eliminate batching where possible.</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">Kanban</span>
+          <span class="dmaic-tool-tag">Heijunka (Load Leveling)</span>
+          <span class="dmaic-tool-tag">One-Piece Flow</span>
+        </div>
+      </div>
+    </div>
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(0,217,163,0.08);color:var(--lean)">4</div>
+      <div class="dmaic-body">
+        <h4 style="color:var(--lean)">Establish Pull</h4>
+        <p>Produce only what the customer demands, when they demand it. This replaces push-based systems (make-to-forecast) with pull-based ones (make-to-order), reducing inventory and overproduction.</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">Just-in-Time (JIT)</span>
+          <span class="dmaic-tool-tag">Kanban Cards</span>
+          <span class="dmaic-tool-tag">Takt Time</span>
+        </div>
+      </div>
+    </div>
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(0,217,163,0.06);color:var(--lean)">5</div>
+      <div class="dmaic-body">
+        <h4 style="color:var(--lean)">Pursue Perfection</h4>
+        <p>Lean is never "done." Once waste is removed, new wastes become visible. The pursuit of perfection (Kaizen) is a perpetual, iterative cycle embedded in the culture.</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">Kaizen Events</span>
+          <span class="dmaic-tool-tag">PDCA Cycle</span>
+          <span class="dmaic-tool-tag">Gemba Walks</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">Key Concept</div>
+
+  <div class="callout">
+    <strong>Takt Time</strong> = Available production time ÷ Customer demand rate. This is the "heartbeat" of production — the pace at which you must complete one unit to meet demand without over- or under-producing.
+  </div>
+
+  <div class="callout">
+    <strong>Gemba Walk</strong> — "Go to where the work happens." Leaders physically observe the actual process rather than relying on reports. Waste is often only visible on the floor.
+  </div>
+</section>
+
+<!-- ═══════════════════ 8 WASTES ═══════════════════ -->
+<section id="wastes" class="section">
+  <div class="hero">
+    <div class="hero-label">// TIMWOODS Mnemonic</div>
+    <h1>The <span>8 Wastes</span></h1>
+    <p>Lean identifies 8 categories of non-value-adding activity. Use the mnemonic <strong>TIMWOODS</strong> to remember them all.</p>
+  </div>
+
+  <div class="wastes-grid">
+    <div class="waste-card">
+      <div class="waste-icon">🚛</div>
+      <h4>T — Transport</h4>
+      <p>Unnecessary movement of materials, products, or information between locations</p>
+    </div>
+    <div class="waste-card">
+      <div class="waste-icon">📦</div>
+      <h4>I — Inventory</h4>
+      <p>Excess raw material, WIP, or finished goods beyond what's immediately needed</p>
+    </div>
+    <div class="waste-card">
+      <div class="waste-icon">🚶</div>
+      <h4>M — Motion</h4>
+      <p>Unnecessary physical movement of people — reaching, walking, searching</p>
+    </div>
+    <div class="waste-card">
+      <div class="waste-icon">⏳</div>
+      <h4>W — Waiting</h4>
+      <p>Idle time when people, equipment, or processes wait for the next step</p>
+    </div>
+    <div class="waste-card">
+      <div class="waste-icon">🏭</div>
+      <h4>O — Overproduction</h4>
+      <p>Producing more, earlier, or faster than customer demand requires — the worst waste</p>
+    </div>
+    <div class="waste-card">
+      <div class="waste-icon">⚙️</div>
+      <h4>O — Over-processing</h4>
+      <p>Doing more work, steps, or quality checks than the customer actually requires</p>
+    </div>
+    <div class="waste-card">
+      <div class="waste-icon">🔧</div>
+      <h4>D — Defects</h4>
+      <p>Errors requiring rework, scrap, or inspection — direct cost and time waste</p>
+    </div>
+    <div class="waste-card">
+      <div class="waste-icon">🧠</div>
+      <h4>S — Skills</h4>
+      <p>Underutilizing people's knowledge, creativity, and experience (the 8th waste)</p>
+    </div>
+  </div>
+
+  <div class="callout gold">
+    <strong>Overproduction</strong> is considered the <strong>worst waste</strong> in Lean because it generates all other wastes — more inventory, more transport, more motion, more potential defects.
+  </div>
+
+  <div class="callout">
+    <strong>Interview tip:</strong> When asked about a process improvement you've made, frame your answer using one or more of these 8 wastes. E.g., "We had significant <em>waiting</em> waste in our API approval workflow, so we implemented async processing to reduce lead time by 40%."
+  </div>
+</section>
+
+<!-- ═══════════════════ SIX SIGMA ═══════════════════ -->
+<section id="sixsigma" class="section">
+  <div class="hero">
+    <div class="hero-label">// Statistical Process Control</div>
+    <h1><span>Six</span><br>Sigma</h1>
+    <p>Sigma (σ) measures process variation. Six Sigma means your process produces fewer than <strong>3.4 defects per million opportunities</strong> — essentially perfect.</p>
+  </div>
+
+  <div class="vis-wrap">
+    <div class="vis-title">// Sigma Level → Defects Per Million Opportunities (DPMO)</div>
+    <div id="sigma-bars"></div>
+  </div>
+
+  <div class="callout sigma">
+    A <strong>1-sigma</strong> process produces ~690,000 defects per million. Moving to <strong>6-sigma</strong> reduces this to just 3.4 DPMO — a 200,000× improvement. Each sigma level roughly halves the defect rate.
+  </div>
+
+  <div class="divider">Core Concepts</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="tag tag-sigma">Statistical</div>
+      <h3 style="color:var(--sixsigma)">Cp & Cpk</h3>
+      <p><strong>Cp</strong> (Process Capability) measures how well a process fits within specification limits — assuming it's centered. <strong>Cpk</strong> accounts for centering. A Cpk ≥ 1.33 is generally considered capable. Cpk = 2.0 corresponds to Six Sigma.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-sigma">Statistical</div>
+      <h3 style="color:var(--sixsigma)">DPMO</h3>
+      <p><strong>Defects Per Million Opportunities.</strong> Formula: (Defects / (Units × Opportunities per unit)) × 1,000,000. This normalizes defect rates across different process complexities, enabling apples-to-apples comparisons.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-sigma">Concept</div>
+      <h3 style="color:var(--sixsigma)">Common vs Special Cause</h3>
+      <p><strong>Common cause</strong> variation is random, inherent in the process — addressed by redesigning the system. <strong>Special cause</strong> variation is assignable to a specific event or factor — addressed by finding and eliminating that root cause.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-sigma">Concept</div>
+      <h3 style="color:var(--sixsigma)">CTQ — Critical to Quality</h3>
+      <p>The specific, measurable characteristics of a product or service that directly satisfy customer needs. Translating vague VOC statements ("fast delivery") into measurable CTQs ("shipped within 24 hours") is foundational to Six Sigma projects.</p>
+    </div>
+  </div>
+
+  <div class="divider">Two Pathways</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="tag tag-sigma">Existing Process</div>
+      <h3 style="color:var(--sixsigma)">DMAIC</h3>
+      <p>Define → Measure → Analyze → Improve → Control. Used when you have an existing process that is underperforming. The most common Six Sigma methodology.</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-sigma">New Process</div>
+      <h3 style="color:var(--sixsigma)">DMADV / DFSS</h3>
+      <p>Define → Measure → Analyze → Design → Verify. Used when designing a new product, service, or process from scratch. Also called Design for Six Sigma (DFSS).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ DMAIC ═══════════════════ -->
+<section id="dmaic" class="section">
+  <div class="hero">
+    <div class="hero-label">// Six Sigma Methodology</div>
+    <h1><span>DMAIC</span></h1>
+    <p>The 5-phase problem-solving framework for improving an existing process. Data-driven and structured — every phase produces measurable outputs.</p>
+  </div>
+
+  <div class="dmaic-flow">
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(255,92,92,0.15);color:#ff5c5c">D</div>
+      <div class="dmaic-body">
+        <h4 style="color:#ff5c5c">Define</h4>
+        <p>Clearly articulate the problem, project scope, customer requirements, and business impact. Build a <strong>Project Charter</strong> with goals, timeline, team, and financial benefits.</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">Project Charter</span>
+          <span class="dmaic-tool-tag">SIPOC Diagram</span>
+          <span class="dmaic-tool-tag">VOC / CTQ Tree</span>
+          <span class="dmaic-tool-tag">Stakeholder Analysis</span>
+        </div>
+      </div>
+    </div>
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(245,197,66,0.15);color:var(--gold)">M</div>
+      <div class="dmaic-body">
+        <h4 style="color:var(--gold)">Measure</h4>
+        <p>Establish a baseline. Collect data on the current process performance and validate that your measurement system is reliable (Gage R&R). Without valid measurement, everything downstream is suspect.</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">Process Map</span>
+          <span class="dmaic-tool-tag">Data Collection Plan</span>
+          <span class="dmaic-tool-tag">Gage R&R</span>
+          <span class="dmaic-tool-tag">Baseline Sigma Level</span>
+          <span class="dmaic-tool-tag">Control Charts</span>
+        </div>
+      </div>
+    </div>
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(0,217,163,0.15);color:var(--lean)">A</div>
+      <div class="dmaic-body">
+        <h4 style="color:var(--lean)">Analyze</h4>
+        <p>Identify the root cause(s) of defects or variation. Use data and statistical tools — not opinions. Separate correlation from causation. The goal: verify which X's (inputs) are driving the problem Y (output).</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">Fishbone / Ishikawa</span>
+          <span class="dmaic-tool-tag">5 Whys</span>
+          <span class="dmaic-tool-tag">Pareto Chart</span>
+          <span class="dmaic-tool-tag">Regression Analysis</span>
+          <span class="dmaic-tool-tag">Hypothesis Testing</span>
+          <span class="dmaic-tool-tag">FMEA</span>
+        </div>
+      </div>
+    </div>
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(74,158,255,0.15);color:var(--sixsigma)">I</div>
+      <div class="dmaic-body">
+        <h4 style="color:var(--sixsigma)">Improve</h4>
+        <p>Design, pilot, and implement solutions that address the root causes. Use experiments to validate that improvements work before full-scale rollout. Quantify the improvement with data.</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">DOE (Design of Experiments)</span>
+          <span class="dmaic-tool-tag">Pilot Studies</span>
+          <span class="dmaic-tool-tag">Kaizen Events</span>
+          <span class="dmaic-tool-tag">Mistake-Proofing (Poka-Yoke)</span>
+          <span class="dmaic-tool-tag">Solution Matrix</span>
+        </div>
+      </div>
+    </div>
+    <div class="dmaic-step">
+      <div class="dmaic-letter" style="background:rgba(167,139,250,0.15);color:var(--accent)">C</div>
+      <div class="dmaic-body">
+        <h4 style="color:var(--accent)">Control</h4>
+        <p>Lock in the gains. Document new procedures, train staff, and implement monitoring systems so the process doesn't regress. Hand off ownership to the process owner with a control plan.</p>
+        <div class="dmaic-tools">
+          <span class="dmaic-tool-tag">Control Chart (SPC)</span>
+          <span class="dmaic-tool-tag">Control Plan</span>
+          <span class="dmaic-tool-tag">SOPs / Work Instructions</span>
+          <span class="dmaic-tool-tag">Visual Management</span>
+          <span class="dmaic-tool-tag">Response Plan</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">Key Formula</div>
+  <div class="callout sigma">
+    <strong>Y = f(X)</strong> — The fundamental Six Sigma equation. The output (Y) is a function of the inputs (X's). DMAIC is the journey of discovering which X's matter most, and controlling them.
+  </div>
+</section>
+
+<!-- ═══════════════════ TOOLS ═══════════════════ -->
+<section id="tools" class="section">
+  <div class="hero">
+    <div class="hero-label">// Practitioner Toolkit</div>
+    <h1>Key <span>Tools</span></h1>
+    <p>These are the most commonly tested and referenced tools in Lean Six Sigma. Know what each does and when to use it.</p>
+  </div>
+
+  <div class="sec-title" style="color:var(--lean)">Lean Tools</div>
+  <div class="grid-2" style="margin-bottom:32px">
+    <div class="tool-card">
+      <h4>Value Stream Map (VSM)</h4>
+      <p>Visualizes the entire flow of materials and information through a process from supplier to customer. Highlights waste, bottlenecks, and handoff delays.</p>
+      <span class="use-case">Use in: Define/Measure</span>
+    </div>
+    <div class="tool-card">
+      <h4>5S Methodology</h4>
+      <p>Sort, Set in Order, Shine, Standardize, Sustain. A workplace organization system that reduces waste through visual order and discipline.</p>
+      <span class="use-case">Use in: Improve</span>
+    </div>
+    <div class="tool-card">
+      <h4>Kanban</h4>
+      <p>Visual scheduling system using cards or boards to signal production needs, limit WIP, and expose bottlenecks. Core to pull-based systems.</p>
+      <span class="use-case">Use in: Improve/Control</span>
+    </div>
+    <div class="tool-card">
+      <h4>Poka-Yoke</h4>
+      <p>Mistake-proofing. Designing the process so errors are impossible or immediately obvious — e.g., a USB plug that only fits one way.</p>
+      <span class="use-case">Use in: Improve</span>
+    </div>
+  </div>
+
+  <div class="sec-title" style="color:var(--sixsigma)">Six Sigma Tools</div>
+  <div class="grid-2" style="margin-bottom:32px">
+    <div class="tool-card">
+      <h4>SIPOC</h4>
+      <p>Suppliers → Inputs → Process → Outputs → Customers. A high-level process map used at the start of a project to define scope and key stakeholders.</p>
+      <span class="use-case">Use in: Define</span>
+    </div>
+    <div class="tool-card">
+      <h4>Fishbone Diagram</h4>
+      <p>Also called Ishikawa or Cause-and-Effect diagram. Organizes potential root causes into categories: Man, Machine, Method, Material, Measurement, Environment (6M's).</p>
+      <span class="use-case">Use in: Analyze</span>
+    </div>
+    <div class="tool-card">
+      <h4>Pareto Chart</h4>
+      <p>Bar chart ordered by frequency/impact, with a cumulative line. Demonstrates the 80/20 rule — 80% of problems typically come from 20% of causes. Prioritizes focus.</p>
+      <span class="use-case">Use in: Analyze</span>
+    </div>
+    <div class="tool-card">
+      <h4>Control Chart (SPC)</h4>
+      <p>Time-series plot with Upper/Lower Control Limits (UCL/LCL) at ±3σ. Used to distinguish special-cause from common-cause variation and monitor process stability.</p>
+      <span class="use-case">Use in: Control</span>
+    </div>
+    <div class="tool-card">
+      <h4>FMEA</h4>
+      <p>Failure Mode & Effects Analysis. Proactively scores potential failures by Severity × Occurrence × Detection = Risk Priority Number (RPN). Prioritizes what to prevent.</p>
+      <span class="use-case">Use in: Analyze/Improve</span>
+    </div>
+    <div class="tool-card">
+      <h4>5 Whys</h4>
+      <p>Repeatedly asking "why?" to drill through symptoms to the true root cause. Simple but powerful — best used after a fishbone to investigate the highest-priority branch.</p>
+      <span class="use-case">Use in: Analyze</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ BELTS ═══════════════════ -->
+<section id="belts" class="section">
+  <div class="hero">
+    <div class="hero-label">// Certification Hierarchy</div>
+    <h1>Belt <span>Levels</span></h1>
+    <p>Six Sigma uses a martial arts belt system to designate levels of expertise, responsibility, and project leadership.</p>
+  </div>
+
+  <div class="belt-row">
+    <div class="belt-icon" style="background:#fff"></div>
+    <h4>White Belt</h4>
+    <p>Basic awareness of Lean Six Sigma concepts. Supports local problem-solving. No formal project leadership. Entry-level understanding for all employees.</p>
+  </div>
+  <div class="belt-row">
+    <div class="belt-icon" style="background:#f5c542"></div>
+    <h4 style="color:var(--gold)">Yellow Belt</h4>
+    <p>Participates in project teams as a subject matter expert. Understands DMAIC, basic tools, and contributes to data collection and analysis.</p>
+  </div>
+  <div class="belt-row">
+    <div class="belt-icon" style="background:#00d9a3"></div>
+    <h4 style="color:var(--lean)">Green Belt</h4>
+    <p>Leads smaller-scale improvement projects while maintaining regular job duties. Proficient in DMAIC, core statistical tools, and Lean principles. Works under a Black Belt.</p>
+  </div>
+  <div class="belt-row">
+    <div class="belt-icon" style="background:#222"></div>
+    <h4>Black Belt</h4>
+    <p>Full-time project leader. Manages complex DMAIC projects with significant financial impact ($200K–$1M+ savings). Coaches Green Belts. Advanced statistical proficiency.</p>
+  </div>
+  <div class="belt-row">
+    <div class="belt-icon" style="background:linear-gradient(90deg,#4a9eff,#a78bfa)"></div>
+    <h4 style="color:var(--sixsigma)">Master Black Belt</h4>
+    <p>Strategic leader and organizational coach. Trains and mentors Black/Green Belts. Shapes the LSS program strategy. Deep expertise across all tools and change management.</p>
+  </div>
+  <div class="belt-row">
+    <div class="belt-icon" style="background:linear-gradient(90deg,var(--gold),#ff5c5c)"></div>
+    <h4 style="color:#ff9f43">Champion / Sponsor</h4>
+    <p>Senior executive who owns the business case, removes organizational barriers, and ensures project alignment to strategic goals. Not technically certified but critical to success.</p>
+  </div>
+
+  <div class="callout" style="margin-top:32px">
+    <strong>For interviews:</strong> Most business/analyst roles value <strong>Green Belt</strong> knowledge. Mention belt certifications if you have them, or position yourself as having "Green Belt-level understanding" of DMAIC and Lean tools.
+  </div>
+</section>
+
+<!-- ═══════════════════ INTERVIEW PREP ═══════════════════ -->
+<section id="interview" class="section">
+  <div class="hero">
+    <div class="hero-label">// Interview Preparation</div>
+    <h1>Interview <span>Prep</span></h1>
+    <p>Common questions, model answers, and key phrases to signal fluency in Lean Six Sigma thinking.</p>
+  </div>
+
+  <div class="sec-title">Common Questions</div>
+  <div class="sec-sub">Click each question to reveal a model answer structure</div>
+
+  <div id="qa-container"></div>
+
+  <div class="divider">Power Phrases</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="tag tag-lean">Lean Language</div>
+      <h3>Use These Terms</h3>
+      <p style="margin-bottom:10px">• "Reduce waste and non-value-add activities"<br>• "Pull-based system vs push-based"<br>• "Identify bottlenecks in the value stream"<br>• "Kaizen mindset — continuous incremental improvement"<br>• "Gemba — go see the actual work"<br>• "Takt time alignment with customer demand"</p>
+    </div>
+    <div class="card">
+      <div class="tag tag-sigma">Six Sigma Language</div>
+      <h3>Use These Terms</h3>
+      <p style="margin-bottom:10px">• "Data-driven root cause analysis"<br>• "Reduce variation and defects"<br>• "DMAIC framework — structured problem solving"<br>• "Voice of Customer → CTQ translation"<br>• "Statistical process control (SPC)"<br>• "Sustain gains through control plans"</p>
+    </div>
+  </div>
+
+  <div class="divider">Quick Reference</div>
+
+  <table class="compare-table">
+    <thead>
+      <tr><th>Topic</th><th>One-Liner to Remember</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Lean vs Six Sigma</td><td>Lean = eliminate waste (speed); Six Sigma = reduce variation (quality)</td></tr>
+      <tr><td>Worst Lean waste</td><td>Overproduction — it generates all other wastes</td></tr>
+      <tr><td>TIMWOODS</td><td>Transport, Inventory, Motion, Waiting, Overproduction, Over-processing, Defects, Skills</td></tr>
+      <tr><td>DMAIC order</td><td>Define → Measure → Analyze → Improve → Control</td></tr>
+      <tr><td>Six Sigma target</td><td>3.4 defects per million opportunities (DPMO)</td></tr>
+      <tr><td>Y = f(X)</td><td>Output quality is a function of process inputs — find and control the X's</td></tr>
+      <tr><td>Control chart</td><td>UCL/LCL at ±3σ — anything outside is special-cause variation</td></tr>
+      <tr><td>Poka-Yoke</td><td>Design the process so mistakes are impossible or immediately visible</td></tr>
+      <tr><td>FMEA</td><td>Risk = Severity × Occurrence × Detection (RPN score)</td></tr>
+      <tr><td>5S</td><td>Sort, Set in order, Shine, Standardize, Sustain</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<script>
+// NAV
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('visible');
+  event.currentTarget.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// SIGMA BARS
+const sigmaData = [
+  { level: '1σ', dpmo: 690000, pct: 100 },
+  { level: '2σ', dpmo: 308537, pct: 45 },
+  { level: '3σ', dpmo: 66807, pct: 9.7 },
+  { level: '4σ', dpmo: 6210, pct: 0.9 },
+  { level: '5σ', dpmo: 233, pct: 0.034 },
+  { level: '6σ', dpmo: 3.4, pct: 0.0005 },
+];
+
+const barsEl = document.getElementById('sigma-bars');
+sigmaData.forEach(d => {
+  const barPct = Math.max(d.dpmo / 690000 * 100, 0.3);
+  barsEl.innerHTML += `
+    <div class="sigma-bar-wrap">
+      <div class="sigma-bar-label">
+        <span>${d.level}</span>
+        <span>${d.dpmo.toLocaleString()} DPMO ${d.level === '6σ' ? '← Goal' : ''}</span>
+      </div>
+      <div class="sigma-bar-track">
+        <div class="sigma-bar-fill" style="width:${barPct}%"></div>
+      </div>
+    </div>`;
+});
+
+// Q&A
+const qas = [
+  {
+    q: "What is the difference between Lean and Six Sigma?",
+    a: `<strong>Strong answer structure:</strong><br><br>
+        "Lean and Six Sigma both aim to improve processes, but from different angles. Lean focuses on <strong>eliminating waste</strong> — any activity that doesn't add value from the customer's perspective. Six Sigma focuses on <strong>reducing variation and defects</strong> using statistical analysis.<br><br>
+        Lean uses tools like Value Stream Mapping and Kanban to improve flow and speed. Six Sigma uses DMAIC and statistical tools like control charts and hypothesis testing to identify and eliminate root causes of defects.<br><br>
+        In practice, they're often combined as <strong>Lean Six Sigma</strong> — Lean speeds things up, Six Sigma makes them more reliable."`,
+  },
+  {
+    q: "Walk me through DMAIC.",
+    a: `<strong>Strong answer:</strong><br><br>
+        "DMAIC is the core Six Sigma problem-solving methodology for improving existing processes:<br><br>
+        <strong>Define</strong> — Establish the problem, scope, and customer requirements via a project charter and SIPOC.<br>
+        <strong>Measure</strong> — Baseline the current process performance, validate the measurement system (Gage R&R), and calculate a baseline sigma level.<br>
+        <strong>Analyze</strong> — Use root cause tools (fishbone, 5 Whys, Pareto, regression) to identify the key X's driving the problem.<br>
+        <strong>Improve</strong> — Design, test, and implement solutions that address those root causes. Use pilots and DOE to validate impact.<br>
+        <strong>Control</strong> — Lock in gains with control charts, SOPs, and a control plan. Hand off to the process owner.<br><br>
+        The key insight is Y = f(X): we improve the output Y by identifying and controlling the inputs X."`,
+  },
+  {
+    q: "What are the 8 wastes in Lean?",
+    a: `<strong>Use the TIMWOODS mnemonic:</strong><br><br>
+        <strong>T</strong>ransport — unnecessary material movement<br>
+        <strong>I</strong>nventory — excess stock beyond immediate needs<br>
+        <strong>M</strong>otion — unnecessary movement of people<br>
+        <strong>W</strong>aiting — idle time between steps<br>
+        <strong>O</strong>verproduction — making more than demanded (the worst waste)<br>
+        <strong>O</strong>ver-processing — doing more than the customer requires<br>
+        <strong>D</strong>efects — errors requiring rework or scrap<br>
+        <strong>S</strong>kills — underutilizing people's knowledge and creativity<br><br>
+        "Overproduction is considered the most critical because it creates all the other wastes."`,
+  },
+  {
+    q: "Tell me about a time you improved a process.",
+    a: `<strong>Use the STAR format + LSS framing:</strong><br><br>
+        Structure your story around a specific waste or variation problem:<br><br>
+        <strong>Situation:</strong> Describe the business context and the pain point (use waste language: "We had significant <em>waiting</em> waste in our X process").<br>
+        <strong>Task:</strong> Explain your role and what you needed to achieve.<br>
+        <strong>Action:</strong> Reference at least one LSS tool — "I mapped the value stream and identified that 60% of our cycle time was non-value-add... I ran a root cause analysis using the 5 Whys... We implemented a Kanban board to create pull..."<br>
+        <strong>Result:</strong> Quantify the improvement — cycle time reduction %, defect reduction %, cost savings.<br><br>
+        Even software/tech examples work: slow deployments (waiting), manual rework (defects), redundant processes (over-processing).`,
+  },
+  {
+    q: "What is a control chart and when would you use it?",
+    a: `<strong>Strong answer:</strong><br><br>
+        "A control chart (or SPC chart) is a time-series plot of process data with a center line (mean) and Upper and Lower Control Limits set at ±3σ from the mean.<br><br>
+        Its purpose is to distinguish <strong>common-cause variation</strong> (random, inherent to the process) from <strong>special-cause variation</strong> (an assignable event that shouldn't be there).<br><br>
+        Any point outside the control limits, or non-random patterns like 8 consecutive points on one side of the mean, signals special-cause variation that needs investigation.<br><br>
+        I'd use it in the <strong>Control phase</strong> of DMAIC to monitor whether the improvement is holding over time, and to give the process owner early warning if the process is drifting."`,
+  },
+  {
+    q: "What is the difference between common-cause and special-cause variation?",
+    a: `<strong>Crisp answer:</strong><br><br>
+        "<strong>Common-cause variation</strong> is the normal, random background noise inherent in any process — like small differences in input materials or minor environmental fluctuations. It's predictable and stable. You address it by fundamentally redesigning the process.<br><br>
+        <strong>Special-cause variation</strong> is unpredictable and due to an assignable factor — a machine malfunction, operator error, or a bad batch of materials. It shows up as an out-of-control signal on a control chart.<br><br>
+        The critical mistake is to over-react to common-cause variation as if it were special-cause — this actually makes the process worse. Shewhart and Deming called this 'tampering.'"`,
+  },
+  {
+    q: "What is a Sigma level and what does Six Sigma actually mean?",
+    a: `<strong>Strong answer:</strong><br><br>
+        "Sigma (σ) is a statistical measure of variation. In process terms, the sigma level tells you how many standard deviations fit between the process mean and the nearest specification limit.<br><br>
+        A higher sigma level means fewer defects. The progression is:<br>
+        • 3σ ≈ 66,800 defects per million (roughly industry average in many sectors)<br>
+        • 4σ ≈ 6,200 DPMO<br>
+        • 6σ ≈ 3.4 DPMO — essentially perfect quality<br><br>
+        Achieving Six Sigma doesn't mean zero variation; it means the process is so well-centered and tightly controlled that defects are statistically near-impossible. Mathematically, Cpk = 2.0 corresponds to Six Sigma performance."`,
+  },
+];
+
+const qaContainer = document.getElementById('qa-container');
+qas.forEach((item, i) => {
+  qaContainer.innerHTML += `
+    <div class="qa-block">
+      <div class="qa-q" onclick="toggleQA(${i}, this)">
+        <span>${item.q}</span>
+        <span class="arrow">›</span>
+      </div>
+      <div class="qa-a" id="qa-a-${i}">${item.a}</div>
+    </div>`;
+});
+
+function toggleQA(i, el) {
+  const ans = document.getElementById(`qa-a-${i}`);
+  const isOpen = ans.classList.contains('open');
+  ans.classList.toggle('open', !isOpen);
+  el.classList.toggle('open', !isOpen);
+}
+</script>
+</body>
+</html>
