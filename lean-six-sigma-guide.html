@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Interactive visual reference for Lean and Six Sigma — covering DMAIC, 8 wastes, sigma levels, key tools, belt levels, and interview prep.">
 <title>Lean / Six Sigma — Visual Reference</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
@@ -80,9 +81,7 @@
   }
 
   /* HERO HEADER */
-  .hero {
-    margin-bottom: 48px;
-  }
+  .hero { margin-bottom: 48px; }
   .hero-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
@@ -185,11 +184,7 @@
   .compare-table tr:hover td { background: var(--surface); }
 
   /* DMAIC */
-  .dmaic-flow {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+  .dmaic-flow { display: flex; flex-direction: column; gap: 0; }
   .dmaic-step {
     display: flex;
     align-items: stretch;
@@ -219,10 +214,7 @@
     flex-shrink: 0;
     z-index: 1;
   }
-  .dmaic-body {
-    padding: 8px 20px 32px;
-    flex: 1;
-  }
+  .dmaic-body { padding: 8px 20px 32px; flex: 1; }
   .dmaic-body h4 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 20px;
@@ -230,11 +222,7 @@
     margin-bottom: 6px;
   }
   .dmaic-body p { font-size: 13px; color: var(--muted); line-height: 1.7; margin-bottom: 10px; }
-  .dmaic-tools {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
+  .dmaic-tools { display: flex; flex-wrap: wrap; gap: 6px; }
   .dmaic-tool-tag {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
@@ -262,10 +250,7 @@
     transition: all 0.2s;
     cursor: default;
   }
-  .waste-card:hover {
-    border-color: var(--lean);
-    transform: translateY(-2px);
-  }
+  .waste-card:hover { border-color: var(--lean); transform: translateY(-2px); }
   .waste-icon { font-size: 28px; margin-bottom: 10px; }
   .waste-card h4 {
     font-family: 'Bebas Neue', sans-serif;
@@ -312,10 +297,7 @@
     padding: 22px;
     transition: all 0.2s;
   }
-  .tool-card:hover {
-    border-color: var(--gold);
-    transform: translateY(-2px);
-  }
+  .tool-card:hover { border-color: var(--gold); transform: translateY(-2px); }
   .tool-card h4 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 18px;
@@ -348,12 +330,7 @@
     transition: all 0.2s;
   }
   .belt-row:hover { border-color: #3a4050; }
-  .belt-icon {
-    width: 40px;
-    height: 14px;
-    border-radius: 7px;
-    flex-shrink: 0;
-  }
+  .belt-icon { width: 40px; height: 14px; border-radius: 7px; flex-shrink: 0; }
   .belt-row h4 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 18px;
@@ -381,6 +358,13 @@
     align-items: center;
     transition: background 0.2s;
     user-select: none;
+    /* button reset */
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    text-align: left;
   }
   .qa-q:hover { background: var(--surface2); }
   .qa-q .arrow {
@@ -435,8 +419,7 @@
   .callout.sigma { border-color: var(--sixsigma); background: rgba(74,158,255,0.05); }
   .callout.gold  { border-color: var(--gold);     background: rgba(245,197,66,0.05); }
 
-  /* SCATTER VIS */
-  canvas { display: block; }
+  /* VIS WRAP */
   .vis-wrap {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -461,19 +444,19 @@
 </head>
 <body>
 
-<nav id="nav">
-  <button class="active" onclick="show('overview')">Overview</button>
-  <button onclick="show('lean')">Lean Principles</button>
-  <button onclick="show('wastes')">8 Wastes</button>
-  <button onclick="show('sixsigma')">Six Sigma</button>
-  <button onclick="show('dmaic')">DMAIC</button>
-  <button onclick="show('tools')">Key Tools</button>
-  <button onclick="show('belts')">Belt Levels</button>
-  <button onclick="show('interview')">Interview Prep</button>
+<nav id="nav" role="tablist" aria-label="Lean Six Sigma sections">
+  <button role="tab" aria-selected="true" class="active" onclick="show('overview', this)">Overview</button>
+  <button role="tab" aria-selected="false" onclick="show('lean', this)">Lean Principles</button>
+  <button role="tab" aria-selected="false" onclick="show('wastes', this)">8 Wastes</button>
+  <button role="tab" aria-selected="false" onclick="show('sixsigma', this)">Six Sigma</button>
+  <button role="tab" aria-selected="false" onclick="show('dmaic', this)">DMAIC</button>
+  <button role="tab" aria-selected="false" onclick="show('tools', this)">Key Tools</button>
+  <button role="tab" aria-selected="false" onclick="show('belts', this)">Belt Levels</button>
+  <button role="tab" aria-selected="false" onclick="show('interview', this)">Interview Prep</button>
 </nav>
 
 <!-- ═══════════════════ OVERVIEW ═══════════════════ -->
-<section id="overview" class="section visible">
+<section id="overview" class="section visible" role="tabpanel" tabindex="0">
   <div class="hero">
     <div class="hero-label">// Process Improvement Framework</div>
     <h1>Lean &<br><span>Six Sigma</span></h1>
@@ -508,7 +491,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr><td>Primary Goal</td><td>Eliminate waste & speed up flow</td><td>Reduce defects & variation</td></tr>
+      <tr><td>Primary Goal</td><td>Eliminate waste &amp; speed up flow</td><td>Reduce defects &amp; variation</td></tr>
       <tr><td>Core Question</td><td>Why does this step even exist?</td><td>Why does this step produce errors?</td></tr>
       <tr><td>Approach</td><td>Visual, intuitive, continuous</td><td>Data-driven, statistical, project-based</td></tr>
       <tr><td>Key Metric</td><td>Cycle time, lead time, throughput</td><td>DPMO, Sigma level, Cp/Cpk</td></tr>
@@ -519,7 +502,7 @@
 </section>
 
 <!-- ═══════════════════ LEAN PRINCIPLES ═══════════════════ -->
-<section id="lean" class="section">
+<section id="lean" class="section" role="tabpanel" tabindex="0">
   <div class="hero">
     <div class="hero-label">// Toyota Production System</div>
     <h1><span>Lean</span><br>Principles</h1>
@@ -589,7 +572,7 @@
     </div>
   </div>
 
-  <div class="divider">Key Concept</div>
+  <div class="divider">Key Concepts</div>
 
   <div class="callout">
     <strong>Takt Time</strong> = Available production time ÷ Customer demand rate. This is the "heartbeat" of production — the pace at which you must complete one unit to meet demand without over- or under-producing.
@@ -598,10 +581,32 @@
   <div class="callout">
     <strong>Gemba Walk</strong> — "Go to where the work happens." Leaders physically observe the actual process rather than relying on reports. Waste is often only visible on the floor.
   </div>
+
+  <div class="divider">The Three MU's — Beyond TIMWOODS</div>
+
+  <p style="font-size:14px;color:var(--muted);margin-bottom:20px">The Toyota Production System recognizes three broader categories of loss. TIMWOODS covers Muda in detail, but Mura and Muri are equally important root causes.</p>
+
+  <div class="grid-3">
+    <div class="card" style="margin-bottom:0">
+      <div class="tag tag-lean">Muda</div>
+      <h3 style="color:var(--lean)">Waste</h3>
+      <p>Activities that consume resources without adding customer value. The 8 wastes (TIMWOODS) are all forms of Muda — the most visible of the three MU's.</p>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="tag tag-lean">Mura</div>
+      <h3 style="color:var(--lean)">Unevenness</h3>
+      <p>Irregular demand or uneven workload — e.g., month-end spikes or large batches. Mura causes alternating overburden and idle time, creating both Muri and Muda downstream.</p>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="tag tag-lean">Muri</div>
+      <h3 style="color:var(--lean)">Overburden</h3>
+      <p>Pushing people, equipment, or processes beyond natural capacity. Signs: workers skipping steps, machines skipping maintenance. Leads to breakdowns, errors, and burnout.</p>
+    </div>
+  </div>
 </section>
 
 <!-- ═══════════════════ 8 WASTES ═══════════════════ -->
-<section id="wastes" class="section">
+<section id="wastes" class="section" role="tabpanel" tabindex="0">
   <div class="hero">
     <div class="hero-label">// TIMWOODS Mnemonic</div>
     <h1>The <span>8 Wastes</span></h1>
@@ -661,7 +666,7 @@
 </section>
 
 <!-- ═══════════════════ SIX SIGMA ═══════════════════ -->
-<section id="sixsigma" class="section">
+<section id="sixsigma" class="section" role="tabpanel" tabindex="0">
   <div class="hero">
     <div class="hero-label">// Statistical Process Control</div>
     <h1><span>Six</span><br>Sigma</h1>
@@ -674,7 +679,11 @@
   </div>
 
   <div class="callout sigma">
-    A <strong>1-sigma</strong> process produces ~690,000 defects per million. Moving to <strong>6-sigma</strong> reduces this to just 3.4 DPMO — a 200,000× improvement. Each sigma level roughly halves the defect rate.
+    <strong>The 1.5σ Shift</strong> — The 3.4 DPMO figure assumes a 1.5σ long-term drift in the process mean (Motorola's empirical finding that real processes shift over time). A mathematically perfect 6σ process with no drift would produce just 0.002 DPMO. This shift is why sigma levels in practice use adjusted DPMO tables. Knowing this detail signals genuine depth in an interview.
+  </div>
+
+  <div class="callout sigma">
+    A <strong>1-sigma</strong> process produces ~690,000 defects per million. Moving to <strong>6-sigma</strong> reduces this to just 3.4 DPMO — a 200,000× improvement.
   </div>
 
   <div class="divider">Core Concepts</div>
@@ -682,8 +691,12 @@
   <div class="grid-2">
     <div class="card">
       <div class="tag tag-sigma">Statistical</div>
-      <h3 style="color:var(--sixsigma)">Cp & Cpk</h3>
-      <p><strong>Cp</strong> (Process Capability) measures how well a process fits within specification limits — assuming it's centered. <strong>Cpk</strong> accounts for centering. A Cpk ≥ 1.33 is generally considered capable. Cpk = 2.0 corresponds to Six Sigma.</p>
+      <h3 style="color:var(--sixsigma)">Cp, Cpk, Pp &amp; Ppk</h3>
+      <p>
+        <strong>Cp</strong> measures how well a process fits within spec limits — assuming it's perfectly centered.<br>
+        <strong>Cpk</strong> accounts for centering (off-center = lower Cpk). Cpk ≥ 1.33 = capable; Cpk = 2.0 = Six Sigma.<br><br>
+        <strong>Pp/Ppk</strong> are the performance equivalents — same formulas but using <em>overall</em> standard deviation (long-term, all sources of variation) instead of within-subgroup variation. Cp/Cpk reveal process <em>potential</em>; Pp/Ppk reveal actual <em>performance</em>. A large gap between Cpk and Ppk means significant between-subgroup variation exists.
+      </p>
     </div>
     <div class="card">
       <div class="tag tag-sigma">Statistical</div>
@@ -713,17 +726,17 @@
     <div class="card">
       <div class="tag tag-sigma">New Process</div>
       <h3 style="color:var(--sixsigma)">DMADV / DFSS</h3>
-      <p>Define → Measure → Analyze → Design → Verify. Used when designing a new product, service, or process from scratch. Also called Design for Six Sigma (DFSS).</p>
+      <p>Define → Measure → Analyze → Design → Verify. Used when designing a new product, service, or process from scratch — or when an existing process is so broken it needs full replacement. Also called Design for Six Sigma (DFSS).</p>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════ DMAIC ═══════════════════ -->
-<section id="dmaic" class="section">
+<section id="dmaic" class="section" role="tabpanel" tabindex="0">
   <div class="hero">
     <div class="hero-label">// Six Sigma Methodology</div>
     <h1><span>DMAIC</span></h1>
-    <p>The 5-phase problem-solving framework for improving an existing process. Data-driven and structured — every phase produces measurable outputs.</p>
+    <p>The 5-phase problem-solving framework for improving an existing process. Data-driven and structured — every phase produces measurable outputs and ends with a formal tollgate review.</p>
   </div>
 
   <div class="dmaic-flow">
@@ -731,7 +744,7 @@
       <div class="dmaic-letter" style="background:rgba(255,92,92,0.15);color:#ff5c5c">D</div>
       <div class="dmaic-body">
         <h4 style="color:#ff5c5c">Define</h4>
-        <p>Clearly articulate the problem, project scope, customer requirements, and business impact. Build a <strong>Project Charter</strong> with goals, timeline, team, and financial benefits.</p>
+        <p>Clearly articulate the problem, project scope, customer requirements, and business impact. Build a <strong>Project Charter</strong> with goals, timeline, team, and financial benefits. Translate VOC into measurable CTQs.</p>
         <div class="dmaic-tools">
           <span class="dmaic-tool-tag">Project Charter</span>
           <span class="dmaic-tool-tag">SIPOC Diagram</span>
@@ -744,11 +757,11 @@
       <div class="dmaic-letter" style="background:rgba(245,197,66,0.15);color:var(--gold)">M</div>
       <div class="dmaic-body">
         <h4 style="color:var(--gold)">Measure</h4>
-        <p>Establish a baseline. Collect data on the current process performance and validate that your measurement system is reliable (Gage R&R). Without valid measurement, everything downstream is suspect.</p>
+        <p>Establish a baseline. Collect data on the current process performance and validate that your measurement system is reliable (<strong>Gage R&amp;R</strong>). Without valid measurement, everything downstream is suspect.</p>
         <div class="dmaic-tools">
           <span class="dmaic-tool-tag">Process Map</span>
           <span class="dmaic-tool-tag">Data Collection Plan</span>
-          <span class="dmaic-tool-tag">Gage R&R</span>
+          <span class="dmaic-tool-tag">Gage R&amp;R</span>
           <span class="dmaic-tool-tag">Baseline Sigma Level</span>
           <span class="dmaic-tool-tag">Control Charts</span>
         </div>
@@ -799,6 +812,11 @@
     </div>
   </div>
 
+  <div class="divider">Tollgate Reviews</div>
+  <div class="callout sigma">
+    <strong>Tollgate Reviews</strong> occur at the end of each DMAIC phase. The project team presents deliverables to the Champion and sponsor, who must formally approve before the team advances. Tollgates enforce rigor, surface risks early, and give leadership visibility and control over project direction. Failing a tollgate means going back and completing the phase — not skipping ahead.
+  </div>
+
   <div class="divider">Key Formula</div>
   <div class="callout sigma">
     <strong>Y = f(X)</strong> — The fundamental Six Sigma equation. The output (Y) is a function of the inputs (X's). DMAIC is the journey of discovering which X's matter most, and controlling them.
@@ -806,7 +824,7 @@
 </section>
 
 <!-- ═══════════════════ TOOLS ═══════════════════ -->
-<section id="tools" class="section">
+<section id="tools" class="section" role="tabpanel" tabindex="0">
   <div class="hero">
     <div class="hero-label">// Practitioner Toolkit</div>
     <h1>Key <span>Tools</span></h1>
@@ -817,22 +835,32 @@
   <div class="grid-2" style="margin-bottom:32px">
     <div class="tool-card">
       <h4>Value Stream Map (VSM)</h4>
-      <p>Visualizes the entire flow of materials and information through a process from supplier to customer. Highlights waste, bottlenecks, and handoff delays.</p>
-      <span class="use-case">Use in: Define/Measure</span>
+      <p>Visualizes the entire flow of materials and information through a process from supplier to customer. Highlights waste, bottlenecks, and handoff delays. Current-state maps reveal problems; future-state maps define the target.</p>
+      <span class="use-case">Use in: Define / Measure</span>
     </div>
     <div class="tool-card">
       <h4>5S Methodology</h4>
-      <p>Sort, Set in Order, Shine, Standardize, Sustain. A workplace organization system that reduces waste through visual order and discipline.</p>
+      <p>Sort, Set in Order, Shine, Standardize, Sustain. A workplace organization system that reduces waste through visual order and discipline. Often the first improvement implemented in a new Lean program.</p>
       <span class="use-case">Use in: Improve</span>
     </div>
     <div class="tool-card">
       <h4>Kanban</h4>
-      <p>Visual scheduling system using cards or boards to signal production needs, limit WIP, and expose bottlenecks. Core to pull-based systems.</p>
-      <span class="use-case">Use in: Improve/Control</span>
+      <p>Visual scheduling system using cards or boards to signal production needs, limit WIP, and expose bottlenecks. Core to pull-based systems. WIP limits force the team to finish before starting new work.</p>
+      <span class="use-case">Use in: Improve / Control</span>
     </div>
     <div class="tool-card">
       <h4>Poka-Yoke</h4>
-      <p>Mistake-proofing. Designing the process so errors are impossible or immediately obvious — e.g., a USB plug that only fits one way.</p>
+      <p>Mistake-proofing. Designing the process so errors are impossible or immediately obvious — e.g., a USB plug that only fits one way, or a form that won't submit without required fields.</p>
+      <span class="use-case">Use in: Improve</span>
+    </div>
+    <div class="tool-card">
+      <h4>A3 Report</h4>
+      <p>A structured one-page problem-solving document (named after A3 paper size) from Toyota. Sections: background → current condition → goal → root cause → countermeasures → follow-up. Forces disciplined thinking in a concise format.</p>
+      <span class="use-case">Use in: Define / Analyze / Improve</span>
+    </div>
+    <div class="tool-card">
+      <h4>Heijunka (Level Scheduling)</h4>
+      <p>Production leveling — distributing work evenly across time rather than processing in large batches. Smooths demand variation, reduces Mura (unevenness), and prevents downstream overburden.</p>
       <span class="use-case">Use in: Improve</span>
     </div>
   </div>
@@ -841,39 +869,49 @@
   <div class="grid-2" style="margin-bottom:32px">
     <div class="tool-card">
       <h4>SIPOC</h4>
-      <p>Suppliers → Inputs → Process → Outputs → Customers. A high-level process map used at the start of a project to define scope and key stakeholders.</p>
+      <p>Suppliers → Inputs → Process → Outputs → Customers. A high-level process map used at the start of a project to define scope and key stakeholders. Prevents scope creep by agreeing on boundaries early.</p>
       <span class="use-case">Use in: Define</span>
     </div>
     <div class="tool-card">
       <h4>Fishbone Diagram</h4>
-      <p>Also called Ishikawa or Cause-and-Effect diagram. Organizes potential root causes into categories: Man, Machine, Method, Material, Measurement, Environment (6M's).</p>
+      <p>Also called Ishikawa or Cause-and-Effect diagram. Organizes potential root causes into categories: Man, Machine, Method, Material, Measurement, Environment (6M's). Best used in a team brainstorm before prioritizing with data.</p>
       <span class="use-case">Use in: Analyze</span>
     </div>
     <div class="tool-card">
       <h4>Pareto Chart</h4>
-      <p>Bar chart ordered by frequency/impact, with a cumulative line. Demonstrates the 80/20 rule — 80% of problems typically come from 20% of causes. Prioritizes focus.</p>
+      <p>Bar chart ordered by frequency/impact, with a cumulative line. Demonstrates the 80/20 rule — 80% of problems typically come from 20% of causes. Prioritizes focus so teams tackle the highest-impact root causes first.</p>
       <span class="use-case">Use in: Analyze</span>
     </div>
     <div class="tool-card">
       <h4>Control Chart (SPC)</h4>
-      <p>Time-series plot with Upper/Lower Control Limits (UCL/LCL) at ±3σ. Used to distinguish special-cause from common-cause variation and monitor process stability.</p>
-      <span class="use-case">Use in: Control</span>
+      <p>Time-series plot with Upper/Lower Control Limits (UCL/LCL) at ±3σ. Used to distinguish special-cause from common-cause variation and monitor process stability over time.</p>
+      <span class="use-case">Use in: Measure / Control</span>
     </div>
     <div class="tool-card">
       <h4>FMEA</h4>
-      <p>Failure Mode & Effects Analysis. Proactively scores potential failures by Severity × Occurrence × Detection = Risk Priority Number (RPN). Prioritizes what to prevent.</p>
-      <span class="use-case">Use in: Analyze/Improve</span>
+      <p>Failure Mode &amp; Effects Analysis. Proactively scores potential failures by Severity × Occurrence × Detection = Risk Priority Number (RPN). Prioritizes what to mistake-proof or monitor. Higher RPN = higher priority.</p>
+      <span class="use-case">Use in: Analyze / Improve</span>
     </div>
     <div class="tool-card">
       <h4>5 Whys</h4>
-      <p>Repeatedly asking "why?" to drill through symptoms to the true root cause. Simple but powerful — best used after a fishbone to investigate the highest-priority branch.</p>
+      <p>Repeatedly asking "why?" to drill through symptoms to the true root cause. Simple but powerful — best used after a fishbone to investigate the highest-priority branch. Stop when you reach something you can control.</p>
       <span class="use-case">Use in: Analyze</span>
+    </div>
+    <div class="tool-card">
+      <h4>Gage R&amp;R</h4>
+      <p>Gauge Repeatability &amp; Reproducibility. Measures how much of your observed variation comes from the measurement system itself, not the process. <strong>Repeatability</strong> = same operator, same instrument variation. <strong>Reproducibility</strong> = variation between operators. A measurement system contributing &gt;30% of total variation is unacceptable — fix measurement before drawing conclusions.</p>
+      <span class="use-case">Use in: Measure</span>
+    </div>
+    <div class="tool-card">
+      <h4>DOE — Design of Experiments</h4>
+      <p>Systematically varies multiple input factors simultaneously to understand their individual and combined effects on the output (Y). Far more efficient than one-factor-at-a-time testing. Key terms: factors, levels, runs, full factorial vs. fractional factorial, interaction effects.</p>
+      <span class="use-case">Use in: Improve</span>
     </div>
   </div>
 </section>
 
 <!-- ═══════════════════ BELTS ═══════════════════ -->
-<section id="belts" class="section">
+<section id="belts" class="section" role="tabpanel" tabindex="0">
   <div class="hero">
     <div class="hero-label">// Certification Hierarchy</div>
     <h1>Belt <span>Levels</span></h1>
@@ -908,7 +946,7 @@
   <div class="belt-row">
     <div class="belt-icon" style="background:linear-gradient(90deg,var(--gold),#ff5c5c)"></div>
     <h4 style="color:#ff9f43">Champion / Sponsor</h4>
-    <p>Senior executive who owns the business case, removes organizational barriers, and ensures project alignment to strategic goals. Not technically certified but critical to success.</p>
+    <p>Senior executive who owns the business case, removes organizational barriers, and ensures project alignment to strategic goals. Conducts tollgate reviews. Not technically certified but critical to success.</p>
   </div>
 
   <div class="callout" style="margin-top:32px">
@@ -917,7 +955,7 @@
 </section>
 
 <!-- ═══════════════════ INTERVIEW PREP ═══════════════════ -->
-<section id="interview" class="section">
+<section id="interview" class="section" role="tabpanel" tabindex="0">
   <div class="hero">
     <div class="hero-label">// Interview Preparation</div>
     <h1>Interview <span>Prep</span></h1>
@@ -954,51 +992,57 @@
       <tr><td>Lean vs Six Sigma</td><td>Lean = eliminate waste (speed); Six Sigma = reduce variation (quality)</td></tr>
       <tr><td>Worst Lean waste</td><td>Overproduction — it generates all other wastes</td></tr>
       <tr><td>TIMWOODS</td><td>Transport, Inventory, Motion, Waiting, Overproduction, Over-processing, Defects, Skills</td></tr>
+      <tr><td>3 MU's</td><td>Muda (waste), Mura (unevenness), Muri (overburden)</td></tr>
       <tr><td>DMAIC order</td><td>Define → Measure → Analyze → Improve → Control</td></tr>
-      <tr><td>Six Sigma target</td><td>3.4 defects per million opportunities (DPMO)</td></tr>
+      <tr><td>Six Sigma target</td><td>3.4 DPMO — assumes a 1.5σ long-term process shift</td></tr>
       <tr><td>Y = f(X)</td><td>Output quality is a function of process inputs — find and control the X's</td></tr>
+      <tr><td>Cpk vs Ppk</td><td>Cpk = short-term potential (within-subgroup); Ppk = long-term actual performance (overall)</td></tr>
       <tr><td>Control chart</td><td>UCL/LCL at ±3σ — anything outside is special-cause variation</td></tr>
       <tr><td>Poka-Yoke</td><td>Design the process so mistakes are impossible or immediately visible</td></tr>
       <tr><td>FMEA</td><td>Risk = Severity × Occurrence × Detection (RPN score)</td></tr>
+      <tr><td>Gage R&amp;R</td><td>Validate the measurement system before drawing conclusions from data</td></tr>
       <tr><td>5S</td><td>Sort, Set in order, Shine, Standardize, Sustain</td></tr>
+      <tr><td>Tollgate</td><td>Formal phase-end review — Champion must approve before team advances</td></tr>
     </tbody>
   </table>
 </section>
 
 <script>
-// NAV
-function show(id) {
+function show(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
   document.getElementById(id).classList.add('visible');
-  event.currentTarget.classList.add('active');
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
   window.scrollTo(0, 0);
 }
 
 // SIGMA BARS
 const sigmaData = [
-  { level: '1σ', dpmo: 690000, pct: 100 },
-  { level: '2σ', dpmo: 308537, pct: 45 },
-  { level: '3σ', dpmo: 66807, pct: 9.7 },
-  { level: '4σ', dpmo: 6210, pct: 0.9 },
-  { level: '5σ', dpmo: 233, pct: 0.034 },
-  { level: '6σ', dpmo: 3.4, pct: 0.0005 },
+  { level: '1σ', dpmo: 690000 },
+  { level: '2σ', dpmo: 308537 },
+  { level: '3σ', dpmo: 66807 },
+  { level: '4σ', dpmo: 6210 },
+  { level: '5σ', dpmo: 233 },
+  { level: '6σ', dpmo: 3.4 },
 ];
 
-const barsEl = document.getElementById('sigma-bars');
-sigmaData.forEach(d => {
+document.getElementById('sigma-bars').innerHTML = sigmaData.map(d => {
   const barPct = Math.max(d.dpmo / 690000 * 100, 0.3);
-  barsEl.innerHTML += `
+  return `
     <div class="sigma-bar-wrap">
       <div class="sigma-bar-label">
         <span>${d.level}</span>
-        <span>${d.dpmo.toLocaleString()} DPMO ${d.level === '6σ' ? '← Goal' : ''}</span>
+        <span>${d.dpmo.toLocaleString()} DPMO${d.level === '6σ' ? ' ← Goal' : ''}</span>
       </div>
       <div class="sigma-bar-track">
         <div class="sigma-bar-fill" style="width:${barPct}%"></div>
       </div>
     </div>`;
-});
+}).join('');
 
 // Q&A
 const qas = [
@@ -1016,9 +1060,9 @@ const qas = [
         <strong>Define</strong> — Establish the problem, scope, and customer requirements via a project charter and SIPOC.<br>
         <strong>Measure</strong> — Baseline the current process performance, validate the measurement system (Gage R&R), and calculate a baseline sigma level.<br>
         <strong>Analyze</strong> — Use root cause tools (fishbone, 5 Whys, Pareto, regression) to identify the key X's driving the problem.<br>
-        <strong>Improve</strong> — Design, test, and implement solutions that address those root causes. Use pilots and DOE to validate impact.<br>
+        <strong>Improve</strong> — Design, test, and implement solutions. Use pilots and DOE to validate impact before full rollout.<br>
         <strong>Control</strong> — Lock in gains with control charts, SOPs, and a control plan. Hand off to the process owner.<br><br>
-        The key insight is Y = f(X): we improve the output Y by identifying and controlling the inputs X."`,
+        Each phase ends with a <strong>tollgate review</strong> where the Champion approves advancement. The key insight is Y = f(X): we improve the output Y by identifying and controlling the inputs X."`,
   },
   {
     q: "What are the 8 wastes in Lean?",
@@ -1049,7 +1093,7 @@ const qas = [
         "A control chart (or SPC chart) is a time-series plot of process data with a center line (mean) and Upper and Lower Control Limits set at ±3σ from the mean.<br><br>
         Its purpose is to distinguish <strong>common-cause variation</strong> (random, inherent to the process) from <strong>special-cause variation</strong> (an assignable event that shouldn't be there).<br><br>
         Any point outside the control limits, or non-random patterns like 8 consecutive points on one side of the mean, signals special-cause variation that needs investigation.<br><br>
-        I'd use it in the <strong>Control phase</strong> of DMAIC to monitor whether the improvement is holding over time, and to give the process owner early warning if the process is drifting."`,
+        I'd use it in the <strong>Measure phase</strong> to assess process stability before baselining, and again in the <strong>Control phase</strong> to monitor whether improvements are holding over time."`,
   },
   {
     q: "What is the difference between common-cause and special-cause variation?",
@@ -1062,31 +1106,67 @@ const qas = [
     q: "What is a Sigma level and what does Six Sigma actually mean?",
     a: `<strong>Strong answer:</strong><br><br>
         "Sigma (σ) is a statistical measure of variation. In process terms, the sigma level tells you how many standard deviations fit between the process mean and the nearest specification limit.<br><br>
-        A higher sigma level means fewer defects. The progression is:<br>
-        • 3σ ≈ 66,800 defects per million (roughly industry average in many sectors)<br>
+        A higher sigma level means fewer defects:<br>
+        • 3σ ≈ 66,800 DPMO (roughly industry average in many sectors)<br>
         • 4σ ≈ 6,200 DPMO<br>
         • 6σ ≈ 3.4 DPMO — essentially perfect quality<br><br>
-        Achieving Six Sigma doesn't mean zero variation; it means the process is so well-centered and tightly controlled that defects are statistically near-impossible. Mathematically, Cpk = 2.0 corresponds to Six Sigma performance."`,
+        The 3.4 figure assumes a 1.5σ long-term mean shift — Motorola's empirical finding that real process means drift over time. Without that shift, a true 6σ process would produce just 0.002 DPMO. Mathematically, Cpk = 2.0 corresponds to Six Sigma performance."`,
+  },
+  {
+    q: "How do you translate Voice of Customer (VOC) into CTQs?",
+    a: `<strong>Strong answer:</strong><br><br>
+        "VOC captures what customers say they want — often in vague, qualitative terms. CTQ (Critical to Quality) makes those needs specific, measurable, and actionable.<br><br>
+        The translation process:<br>
+        1. <strong>Collect VOC</strong> — interviews, surveys, complaints, focus groups, NPS data<br>
+        2. <strong>Affinity diagram</strong> — group themes from raw customer statements<br>
+        3. <strong>CTQ Tree</strong> — decompose each theme into driver → CTQ. E.g., VOC: 'I want fast delivery' → Driver: shipping speed → CTQ: 'order shipped within 24 hours of purchase, 99% of the time'<br><br>
+        The test of a good CTQ: can you measure it, and can you set a spec limit? If yes, it's a proper CTQ. If it's still vague, keep drilling down."`,
+  },
+  {
+    q: "What is Kaizen and how does it differ from a DMAIC project?",
+    a: `<strong>Strong answer:</strong><br><br>
+        "Kaizen means 'change for better' in Japanese — it describes small, continuous, incremental improvements made by the people doing the work every day. A <strong>Kaizen event</strong> (or Kaizen blitz) is a focused, time-boxed team effort — typically 3–5 days — targeting a specific area with an obvious waste problem.<br><br>
+        <strong>Key differences from DMAIC:</strong><br>
+        • Kaizen is fast, low-data, and targets visible waste. DMAIC is a formal multi-week project targeting complex, data-driven problems.<br>
+        • Kaizen is led by frontline teams. DMAIC is led by a Green or Black Belt with statistical tools.<br>
+        • Kaizen is great when the problem and solution are already reasonably clear. Use DMAIC when you need to discover the root cause through data.<br><br>
+        In practice, Kaizen events often emerge from DMAIC's Improve phase as the implementation vehicle."`,
+  },
+  {
+    q: "What is the difference between DMAIC and DMADV?",
+    a: `<strong>Crisp answer:</strong><br><br>
+        "Both are Six Sigma methodologies, but they serve different situations:<br><br>
+        <strong>DMAIC</strong> (Define → Measure → Analyze → Improve → Control) is for <em>improving an existing process</em> that is underperforming. You have something to fix.<br><br>
+        <strong>DMADV</strong> (Define → Measure → Analyze → Design → Verify), also called Design for Six Sigma (DFSS), is for <em>creating a new product, service, or process from scratch</em> — or when an existing process is so fundamentally broken that it needs replacement rather than improvement.<br><br>
+        Decision rule: if a process exists and can be improved, use DMAIC. If you're designing new, or the process is beyond saving, use DMADV."`,
+  },
+  {
+    q: "How do you handle resistance to change during a process improvement project?",
+    a: `<strong>Strong answer:</strong><br><br>
+        "Resistance is expected and normal — people protect what they know. My approach:<br><br>
+        <strong>Involve early:</strong> Bring frontline workers into process mapping and root cause analysis from the start. People support what they help create. Gemba walks are great for this — you go to them, not the other way around.<br><br>
+        <strong>Lead with data, not blame:</strong> Frame problems as system failures, not people failures. A control chart showing a drifting process is less threatening than a manager saying 'you're doing it wrong.'<br><br>
+        <strong>Pilot with willing adopters:</strong> Run a small pilot with a team that's open to change, build evidence of results, and let peer success stories do the persuading.<br><br>
+        <strong>Champion visibility:</strong> Ensure the sponsor is visibly engaged and communicating priority. Without executive backing, resistance will win.<br><br>
+        Change management is a parallel workstream alongside the technical DMAIC work — not an afterthought."`,
   },
 ];
 
-const qaContainer = document.getElementById('qa-container');
-qas.forEach((item, i) => {
-  qaContainer.innerHTML += `
-    <div class="qa-block">
-      <div class="qa-q" onclick="toggleQA(${i}, this)">
-        <span>${item.q}</span>
-        <span class="arrow">›</span>
-      </div>
-      <div class="qa-a" id="qa-a-${i}">${item.a}</div>
-    </div>`;
-});
+document.getElementById('qa-container').innerHTML = qas.map((item, i) => `
+  <div class="qa-block">
+    <button class="qa-q" aria-expanded="false" onclick="toggleQA(${i}, this)">
+      <span>${item.q}</span>
+      <span class="arrow" aria-hidden="true">›</span>
+    </button>
+    <div class="qa-a" id="qa-a-${i}" role="region">${item.a}</div>
+  </div>`).join('');
 
 function toggleQA(i, el) {
   const ans = document.getElementById(`qa-a-${i}`);
   const isOpen = ans.classList.contains('open');
   ans.classList.toggle('open', !isOpen);
   el.classList.toggle('open', !isOpen);
+  el.setAttribute('aria-expanded', String(!isOpen));
 }
 </script>
 </body>
