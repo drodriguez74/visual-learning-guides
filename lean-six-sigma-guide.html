@@ -440,6 +440,110 @@
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+  /* ═══════════════════ BELT FLIP CARDS ═══════════════════ */
+  .belt-flip-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 700px) { .belt-flip-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 440px) { .belt-flip-grid { grid-template-columns: 1fr; } }
+
+  .flip-card {
+    perspective: 900px;
+    height: 190px;
+    cursor: pointer;
+  }
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+
+  .flip-card-front,
+  .flip-card-back {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .flip-card:hover .flip-card-front,
+  .flip-card.flipped:hover .flip-card-back { border-color: #3a4050; }
+
+  /* Front face */
+  .flip-card-front {
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px 16px 28px;
+    position: relative;
+  }
+  .fc-belt {
+    width: 64px;
+    height: 14px;
+    border-radius: 7px;
+    flex-shrink: 0;
+  }
+  .flip-card-front h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.06em;
+    text-align: center;
+    line-height: 1.1;
+  }
+  .fc-hint {
+    position: absolute;
+    bottom: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.6;
+  }
+  .flip-card:hover .fc-hint { opacity: 1; }
+
+  /* Back face */
+  .flip-card-back {
+    background: var(--surface2);
+    transform: rotateY(180deg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 3px solid var(--border);
+  }
+  .fc-back-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .flip-card-back h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .flip-card-back p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
   /* ═══════════════════ QUIZ MODE ═══════════════════ */
 
   .quiz-toggle-row {
@@ -1254,35 +1358,110 @@
     <p>Six Sigma uses a martial arts belt system to designate levels of expertise, responsibility, and project leadership.</p>
   </div>
 
-  <div class="belt-row">
-    <div class="belt-icon" style="background:#fff"></div>
-    <h4>White Belt</h4>
-    <p>Basic awareness of Lean Six Sigma concepts. Supports local problem-solving. No formal project leadership. Entry-level understanding for all employees.</p>
-  </div>
-  <div class="belt-row">
-    <div class="belt-icon" style="background:#f5c542"></div>
-    <h4 style="color:var(--gold)">Yellow Belt</h4>
-    <p>Participates in project teams as a subject matter expert. Understands DMAIC, basic tools, and contributes to data collection and analysis.</p>
-  </div>
-  <div class="belt-row">
-    <div class="belt-icon" style="background:#00d9a3"></div>
-    <h4 style="color:var(--lean)">Green Belt</h4>
-    <p>Leads smaller-scale improvement projects while maintaining regular job duties. Proficient in DMAIC, core statistical tools, and Lean principles. Works under a Black Belt.</p>
-  </div>
-  <div class="belt-row">
-    <div class="belt-icon" style="background:#222"></div>
-    <h4>Black Belt</h4>
-    <p>Full-time project leader. Manages complex DMAIC projects with significant financial impact ($200K–$1M+ savings). Coaches Green Belts. Advanced statistical proficiency.</p>
-  </div>
-  <div class="belt-row">
-    <div class="belt-icon" style="background:linear-gradient(90deg,#4a9eff,#a78bfa)"></div>
-    <h4 style="color:var(--sixsigma)">Master Black Belt</h4>
-    <p>Strategic leader and organizational coach. Trains and mentors Black/Green Belts. Shapes the LSS program strategy. Deep expertise across all tools and change management.</p>
-  </div>
-  <div class="belt-row">
-    <div class="belt-icon" style="background:linear-gradient(90deg,var(--gold),#ff5c5c)"></div>
-    <h4 style="color:#ff9f43">Champion / Sponsor</h4>
-    <p>Senior executive who owns the business case, removes organizational barriers, and ensures project alignment to strategic goals. Conducts tollgate reviews. Not technically certified but critical to success.</p>
+  <div class="belt-flip-grid">
+
+    <div class="flip-card" onclick="toggleFlip(this)" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' ')toggleFlip(this)"
+         role="button" aria-label="White Belt — click to see details">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div class="fc-belt" style="background:#e2e8f0"></div>
+          <h4>White Belt</h4>
+          <span class="fc-hint">tap to flip ↻</span>
+        </div>
+        <div class="flip-card-back" style="border-left-color:#e2e8f0">
+          <div class="fc-back-label">// White Belt</div>
+          <h4>Entry Level</h4>
+          <p>Basic awareness of Lean Six Sigma concepts. Supports local problem-solving. No formal project leadership. Entry-level understanding for all employees.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flip-card" onclick="toggleFlip(this)" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' ')toggleFlip(this)"
+         role="button" aria-label="Yellow Belt — click to see details">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div class="fc-belt" style="background:var(--gold)"></div>
+          <h4 style="color:var(--gold)">Yellow Belt</h4>
+          <span class="fc-hint">tap to flip ↻</span>
+        </div>
+        <div class="flip-card-back" style="border-left-color:var(--gold)">
+          <div class="fc-back-label">// Yellow Belt</div>
+          <h4 style="color:var(--gold)">Contributor</h4>
+          <p>Participates in project teams as a subject matter expert. Understands DMAIC basics and contributes to data collection and analysis. Works under a Green or Black Belt.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flip-card" onclick="toggleFlip(this)" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' ')toggleFlip(this)"
+         role="button" aria-label="Green Belt — click to see details">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div class="fc-belt" style="background:var(--lean)"></div>
+          <h4 style="color:var(--lean)">Green Belt</h4>
+          <span class="fc-hint">tap to flip ↻</span>
+        </div>
+        <div class="flip-card-back" style="border-left-color:var(--lean)">
+          <div class="fc-back-label">// Green Belt</div>
+          <h4 style="color:var(--lean)">Project Lead</h4>
+          <p>Leads smaller-scale DMAIC projects while maintaining regular duties. Proficient in core statistical tools and Lean principles. Works under Black Belt guidance.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flip-card" onclick="toggleFlip(this)" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' ')toggleFlip(this)"
+         role="button" aria-label="Black Belt — click to see details">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div class="fc-belt" style="background:linear-gradient(135deg,#374151,#6b7280)"></div>
+          <h4>Black Belt</h4>
+          <span class="fc-hint">tap to flip ↻</span>
+        </div>
+        <div class="flip-card-back" style="border-left-color:#6b7280">
+          <div class="fc-back-label">// Black Belt</div>
+          <h4>Full-Time Leader</h4>
+          <p>Full-time project leader managing complex DMAIC projects ($200K–$1M+ savings). Coaches Green Belts. Advanced statistical proficiency required.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flip-card" onclick="toggleFlip(this)" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' ')toggleFlip(this)"
+         role="button" aria-label="Master Black Belt — click to see details">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div class="fc-belt" style="background:linear-gradient(90deg,#4a9eff,#a78bfa)"></div>
+          <h4 style="color:var(--sixsigma)">Master Black Belt</h4>
+          <span class="fc-hint">tap to flip ↻</span>
+        </div>
+        <div class="flip-card-back" style="border-left-color:var(--sixsigma)">
+          <div class="fc-back-label">// Master Black Belt</div>
+          <h4 style="color:var(--sixsigma)">Strategic Coach</h4>
+          <p>Trains and mentors Black/Green Belts. Shapes the organization's LSS program strategy. Deep expertise across all tools and change management.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flip-card" onclick="toggleFlip(this)" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' ')toggleFlip(this)"
+         role="button" aria-label="Champion / Sponsor — click to see details">
+      <div class="flip-card-inner">
+        <div class="flip-card-front">
+          <div class="fc-belt" style="background:linear-gradient(90deg,var(--gold),#ff5c5c)"></div>
+          <h4 style="color:#ff9f43">Champion / Sponsor</h4>
+          <span class="fc-hint">tap to flip ↻</span>
+        </div>
+        <div class="flip-card-back" style="border-left-color:#ff9f43">
+          <div class="fc-back-label">// Champion / Sponsor</div>
+          <h4 style="color:#ff9f43">Executive Owner</h4>
+          <p>Senior executive who owns the business case, removes barriers, and conducts tollgate reviews. Not technically certified but critical to project success.</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <div class="callout" style="margin-top:32px">
@@ -1581,6 +1760,12 @@ function toggleQA(i, el) {
   ans.classList.toggle('open', !isOpen);
   el.classList.toggle('open', !isOpen);
   el.setAttribute('aria-expanded', String(!isOpen));
+}
+
+// ── BELT FLIP CARDS ──
+function toggleFlip(el) {
+  el.classList.toggle('flipped');
+  el.setAttribute('aria-pressed', el.classList.contains('flipped'));
 }
 
 // ── QUIZ MODE ──
