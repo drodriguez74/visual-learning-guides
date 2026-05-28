@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Mainframe — Visual Explainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800;900&family=VT323&display=swap" rel="stylesheet">
+<style>
+
+/* ══ DESIGN: IBM Green Phosphor Terminal / Retro-Futuristic Mainframe ══
+   Deep near-black background. Classic IBM green (#00FF41) with amber accents.
+   Everything feels like you're staring into a 3279 terminal in 1987.
+   Scan lines, phosphor glow, monospace everywhere. Brutally cinematic. */
+
+:root {
+  --void:      #040805;
+  --surface:   #060d07;
+  --card:      #091209;
+  --border:    #0d2010;
+  --border2:   #163020;
+
+  --green:     #00e832;
+  --green2:    #00c228;
+  --green3:    #009918;
+  --green-dim: #00601a;
+  --green-bg:  rgba(0,232,50,0.06);
+  --green-glow:rgba(0,232,50,0.15);
+
+  --amber:     #ffaa00;
+  --amber2:    #ff8800;
+  --amber-bg:  rgba(255,170,0,0.07);
+
+  --red:       #ff3333;
+  --cyan:      #00e8cc;
+  --blue:      #4499ff;
+
+  --text:      #b8f0c0;
+  --muted:     #3d7040;
+  --dim:       #1a3020;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  overflow-x: hidden;
+  cursor: crosshair;
+}
+
+/* Scanlines */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.18) 3px,
+    rgba(0,0,0,0.18) 4px
+  );
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Phosphor vignette */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center,
+    transparent 55%,
+    rgba(0,0,0,0.65) 100%
+  );
+  pointer-events: none;
+  z-index: 9997;
+}
+
+/* ─── TEXT GLOW UTILITY ─── */
+.glow { text-shadow: 0 0 10px var(--green), 0 0 20px var(--green3); }
+.glow-amber { text-shadow: 0 0 10px var(--amber), 0 0 20px var(--amber2); }
+.glow-cyan  { text-shadow: 0 0 10px var(--cyan); }
+
+/* ─── LAYOUT ─── */
+.page { max-width: 1040px; margin: 0 auto; padding: 0 24px 120px; position: relative; z-index: 1; }
+
+/* ─── BOOT HEADER ─── */
+.boot {
+  padding: 48px 0 40px;
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 56px;
+}
+
+.boot-bar {
+  background: var(--green);
+  height: 3px;
+  margin-bottom: 28px;
+  animation: scan-bar 3s ease-in-out infinite;
+  box-shadow: 0 0 12px var(--green), 0 0 24px var(--green3);
+}
+
+@keyframes scan-bar {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+.boot-sys {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.boot-sys span { color: var(--green); }
+
+h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(32px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--green);
+  text-shadow: 0 0 20px var(--green), 0 0 40px var(--green3), 0 0 80px rgba(0,200,40,0.2);
+  margin-bottom: 18px;
+}
+
+h1 span { color: var(--amber); text-shadow: 0 0 20px var(--amber), 0 0 40px var(--amber2); }
+
+.boot-desc {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 600px;
+  line-height: 1.75;
+  border-left: 2px solid var(--green3);
+  padding-left: 14px;
+}
+
+.boot-desc strong { color: var(--green2); }
+
+.boot-stats {
+  display: flex;
+  gap: 28px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.bstat {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.bstat span { color: var(--amber); font-size: 18px; font-family: 'Orbitron', monospace; font-weight: 700; display: block; text-shadow: 0 0 10px var(--amber); }
+
+/* ─── SECTION ─── */
+.section {
+  margin-bottom: 64px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s, transform 0.6s;
+}
+.section.in { opacity: 1; transform: translateY(0); }
+
+.sec-label {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--green3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+
+.sec-title {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(16px, 3vw, 24px);
+  font-weight: 700;
+  color: var(--green);
+  text-shadow: 0 0 10px var(--green3);
+  letter-spacing: 0.05em;
+  margin-bottom: 20px;
+}
+
+/* ─── THE MAINFRAME STACK DIAGRAM ─── */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.stack::before {
+  content: '[ IBM z16 MAINFRAME ARCHITECTURE ]';
+  position: absolute;
+  top: -11px;
+  left: 20px;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  background: var(--void);
+  padding: 0 8px;
+}
+
+.stack-layer {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 0;
+  min-height: 52px;
+  transition: filter 0.2s;
+  cursor: default;
+  position: relative;
+}
+
+.stack-layer:hover { filter: brightness(1.3); }
+
+.stack-layer:hover .sl-right { background: rgba(0,232,50,0.06); }
+
+.sl-left {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 2px solid var(--border2);
+}
+
+.sl-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+.sl-type {
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.sl-right {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  transition: background 0.2s;
+}
+
+.sl-pill {
+  font-size: 9px;
+  padding: 3px 9px;
+  border-radius: 2px;
+  letter-spacing: 0.1em;
+  border: 1px solid;
+  white-space: nowrap;
+  transition: box-shadow 0.2s;
+}
+
+.sl-pill:hover { box-shadow: 0 0 8px currentColor; }
+
+.sl-desc {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.6;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Layer colors */
+.l-hw  { --lc: var(--amber); }
+.l-os  { --lc: var(--green); }
+.l-mid { --lc: var(--cyan); }
+.l-db  { --lc: #aa66ff; }
+.l-app { --lc: var(--blue); }
+.l-net { --lc: #ff5566; }
+
+.sl-left { border-left: 3px solid var(--lc); }
+.sl-name { color: var(--lc); text-shadow: 0 0 8px var(--lc); }
+.sl-pill { color: var(--lc); border-color: color-mix(in srgb, var(--lc) 40%, transparent); background: color-mix(in srgb, var(--lc) 8%, transparent); }
+
+/* ─── LANGUAGES GRID ─── */
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media(max-width:640px){ .lang-grid { grid-template-columns: 1fr; } }
+
+.lang-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s;
+  cursor: default;
+}
+
+.lang-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--lc2);
+  box-shadow: 0 0 10px var(--lc2);
+}
+
+.lang-card::after {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--lc2) 15%, transparent) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.lang-card:hover {
+  border-color: var(--lc2);
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--lc2) 15%, transparent);
+}
+
+.lc-year {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-family: 'VT323', monospace;
+  font-size: 14px;
+}
+
+.lc-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--lc2);
+  text-shadow: 0 0 10px var(--lc2);
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.lc-full {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.lc-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+
+.lc-uses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.lc-use {
+  font-size: 9px;
+  padding: 2px 7px;
+  border: 1px solid color-mix(in srgb, var(--lc2) 30%, transparent);
+  border-radius: 2px;
+  color: var(--lc2);
+  background: color-mix(in srgb, var(--lc2) 8%, transparent);
+  letter-spacing: 0.08em;
+}
+
+/* CODE SAMPLE */
+.code-block {
+  background: #020602;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 14px 18px;
+  margin-top: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--green3);
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.code-block .kw  { color: var(--green); }
+.code-block .str { color: var(--amber); }
+.code-block .com { color: var(--muted); }
+.code-block .num { color: var(--cyan); }
+.code-block .typ { color: #aa66ff; }
+
+/* ─── APPLICATIONS DIAGRAM ─── */
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+@media(max-width:580px){ .apps-grid { grid-template-columns: 1fr; } }
+
+.app-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 14px;
+  align-items: flex-start;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: default;
+}
+
+.app-card:hover {
+  border-color: var(--ac);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--ac) 12%, transparent);
+}
+
+.app-icon {
+  width: 48px; height: 48px;
+  border: 1px solid var(--ac);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  background: color-mix(in srgb, var(--ac) 10%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--ac) 20%, transparent);
+  flex-shrink: 0;
+}
+
+.app-name {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ac);
+  text-shadow: 0 0 8px var(--ac);
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.app-sub {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.app-desc { font-size: 11px; color: var(--muted); line-height: 1.7; margin-bottom: 8px; }
+
+.app-langs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.app-lang {
+  font-size: 8px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--ac) 30%, transparent);
+  color: var(--ac);
+  background: color-mix(in srgb, var(--ac) 8%, transparent);
+  letter-spacing: 0.08em;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* ─── PIPELINE FLOW ─── */
+.pipeline {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+@media(max-width:600px){ .pipeline { flex-direction:column; } }
+
+.pipe-stage {
+  flex: 1;
+  padding: 20px 16px;
+  border-right: 1px solid var(--border2);
+  position: relative;
+  transition: background 0.2s;
+  cursor: default;
+}
+.pipe-stage:last-child { border-right: none; }
+.pipe-stage:hover { background: var(--green-bg); }
+
+.pipe-num {
+  font-family: 'VT323', monospace;
+  font-size: 36px;
+  color: var(--border2);
+  position: absolute;
+  top: 6px; right: 10px;
+  line-height: 1;
+}
+
+.pipe-icon { font-size: 22px; margin-bottom: 8px; }
+.pipe-name { font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 700; color: var(--green); letter-spacing: 0.05em; margin-bottom: 5px; text-shadow: 0 0 6px var(--green3); }
+.pipe-desc { font-size: 10px; color: var(--muted); line-height: 1.65; }
+
+.pipe-arrow {
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green3);
+  font-size: 16px;
+  background: var(--surface);
+  border-right: 1px solid var(--border2);
+  flex-shrink: 0;
+}
+
+@media(max-width:600px) { .pipe-arrow { display:none; } }
+
+/* ─── DB2 / MIDDLEWARE TABLE ─── */
+.mw-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.mw-table th {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface);
+}
+.mw-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.6;
+}
+.mw-table tr:last-child td { border-bottom: none; }
+.mw-table tr:hover td { background: var(--green-bg); }
+.mw-table td.name { color: var(--green); font-family: 'Orbitron', monospace; font-size: 11px; font-weight: 600; text-shadow: 0 0 6px var(--green3); white-space: nowrap; }
+.mw-table td.cat  { color: var(--amber); font-size: 9px; letter-spacing: 0.1em; white-space: nowrap; }
+.mw-table td.desc { color: var(--muted); }
+.mw-table td.uses { color: var(--cyan); font-size: 10px; }
+
+.mw-wrap { background: var(--card); border: 1px solid var(--border2); border-radius: 4px; overflow: hidden; }
+
+/* ─── WHY MAINFRAME STILL EXISTS ─── */
+.reasons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+@media(max-width:580px){ .reasons { grid-template-columns: 1fr; } }
+
+.reason {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  transition: border-color 0.2s;
+}
+.reason:hover { border-color: var(--green3); }
+
+.reason-icon {
+  font-size: 24px;
+  width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.reason-name { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; color: var(--green); letter-spacing: 0.04em; margin-bottom: 5px; text-shadow: 0 0 8px var(--green3); }
+.reason-desc { font-size: 11px; color: var(--muted); line-height: 1.7; }
+.reason-stat { font-family: 'VT323', monospace; font-size: 22px; color: var(--amber); text-shadow: 0 0 8px var(--amber); margin-top: 6px; }
+
+/* ─── BLINKING CURSOR ─── */
+.cursor::after {
+  content: '█';
+  animation: blink 1s step-end infinite;
+  color: var(--green);
+}
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+
+/* ─── TERMINAL PROMPT ─── */
+.prompt {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--green3);
+  background: #010301;
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  line-height: 1.8;
+}
+.prompt .p-cmd { color: var(--green); }
+.prompt .p-out { color: var(--amber); }
+.prompt .p-muted { color: var(--muted); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.stagger > * {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.45s, transform 0.45s;
+}
+.stagger.in > * { opacity: 1; transform: translateY(0); }
+
+.boot { opacity:0; animation: fadeUp 0.8s 0.1s forwards; }
+
+/* Flickering title effect */
+@keyframes flicker {
+  0%,19%,21%,23%,25%,54%,56%,100% { opacity:1; }
+  20%,24%,55% { opacity:0.7; }
+}
+h1 { animation: flicker 8s infinite; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- BOOT HEADER -->
+  <div class="boot">
+    <div class="boot-bar"></div>
+    <div class="boot-sys">IBM z16 MAINFRAME SYSTEM &nbsp;·&nbsp; <span>POWER ON SELF TEST ... OK</span> &nbsp;·&nbsp; z/OS 3.1 LOADED</div>
+    <h1>MAIN<span>FRAME</span></h1>
+    <p class="boot-desc">
+      The <strong>IBM mainframe</strong> is the world's most resilient, high-throughput computing platform — still powering <strong>95% of ATM transactions</strong>, <strong>87% of all credit card payments</strong>, and the back-end of every major global bank, airline, and insurer. Not legacy. Not dying. <strong>Irreplaceable.</strong>
+    </p>
+    <div class="boot-stats">
+      <div class="bstat"><span>$10T+</span>Daily transactions</div>
+      <div class="bstat"><span>70%</span>Fortune 500 use it</div>
+      <div class="bstat"><span>30B+</span>COBOL lines in prod</div>
+      <div class="bstat"><span>99.999%</span>Uptime ("Five 9s")</div>
+    </div>
+  </div>
+
+  <!-- § 01 — THE STACK -->
+  <div class="section" id="s0">
+    <div class="sec-label">§ 01 — SYSTEM ARCHITECTURE</div>
+    <div class="sec-title">THE z/OS SOFTWARE STACK</div>
+
+    <div class="prompt">
+      <span class="p-muted">DSNAME=SYS1.NUCLEUS &nbsp; STATUS=ACTIVE</span><br>
+      <span class="p-cmd">DISPLAY SYSTEM,CONFIG</span><br>
+      <span class="p-out">IEE174I  z/OS V3R1 IBM z16  LPAR=PROD1  CP=32  zIIP=16</span>
+    </div>
+
+    <div class="stack">
+
+      <!-- Applications -->
+      <div class="stack-layer l-app">
+        <div class="sl-left">
+          <div class="sl-name">APPLICATIONS</div>
+          <div class="sl-type">Business Logic</div>
+        </div>
+        <div class="sl-right">
+          <span class="sl-pill">COBOL Programs</span>
+          <span class="sl-pill">Java EE / Spring</span>
+          <span class="sl-pill">REXX Scripts</span>
+          <span class="sl-pill">PL/I Apps</span>
+          <span class="sl-pill">Assembler Modules</span>
+          <div class="sl-desc">Custom business logic: banking ledgers, payroll engines, insurance claims, reservation systems, tax processing.</div>
+        </div>
+      </div>
+
+      <!-- Transaction Systems -->
+      <div class="stack-layer l-app" style="--lc:#88aaff">
+        <div class="sl-left">
+          <div class="sl-name">TRANSACTION MGR</div>
+          <div class="sl-type">TP Monitors</div>
+        </div>
+        <div class="sl-right">
+          <span class="sl-pill">CICS</span>
+          <span class="sl-pill">IMS/TM</span>
+          <span class="sl-pill">MQ Series</span>
+          <span class="sl-pill">Liberty Profile</span>
+          <div class="sl-desc">Manages millions of concurrent short-lived transactions with ACID guarantees. CICS alone handles ~1M transactions/second worldwide.</div>
+        </div>
+      </div>
+
+      <!-- Data / DB -->
+      <div class="stack-layer l-db">
+        <div class="sl-left">
+          <div class="sl-name">DATA LAYER</div>
+          <div class="sl-type">Databases</div>
+        </div>
+        <div class="sl-right">
+          <span class="sl-pill">DB2 for z/OS</span>
+          <span class="sl-pill">IMS DB</span>
+          <span class="sl-pill">VSAM Files</span>
+          <span class="sl-pill">zHyperLink</span>
+          <div class="sl-desc">DB2 is the relational flagship — handles trillion-row tables, parallel query, and sub-millisecond response via tightly coupled hardware acceleration.</div>
+        </div>
+      </div>
+
+      <!-- Middleware -->
+      <div class="stack-layer l-mid">
+        <div class="sl-left">
+          <div class="sl-name">MIDDLEWARE</div>
+          <div class="sl-type">Integration</div>
+        </div>
+        <div class="sl-right">
+          <span class="sl-pill">WebSphere</span>
+          <span class="sl-pill">z/OS Connect</span>
+          <span class="sl-pill">DataPower</span>
+          <span class="sl-pill">MQ</span>
+          <span class="sl-pill">REST/SOAP APIs</span>
+          <div class="sl-desc">Bridges mainframe assets to modern channels: REST APIs, microservices, cloud, and mobile front-ends — without rewriting core logic.</div>
+        </div>
+      </div>
+
+      <!-- z/OS -->
+      <div class="stack-layer l-os">
+        <div class="sl-left">
+          <div class="sl-name">z/OS</div>
+          <div class="sl-type">Operating System</div>
+        </div>
+        <div class="sl-right">
+          <span class="sl-pill">JES2/JES3</span>
+          <span class="sl-pill">RACF Security</span>
+          <span class="sl-pill">SMS Storage</span>
+          <span class="sl-pill">Parallel Sysplex</span>
+          <span class="sl-pill">WLM</span>
+          <div class="sl-desc">IBM's mainframe OS. 64-bit. Hardware-level memory protection. Cryptographic services baked into the silicon. Never reboots in production.</div>
+        </div>
+      </div>
+
+      <!-- Hardware -->
+      <div class="stack-layer l-hw">
+        <div class="sl-left">
+          <div class="sl-name">HARDWARE</div>
+          <div class="sl-type">IBM z16 CPC</div>
+        </div>
+        <div class="sl-right">
+          <span class="sl-pill">200 CP cores</span>
+          <span class="sl-pill">40TB RAM</span>
+          <span class="sl-pill">On-chip AI</span>
+          <span class="sl-pill">Crypto Express8S</span>
+          <span class="sl-pill">RAS circuits</span>
+          <div class="sl-desc">Single frame capable of 19B encrypted transactions/day. Hardware-accelerated AES-256. Fault-tolerant down to individual memory cell level.</div>
+        </div>
+      </div>
+
+      <!-- Network -->
+      <div class="stack-layer l-net">
+        <div class="sl-left">
+          <div class="sl-name">NETWORK / I-O</div>
+          <div class="sl-type">Connectivity</div>
+        </div>
+        <div class="sl-right">
+          <span class="sl-pill">TCP/IP</span>
+          <span class="sl-pill">FICON</span>
+          <span class="sl-pill">HiperSockets</span>
+          <span class="sl-pill">OSA-Express7S</span>
+          <div class="sl-desc">10/25/100GbE network cards. FICON to storage arrays. HiperSockets for intra-LPAR sub-microsecond communication.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- § 02 — LANGUAGES -->
+  <div class="section" id="s1">
+    <div class="sec-label">§ 02 — PROGRAMMING LANGUAGES</div>
+    <div class="sec-title">LANGUAGES OF THE MAINFRAME</div>
+
+    <div class="lang-grid stagger" id="langGrid">
+
+      <!-- COBOL -->
+      <div class="lang-card" style="--lc2:var(--green)">
+        <div class="lc-year">EST. 1959 — STILL DOMINANT</div>
+        <div class="lc-name">COBOL</div>
+        <div class="lc-full">Common Business-Oriented Language</div>
+        <div class="lc-desc">The financial world runs on COBOL. Reads like English, handles decimal arithmetic exactly (no floating-point rounding errors — critical for money), and processes batch jobs at billions of records/day. 95% of ATM swipes touch COBOL.</div>
+        <div class="lc-uses">
+          <span class="lc-use">Banking Core</span>
+          <span class="lc-use">Payroll</span>
+          <span class="lc-use">Batch Processing</span>
+          <span class="lc-use">Tax Systems</span>
+          <span class="lc-use">Insurance Claims</span>
+        </div>
+        <div class="code-block">
+<span class="com">      * Calculate daily interest</span>
+<span class="kw">       IDENTIFICATION DIVISION.</span>
+       PROGRAM-ID. CALC-INTEREST.
+<span class="kw">       DATA DIVISION.</span>
+<span class="kw">       WORKING-STORAGE SECTION.</span>
+       <span class="num">01</span>  WS-BALANCE    <span class="typ">PIC 9(12)V99</span>.
+       <span class="num">01</span>  WS-RATE       <span class="typ">PIC 9(2)V9(6)</span>.
+       <span class="num">01</span>  WS-INTEREST   <span class="typ">PIC 9(12)V99</span>.
+<span class="kw">       PROCEDURE DIVISION.</span>
+           COMPUTE WS-INTEREST =
+               WS-BALANCE * WS-RATE / <span class="num">365</span>
+           STOP RUN.
+        </div>
+      </div>
+
+      <!-- Java -->
+      <div class="lang-card" style="--lc2:var(--amber)">
+        <div class="lc-year">EST. 1995 — MODERN INTEGRATION</div>
+        <div class="lc-name">JAVA</div>
+        <div class="lc-full">Java on z/OS (IBM SDK + Liberty)</div>
+        <div class="lc-desc">Java runs natively on z/OS via IBM's SDK, often inside WebSphere Liberty profiles. Leverages IBM's dedicated zIIP processors (specialty engines) for Java workloads — dramatically reducing software licensing costs vs general CPs.</div>
+        <div class="lc-uses">
+          <span class="lc-use">REST APIs</span>
+          <span class="lc-use">Microservices</span>
+          <span class="lc-use">Spring Boot</span>
+          <span class="lc-use">CICS Channels</span>
+          <span class="lc-use">MQ Consumers</span>
+        </div>
+        <div class="code-block">
+<span class="com">// Call COBOL program via JCICS</span>
+<span class="kw">import</span> com.ibm.cics.server.*;
+
+<span class="kw">public class</span> <span class="typ">AccountService</span> {
+  <span class="kw">public</span> BigDecimal getBalance(
+      <span class="typ">String</span> accountId) {
+    <span class="typ">Program</span> cobolPgm =
+      <span class="kw">new</span> Program();
+    cobolPgm.setName(<span class="str">"GETBAL"</span>);
+    cobolPgm.link(commArea);
+    <span class="kw">return</span> parseBalance(commArea);
+  }
+}
+        </div>
+      </div>
+
+      <!-- PL/I -->
+      <div class="lang-card" style="--lc2:var(--cyan)">
+        <div class="lc-year">EST. 1964 — ENGINEERING APPS</div>
+        <div class="lc-name">PL/I</div>
+        <div class="lc-full">Programming Language One</div>
+        <div class="lc-desc">IBM's own language — more powerful than COBOL for systems programming, more structured than assembler. Used in telecom billing, scientific computing, and any app requiring complex data structures, recursion, and pointer manipulation alongside business logic.</div>
+        <div class="lc-uses">
+          <span class="lc-use">Telecom Billing</span>
+          <span class="lc-use">Scientific Apps</span>
+          <span class="lc-use">Complex Data</span>
+          <span class="lc-use">Compiler Tools</span>
+        </div>
+        <div class="code-block">
+<span class="com">/* PL/I — Bill computation */</span>
+<span class="kw">BILLING:</span> PROC OPTIONS(MAIN);
+  DCL ACCOUNT_ID <span class="typ">CHAR(10)</span>;
+  DCL BALANCE    <span class="typ">DEC FIXED(15,2)</span>;
+  DCL RATE       <span class="typ">DEC FLOAT(6)</span>;
+
+  GET LIST(ACCOUNT_ID, BALANCE);
+  RATE = <span class="num">0.0325</span>;
+  PUT SKIP LIST(
+    BALANCE * (<span class="num">1</span> + RATE));
+<span class="kw">END BILLING;</span>
+        </div>
+      </div>
+
+      <!-- Assembler -->
+      <div class="lang-card" style="--lc2:#ff5566">
+        <div class="lc-year">EST. 1952 — METAL-LEVEL POWER</div>
+        <div class="lc-name">HLASM</div>
+        <div class="lc-full">High Level Assembler (z/Architecture)</div>
+        <div class="lc-desc">Direct access to z/Architecture instructions. Used for performance-critical kernel modules, cryptographic routines, I/O drivers, and anything that must squeeze every nanosecond. Still written today for interrupt handlers and licensed program internals.</div>
+        <div class="lc-uses">
+          <span class="lc-use">OS Internals</span>
+          <span class="lc-use">Crypto Routines</span>
+          <span class="lc-use">I/O Drivers</span>
+          <span class="lc-use">Performance Libs</span>
+        </div>
+        <div class="code-block">
+<span class="com">*  Add two 64-bit registers</span>
+<span class="typ">MYPGM    CSECT</span>
+         <span class="kw">STM</span>   <span class="num">14,12</span>,<span class="num">12</span>(<span class="num">13</span>)
+         <span class="kw">LG</span>    <span class="num">2</span>,VALX
+         <span class="kw">LG</span>    <span class="num">3</span>,VALY
+         <span class="kw">AGR</span>   <span class="num">2,3</span>
+         <span class="kw">STG</span>   <span class="num">2</span>,RESULT
+         <span class="kw">LM</span>    <span class="num">14,12</span>,<span class="num">12</span>(<span class="num">13</span>)
+         <span class="kw">BR</span>    <span class="num">14</span>
+        </div>
+      </div>
+
+      <!-- REXX -->
+      <div class="lang-card" style="--lc2:#aa66ff">
+        <div class="lc-year">EST. 1979 — SCRIPTING KING</div>
+        <div class="lc-name">REXX</div>
+        <div class="lc-full">Restructured Extended Executor</div>
+        <div class="lc-desc">The shell scripting language of z/OS. Glues everything together — runs JCL jobs, parses SYSOUT, calls ISPF panels, invokes DB2, and automates operations tasks. Every mainframe operator writes REXX. Simple, readable, incredibly powerful in the z/OS environment.</div>
+        <div class="lc-uses">
+          <span class="lc-use">Automation</span>
+          <span class="lc-use">JCL Management</span>
+          <span class="lc-use">ISPF Scripting</span>
+          <span class="lc-use">Ops Tooling</span>
+        </div>
+        <div class="code-block">
+<span class="com">/* REXX — Submit batch job */</span>
+<span class="str">"ALLOCATE FILE(SYSUT1) DA('SYS1.JCLLIB')"</span>
+<span class="str">"EXECIO * DISKR SYSUT1 (STEM JCL."</span>
+<span class="kw">DO</span> i = 1 <span class="kw">TO</span> JCL.0
+  <span class="kw">IF</span> POS(<span class="str">'//PAYROLL'</span>,JCL.i) > 0
+    <span class="kw">THEN SAY</span> <span class="str">'Found payroll job'</span>
+<span class="kw">END</span>
+<span class="str">"SUBMIT 'SYS1.JOBS(PAYJOB)'"</span>
+        </div>
+      </div>
+
+      <!-- DB2 SQL -->
+      <div class="lang-card" style="--lc2:var(--blue)">
+        <div class="lc-year">EST. 1983 — DATA POWERHOUSE</div>
+        <div class="lc-name">DB2 SQL</div>
+        <div class="lc-full">DB2 for z/OS — Embedded & Dynamic SQL</div>
+        <div class="lc-desc">Not a language per se, but SQL embedded in COBOL, PL/I, Java, and C programs via the DB2 precompiler. Static SQL is bound at compile time into access plans — giving sub-millisecond execution on trillion-row tables. Features not found in any other RDBMS.</div>
+        <div class="lc-uses">
+          <span class="lc-use">Embedded SQL</span>
+          <span class="lc-use">Stored Procs</span>
+          <span class="lc-use">Temporal Tables</span>
+          <span class="lc-use">Row-level Security</span>
+        </div>
+        <div class="code-block">
+<span class="com">      * Embedded DB2 in COBOL</span>
+           <span class="kw">EXEC SQL</span>
+             SELECT ACCT_BAL,
+                    ACCT_STATUS
+             <span class="kw">INTO</span> :WS-BALANCE,
+                       :WS-STATUS
+             <span class="kw">FROM</span> ACCOUNTS
+             <span class="kw">WHERE</span> ACCT_ID = :WS-ACCTID
+             <span class="kw">FOR</span> READ ONLY
+           <span class="kw">END-EXEC</span>.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- § 03 — APPLICATIONS -->
+  <div class="section" id="s2">
+    <div class="sec-label">§ 03 — APPLICATIONS</div>
+    <div class="sec-title">WHAT RUNS ON A MAINFRAME</div>
+
+    <div class="apps-grid stagger" id="appsGrid">
+
+      <div class="app-card" style="--ac:var(--green)">
+        <div class="app-icon">🏦</div>
+        <div>
+          <div class="app-name">CORE BANKING</div>
+          <div class="app-sub">Ledger · Settlements · Accounts</div>
+          <div class="app-desc">Every deposit, withdrawal, wire transfer, and mortgage calculation. Processes end-of-day batch runs against billions of accounts. Real-time fraud scoring on every card swipe. Zero tolerance for data loss.</div>
+          <div class="app-langs"><span class="app-lang">COBOL</span><span class="app-lang">DB2</span><span class="app-lang">CICS</span><span class="app-lang">IMS</span><span class="app-lang">VSAM</span></div>
+        </div>
+      </div>
+
+      <div class="app-card" style="--ac:var(--amber)">
+        <div class="app-icon">✈️</div>
+        <div>
+          <div class="app-name">AIRLINE RESERVATIONS</div>
+          <div class="app-sub">Inventory · Booking · Revenue Mgmt</div>
+          <div class="app-desc">SABRE, Amadeus, and every major GDS runs on mainframes. Manages real-time seat inventory for thousands of simultaneous booking agents. Pricing calculations across millions of fare combinations in milliseconds.</div>
+          <div class="app-langs"><span class="app-lang">COBOL</span><span class="app-lang">CICS</span><span class="app-lang">TPF</span><span class="app-lang">Assembler</span></div>
+        </div>
+      </div>
+
+      <div class="app-card" style="--ac:var(--cyan)">
+        <div class="app-icon">💳</div>
+        <div>
+          <div class="app-name">PAYMENT PROCESSING</div>
+          <div class="app-sub">Auth · Clearing · Settlement</div>
+          <div class="app-desc">Visa, Mastercard, and SWIFT interbank clearing. Every tap-to-pay, card swipe, and ACH transfer routes through mainframe authorization logic. IBM z16 includes on-chip AI for real-time fraud inference at 300µs latency.</div>
+          <div class="app-langs"><span class="app-lang">COBOL</span><span class="app-lang">HLASM</span><span class="app-lang">Java</span><span class="app-lang">DB2</span></div>
+        </div>
+      </div>
+
+      <div class="app-card" style="--ac:#aa66ff">
+        <div class="app-icon">🏥</div>
+        <div>
+          <div class="app-name">HEALTHCARE SYSTEMS</div>
+          <div class="app-sub">Claims · EHR · Eligibility</div>
+          <div class="app-desc">Medicare and Medicaid claims adjudication. Hospital billing. Insurance eligibility lookups. Processes 5+ billion medical claims annually in the US. HIPAA-compliant data encryption in hardware — never touches unencrypted at rest.</div>
+          <div class="app-langs"><span class="app-lang">COBOL</span><span class="app-lang">PL/I</span><span class="app-lang">DB2</span><span class="app-lang">Java</span></div>
+        </div>
+      </div>
+
+      <div class="app-card" style="--ac:#ff5566">
+        <div class="app-icon">📦</div>
+        <div>
+          <div class="app-name">SUPPLY CHAIN / ERP</div>
+          <div class="app-sub">Inventory · Procurement · Logistics</div>
+          <div class="app-desc">SAP runs on z/OS. Retail giants manage real-time inventory across thousands of locations, calculate reorder points, run MRP across million-node supplier graphs. SAP S/4HANA on IBM LinuxONE is a common pattern.</div>
+          <div class="app-langs"><span class="app-lang">ABAP</span><span class="app-lang">Java</span><span class="app-lang">DB2</span><span class="app-lang">REXX</span></div>
+        </div>
+      </div>
+
+      <div class="app-card" style="--ac:var(--blue)">
+        <div class="app-icon">🏛️</div>
+        <div>
+          <div class="app-name">GOVERNMENT / TAX</div>
+          <div class="app-sub">Revenue · Benefits · Census</div>
+          <div class="app-desc">US Social Security Administration, IRS individual returns, Medicare/Medicaid. Processes 100M+ tax returns per season. Benefits eligibility for 64M Social Security recipients. Government agencies legally cannot let these fail.</div>
+          <div class="app-langs"><span class="app-lang">COBOL</span><span class="app-lang">PL/I</span><span class="app-lang">REXX</span><span class="app-lang">JCL</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- § 04 — MIDDLEWARE ECOSYSTEM -->
+  <div class="section" id="s3">
+    <div class="sec-label">§ 04 — MIDDLEWARE ECOSYSTEM</div>
+    <div class="sec-title">KEY PLATFORM COMPONENTS</div>
+
+    <div class="mw-wrap">
+      <table class="mw-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Category</th>
+            <th>What It Does</th>
+            <th>Used With</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="name">CICS</td>
+            <td class="cat">TP MONITOR</td>
+            <td class="desc">Customer Information Control System. The world's highest-throughput transaction manager. Handles session management, task dispatching, and resource recovery for millions of concurrent OLTP transactions. Bridges COBOL programs to networks.</td>
+            <td class="uses">COBOL, PL/I, Java, C</td>
+          </tr>
+          <tr>
+            <td class="name">DB2 z/OS</td>
+            <td class="cat">RDBMS</td>
+            <td class="desc">IBM's relational database for mainframe. Tightly coupled to hardware — uses dedicated data engines and z/Architecture instructions. Row-level access control, temporal tables, and encryption that cloud RDBMS vendors still can't match in throughput/cost.</td>
+            <td class="uses">COBOL, Java, PL/I, SQL</td>
+          </tr>
+          <tr>
+            <td class="name">IMS</td>
+            <td class="cat">HIERARCHICAL DB + TP</td>
+            <td class="desc">Information Management System — a hierarchical database AND transaction manager, predating SQL. Many 1960s data structures still live here. Airlines, banks, and telcos have IMS data they can't easily migrate. Incredibly fast for known-path queries.</td>
+            <td class="uses">COBOL, Assembler, Java</td>
+          </tr>
+          <tr>
+            <td class="name">MQ Series</td>
+            <td class="cat">MESSAGING</td>
+            <td class="desc">IBM MQ provides persistent, transactional message queuing between mainframe and distributed systems. Guarantees exactly-once delivery. The glue between COBOL batch jobs, Java microservices, and cloud-native consumers.</td>
+            <td class="uses">Java, COBOL, C++, .NET</td>
+          </tr>
+          <tr>
+            <td class="name">z/OS Connect</td>
+            <td class="cat">API GATEWAY</td>
+            <td class="desc">Exposes COBOL programs, CICS transactions, and DB2 stored procs as RESTful JSON APIs — without rewriting any COBOL. A mobile app calls a REST endpoint; z/OS Connect forwards it to a 40-year-old COBOL program. The modernization bridge.</td>
+            <td class="uses">REST, JSON, COBOL, CICS</td>
+          </tr>
+          <tr>
+            <td class="name">RACF</td>
+            <td class="cat">SECURITY</td>
+            <td class="desc">Resource Access Control Facility. Controls who can touch every dataset, program, port, and transaction — down to the record level. Audit trails for every access. NIST compliance baked in. Far more granular than AWS IAM.</td>
+            <td class="uses">All languages, z/OS kernel</td>
+          </tr>
+          <tr>
+            <td class="name">JES2 / JCL</td>
+            <td class="cat">JOB SCHEDULER</td>
+            <td class="desc">Job Entry Subsystem manages batch job submission, scheduling, output routing, and spool management. JCL (Job Control Language) defines job steps, datasets, and dependencies. The backbone of nightly batch — end-of-day clearing, statement generation, report runs.</td>
+            <td class="uses">COBOL, PL/I, REXX, all</td>
+          </tr>
+          <tr>
+            <td class="name">WebSphere Liberty</td>
+            <td class="cat">JAVA RUNTIME</td>
+            <td class="desc">Lightweight Java EE / Jakarta EE runtime on z/OS. Runs Spring Boot, JAX-RS, microservices — offloaded to zIIP specialty processors to minimize general CP consumption and licensing costs. Runs in containers via z/OS Container Extensions (zCX).</td>
+            <td class="uses">Java, Jakarta EE, Spring</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- § 05 — JOB LIFECYCLE -->
+  <div class="section" id="s4">
+    <div class="sec-label">§ 05 — PROCESSING PIPELINE</div>
+    <div class="sec-title">ONLINE TRANSACTION → BATCH → REPORT</div>
+
+    <div class="pipeline">
+      <div class="pipe-stage">
+        <div class="pipe-num">01</div>
+        <div class="pipe-icon">📱</div>
+        <div class="pipe-name">CHANNEL REQUEST</div>
+        <div class="pipe-desc">ATM, mobile app, or teller terminal sends request via TCP/IP or SNA to z/OS Connect or CICS front-end. JSON or 3270 data stream.</div>
+      </div>
+      <div class="pipe-arrow">›</div>
+      <div class="pipe-stage">
+        <div class="pipe-num">02</div>
+        <div class="pipe-icon">⚡</div>
+        <div class="pipe-name">CICS ONLINE TXN</div>
+        <div class="pipe-desc">CICS dispatches a task, calls the COBOL or Java program, which executes the business rule and issues an EXEC SQL to DB2. Sub-10ms round trip.</div>
+      </div>
+      <div class="pipe-arrow">›</div>
+      <div class="pipe-stage">
+        <div class="pipe-num">03</div>
+        <div class="pipe-icon">🗄️</div>
+        <div class="pipe-name">DB2 COMMIT</div>
+        <div class="pipe-desc">DB2 commits the transaction with full ACID guarantees. Data is synchronously mirrored to the disaster recovery LPAR via Parallel Sysplex coupling.</div>
+      </div>
+      <div class="pipe-arrow">›</div>
+      <div class="pipe-stage">
+        <div class="pipe-num">04</div>
+        <div class="pipe-icon">🌙</div>
+        <div class="pipe-name">NIGHTLY BATCH</div>
+        <div class="pipe-desc">JES2 submits JCL job stream at 00:01. COBOL programs process the day's transactions: interest calculation, statement generation, clearing files.</div>
+      </div>
+      <div class="pipe-arrow">›</div>
+      <div class="pipe-stage">
+        <div class="pipe-num">05</div>
+        <div class="pipe-icon">📊</div>
+        <div class="pipe-name">OUTPUT / REPORT</div>
+        <div class="pipe-desc">JES2 routes output: PDF statements to print, flat files to downstream systems, EDI batches to clearing houses, audit logs to RACF journal datasets.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- § 06 — WHY IT STILL EXISTS -->
+  <div class="section" id="s5">
+    <div class="sec-label">§ 06 — RELEVANCE</div>
+    <div class="sec-title">WHY THE MAINFRAME IS IRREPLACEABLE</div>
+
+    <div class="reasons stagger" id="reasonsGrid">
+
+      <div class="reason">
+        <div class="reason-icon">🔒</div>
+        <div>
+          <div class="reason-name">SECURITY</div>
+          <div class="reason-desc">Hardware encryption engines, tamper-evident hardware, RACF access control to individual records, and Common Criteria EAL5+ certification. IBM z16 can detect and respond to quantum-based cryptographic attacks in real time.</div>
+          <div class="reason-stat">EAL5+ CERTIFIED</div>
+        </div>
+      </div>
+
+      <div class="reason">
+        <div class="reason-icon">⏱️</div>
+        <div>
+          <div class="reason-name">THROUGHPUT</div>
+          <div class="reason-desc">A single IBM z16 rack processes more transactions per second than a cluster of thousands of x86 servers — at a fraction of the power consumption, rack space, and software licensing cost at scale. Economy of density is unmatched.</div>
+          <div class="reason-stat">19B TXN/DAY</div>
+        </div>
+      </div>
+
+      <div class="reason">
+        <div class="reason-icon">🔁</div>
+        <div>
+          <div class="reason-name">RELIABILITY</div>
+          <div class="reason-desc">Designed for continuous operation. Memory self-heals, failing components hot-swap without downtime, and Parallel Sysplex clusters provide synchronous disaster recovery. Banks legally must not fail — the mainframe guarantees this.</div>
+          <div class="reason-stat">99.999% UPTIME</div>
+        </div>
+      </div>
+
+      <div class="reason">
+        <div class="reason-icon">💰</div>
+        <div>
+          <div class="reason-name">TCO AT SCALE</div>
+          <div class="reason-desc">Counter-intuitive but true: at very high transaction volumes, mainframe TCO (total cost of ownership) is lower than equivalent cloud infrastructure. Fewer servers, fewer licenses, less power, less real estate, far fewer system administrators.</div>
+          <div class="reason-stat">60% LOWER TCO</div>
+        </div>
+      </div>
+
+      <div class="reason">
+        <div class="reason-icon">🔗</div>
+        <div>
+          <div class="reason-name">MODERNIZATION</div>
+          <div class="reason-desc">z/OS Container Extensions (zCX) run Docker containers natively. z/OS Connect turns COBOL into REST APIs. Java and Python run alongside COBOL. The mainframe absorbs modern tech rather than being replaced by it.</div>
+          <div class="reason-stat">DOCKER ON z/OS</div>
+        </div>
+      </div>
+
+      <div class="reason">
+        <div class="reason-icon">📜</div>
+        <div>
+          <div class="reason-name">REGULATORY</div>
+          <div class="reason-desc">SOX, PCI-DSS, Basel III, GDPR, HIPAA compliance is built into the hardware and OS. Auditors and regulators trust the mainframe's immutable audit trail and hardware-attested data lineage — cloud alternatives require expensive add-ons to reach the same bar.</div>
+          <div class="reason-stat">FULLY COMPLIANT</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TERMINAL FOOTER -->
+  <div style="border-top:1px solid var(--border2);padding-top:28px;margin-top:20px">
+    <div class="prompt" style="max-width:600px">
+      <span class="p-muted">SYSTEM: z/OS V3R1 &nbsp;·&nbsp; UPTIME: 2847 DAYS &nbsp;·&nbsp; JOBS: 1,482,906 PROCESSED TODAY</span><br>
+      <span class="p-cmd">STATUS ALL</span><br>
+      <span class="p-out">IEF0001 ALL SUBSYSTEMS OPERATIONAL</span><br>
+      <span class="p-muted">DB2=ACTIVE  CICS=ACTIVE  IMS=ACTIVE  MQ=ACTIVE  JES2=ACTIVE</span><br>
+      <span class="p-muted">RACF=ACTIVE  WLM=ACTIVE  RMF=ACTIVE  SMF=ACTIVE  HSM=ACTIVE</span><br>
+      <span class="p-cmd">_</span><span class="cursor"></span>
+    </div>
+    <div style="font-size:10px;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase">
+      MAINFRAME = COBOL + JAVA + PL/I + HLASM + REXX + DB2 + CICS + IMS + JES2 + RACF + z/OS + IBM z16 HARDWARE
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// Intersection observer
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    [...e.target.querySelectorAll('.stagger > *')].forEach((c, i) => {
+      setTimeout(() => c.style.cssText = 'opacity:1;transform:translateY(0)', i * 90);
+    });
+    io.unobserve(e.target);
+  });
+}, { threshold: 0.06 });
+
+document.querySelectorAll('.section').forEach(s => io.observe(s));
+
+// Stagger init — set transitions
+document.querySelectorAll('.stagger > *').forEach((el, i) => {
+  el.style.transitionDelay = i * 0.08 + 's';
+});
+
+// Occasional phosphor flicker on random cards
+setInterval(() => {
+  const cards = document.querySelectorAll('.lang-card, .app-card, .reason');
+  const card = cards[Math.floor(Math.random() * cards.length)];
+  card.style.filter = 'brightness(1.4)';
+  setTimeout(() => card.style.filter = '', 80);
+}, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Harness — Visual Explainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #06080f;
+  --surface: #0d1220;
+  --raised:  #131a2e;
+  --border:  #1c2840;
+  --text:    #dde4f5;
+  --muted:   #4a587a;
+  --subtle:  #111828;
+
+  --accent:  #fbbf24;   /* amber — primary / harness */
+  --accent2: #38bdf8;   /* sky   — code / technical  */
+  --accent3: #34d399;   /* green — output / success  */
+  --accent4: #f87171;   /* red   — warnings / without */
+  --accent5: #a78bfa;   /* violet — AI / model side  */
+}
+
+[data-theme="light"] {
+  --bg:      #f5f3ef;
+  --surface: #ffffff;
+  --raised:  #edeae4;
+  --border:  #d5cec4;
+  --text:    #1a1610;
+  --muted:   #6b6055;
+  --subtle:  #e8e3db;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+/* dark grid overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="light"] body::before {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  position: fixed;
+  top: 16px; right: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 6px 14px;
+  cursor: pointer;
+  z-index: 100;
+  text-transform: uppercase;
+  transition: color 0.2s, border-color 0.2s;
+}
+.theme-toggle:hover { color: var(--text); border-color: var(--accent); }
+
+.page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 28px 120px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── MASTHEAD ── */
+.masthead {
+  padding: 64px 0 52px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 68px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 32px;
+  align-items: end;
+  opacity: 0;
+  animation: emerge 0.7s 0.1s cubic-bezier(.22,1,.36,1) forwards;
+}
+
+@media(max-width:600px){ .masthead { grid-template-columns:1fr; } }
+
+.mast-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mast-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 24px;
+  height: 2px;
+  background: var(--accent);
+}
+
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(52px, 8.5vw, 92px);
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+
+.hero-accent {
+  color: var(--accent);
+  position: relative;
+  display: inline-block;
+}
+
+.hero-accent::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.mast-def {
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 460px;
+  line-height: 1.9;
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+}
+
+.mast-def strong { color: var(--text); }
+
+.mast-right { text-align: right; }
+
+.mast-fig {
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.mast-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+}
+
+.tag {
+  font-size: 9px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+/* ── SECTIONS ── */
+.section {
+  margin-bottom: 84px;
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s, transform 0.6s;
+}
+
+.section.vis { opacity: 1; transform: translateY(0); }
+
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.sec-head::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 44px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.sec-num {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.sec-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: clamp(20px, 3vw, 28px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+/* ── DEF BOX ── */
+.def-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 18px 22px;
+  margin-bottom: 32px;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+
+.def-box strong { color: var(--accent); }
+.def-box em { color: var(--text); font-style: italic; }
+
+/* ── ANATOMY DIAGRAM ── */
+.anatomy {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.anatomy-header {
+  background: var(--raised);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.anatomy-dot { width:9px;height:9px;border-radius:50%;flex-shrink:0; }
+
+.anatomy-body { padding: 28px 24px; }
+
+/* Three-zone layout */
+.three-zone {
+  display: grid;
+  grid-template-columns: 1fr 72px 1fr;
+  gap: 0;
+  align-items: stretch;
+  min-height: 340px;
+}
+
+@media(max-width:640px){
+  .three-zone { grid-template-columns:1fr; min-height:auto; }
+  .zone-pipe { flex-direction: row; justify-content: center; padding: 12px 0; }
+  .pipe-vline { width: 80px; height: 2px; }
+}
+
+.zone {
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.zone-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.zone-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.zone-item {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.zone-item::before {
+  content: '▸';
+  flex-shrink: 0;
+  color: var(--z-color, var(--border));
+  font-size: 9px;
+  margin-top: 2px;
+}
+
+/* Zone pipe */
+.zone-pipe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.pipe-vline {
+  width: 2px;
+  flex: 1;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--accent2) 0px,
+    var(--accent2) 5px,
+    transparent 5px,
+    transparent 10px
+  );
+  opacity: 0.45;
+}
+
+.pipe-arrow-node {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--accent2);
+  background: color-mix(in srgb, var(--accent2) 10%, var(--surface));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--accent2);
+  flex-shrink: 0;
+  animation: pulseNode 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseNode {
+  0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent2) 30%, transparent); }
+  50%      { box-shadow: 0 0 0 10px transparent; }
+}
+
+.pipe-label {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  opacity: 0.65;
+}
+
+/* Zone C — output strip */
+.zone-c {
+  margin-top: 16px;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--accent3);
+  border-radius: 8px;
+  padding: 20px 22px;
+}
+
+.zone-c-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent3);
+  margin-bottom: 4px;
+}
+
+.zone-c-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.zone-c-cols {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media(max-width:640px){ .zone-c-cols { grid-template-columns: repeat(2,1fr); } }
+
+.zone-c-col {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.zone-c-col-label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent3);
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* ── LAYER STACK ── */
+.layer-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lstack-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--ls-color, var(--border));
+  border-radius: 0 8px 8px 0;
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 190px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  transition: transform 0.2s, background 0.2s;
+  cursor: default;
+}
+
+.lstack-item:hover {
+  transform: translateX(4px);
+  background: color-mix(in srgb, var(--ls-color, var(--border)) 5%, var(--surface));
+}
+
+@media(max-width:640px){ .lstack-item { grid-template-columns: 1fr; } }
+
+.ls-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ls-color, var(--text));
+  letter-spacing: -0.01em;
+}
+
+.ls-path {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: 0.03em;
+}
+
+.ls-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.ls-badge {
+  font-size: 9px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--ls-color, var(--border)) 40%, transparent);
+  color: var(--ls-color, var(--muted));
+  background: color-mix(in srgb, var(--ls-color, var(--border)) 8%, transparent);
+  white-space: nowrap;
+  letter-spacing: 0.08em;
+}
+
+/* ── SIGNAL FLOW ── */
+.signal-flow {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.sf-header {
+  background: var(--raised);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sf-header-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sf-dot-r { width:9px;height:9px;border-radius:50%;background:#f87171; }
+.sf-dot-y { width:9px;height:9px;border-radius:50%;background:#fbbf24; }
+.sf-dot-g { width:9px;height:9px;border-radius:50%;background:#34d399; }
+
+.sf-title {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-left: 5px;
+}
+
+.sf-play {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--accent);
+  color: #0a0800;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.sf-play:hover { opacity: 0.85; }
+
+.sf-body {
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sf-step {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 14px;
+  align-items: flex-start;
+  opacity: 0.22;
+  transition: opacity 0.45s;
+}
+
+.sf-step.active { opacity: 1; }
+
+.sf-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.3s;
+  margin-top: 2px;
+}
+
+.sf-step.active .sf-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #0a0800;
+}
+
+.sf-content {
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 13px 16px;
+}
+
+.sf-step-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.sf-step-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.sf-step-code {
+  font-size: 10px;
+  color: var(--accent2);
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: color-mix(in srgb, var(--accent2) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent2) 18%, transparent);
+  border-radius: 4px;
+  display: inline-block;
+  letter-spacing: 0.02em;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: color-mix(in srgb, var(--accent2) 10%, var(--surface));
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--accent2);
+}
+
+.sf-connector {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 14px;
+  color: var(--border);
+  font-size: 12px;
+}
+
+/* ── HARNESS TYPE CARDS ── */
+.harness-types {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media(max-width:620px){ .harness-types { grid-template-columns: 1fr; } }
+
+.ht-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  cursor: default;
+}
+
+.ht-card::before {
+  content: '';
+  display: block;
+  height: 3px;
+  background: var(--ht-color, var(--border));
+}
+
+.ht-card:hover {
+  border-color: var(--ht-color, var(--border));
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--ht-color, var(--border)) 12%, transparent);
+}
+
+.ht-body { padding: 22px; }
+
+.ht-icon { font-size: 24px; margin-bottom: 12px; }
+
+.ht-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+  color: var(--ht-color, var(--text));
+}
+
+.ht-sub {
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.ht-desc {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.ht-examples {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.ht-ex {
+  font-size: 9px;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* ── COMPARE TABLE ── */
+.compare-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.compare-table th {
+  background: var(--raised);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 18px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+}
+
+.compare-table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  vertical-align: top;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table tr:hover td { background: var(--raised); }
+
+.compare-table td.feature {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.compare-table td.good { color: var(--accent3); }
+.compare-table td.bad  { color: var(--accent4); opacity: 0.85; }
+
+/* ── CLOSING ── */
+.closing {
+  border-top: 1px solid var(--border);
+  padding-top: 32px;
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 4px 1fr;
+  gap: 22px;
+}
+
+.closing-bar {
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.closing-text {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: clamp(18px, 2.6vw, 24px);
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+}
+
+.closing-text em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.closing-formula {
+  margin-top: 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  padding: 10px 16px;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  display: inline-block;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes emerge {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-child {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.45s, transform 0.45s;
+}
+
+.stagger-child.vis { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()">Light / Dark</button>
+
+<div class="page">
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div>
+      <div class="mast-eyebrow">Technical Explainer · AI Systems</div>
+      <h1 class="hero-title">The AI<br><span class="hero-accent">Harness</span></h1>
+      <p class="mast-def">An AI harness is the <strong>structured runtime environment</strong> that connects a raw AI model to your tools, context, memory, and workflow — transforming a general intelligence into a <strong>specialized, controllable co-worker</strong>.</p>
+    </div>
+    <div class="mast-right">
+      <div class="mast-fig">FIG. A — OVERVIEW</div>
+      <div class="mast-tags">
+        <span class="tag">RUNTIME FRAMEWORK</span>
+        <span class="tag">CONTEXT MANAGEMENT</span>
+        <span class="tag">TOOL BINDING</span>
+        <span class="tag">WORKFLOW CONTROL</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- § 01 — WHAT IS A HARNESS -->
+  <div class="section" id="s0">
+    <div class="sec-head">
+      <span class="sec-num">§ 01</span>
+      <span class="sec-title">What Is a Harness?</span>
+    </div>
+
+    <div class="def-box">
+      Like a horse harness distributes force and gives the rider control without limiting what the horse can do — an AI harness <strong>channels the model's raw capability</strong> into purposeful, reliable, repeatable behavior. It defines <em>what the AI knows</em>, <em>what it can do</em>, <em>how it should respond</em>, and <em>what constraints it operates under</em>.
+    </div>
+
+    <!-- Three-zone anatomy -->
+    <div class="anatomy">
+      <div class="anatomy-header">
+        <div class="anatomy-dot" style="background:#f87171"></div>
+        <div class="anatomy-dot" style="background:#fbbf24"></div>
+        <div class="anatomy-dot" style="background:#34d399"></div>
+        <span style="margin-left:8px">FIG. B — HARNESS ANATOMY (3-ZONE MODEL)</span>
+      </div>
+      <div class="anatomy-body">
+        <div class="three-zone">
+
+          <!-- ZONE A: HUMAN INTENT -->
+          <div class="zone" style="--z-color:var(--accent)">
+            <div>
+              <div class="zone-label" style="color:var(--accent)">Zone A — Input</div>
+              <div class="zone-name">Human Intent</div>
+            </div>
+            <div class="zone-item">A developer types a slash command, natural language query, or code snippet</div>
+            <div class="zone-item">The task carries goal, constraints, and implicit expectations the harness must surface</div>
+            <div class="zone-item">The harness pre-processes the input — rewriting, augmenting, and injecting context before the model sees it</div>
+            <div class="zone-item">Examples: <code>/review</code> · <code>/build</code> · a code block · a free-text question</div>
+          </div>
+
+          <!-- PIPE -->
+          <div class="zone-pipe">
+            <div class="pipe-vline"></div>
+            <div class="pipe-arrow-node">⇅</div>
+            <div class="pipe-label">Harness Bridge</div>
+            <div class="pipe-vline"></div>
+          </div>
+
+          <!-- ZONE B: AI MODEL + CONTEXT -->
+          <div class="zone" style="--z-color:var(--accent5)">
+            <div>
+              <div class="zone-label" style="color:var(--accent5)">Zone B — Processing</div>
+              <div class="zone-name">AI Model + Context</div>
+            </div>
+            <div class="zone-item">The context window is assembled: system prompt + memory + tools + history + retrieved docs + user message</div>
+            <div class="zone-item">The model reasons within this assembled reality — it can only act on what the harness has placed in context</div>
+            <div class="zone-item">Tool calls loop back through the harness before the next model turn</div>
+            <div class="zone-item">Output is raw — unstructured, potentially verbose, unparsed</div>
+          </div>
+
+        </div>
+
+        <!-- Zone C: Output -->
+        <div class="zone-c">
+          <div class="zone-c-label">Zone C — Output</div>
+          <div class="zone-c-name">Post-processing &amp; Delivery</div>
+          <div class="zone-c-cols">
+            <div class="zone-c-col">
+              <span class="zone-c-col-label">Parse</span>
+              Extract structured data from model output — code blocks, JSON, lists, decisions
+            </div>
+            <div class="zone-c-col">
+              <span class="zone-c-col-label">Validate</span>
+              Schema checks, safety filters, policy enforcement — reject malformed responses
+            </div>
+            <div class="zone-c-col">
+              <span class="zone-c-col-label">Route</span>
+              Direct output to the right surface: IDE, terminal, PR comment, CI pipeline, webhook
+            </div>
+            <div class="zone-c-col">
+              <span class="zone-c-col-label">Update</span>
+              Persist new memories, increment version state, trigger downstream agents
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- § 02 — ANATOMY: LAYER BY LAYER -->
+  <div class="section" id="s1">
+    <div class="sec-head">
+      <span class="sec-num">§ 02</span>
+      <span class="sec-title">Anatomy — Layer by Layer</span>
+    </div>
+
+    <div class="layer-stack">
+
+      <div class="lstack-item stagger-child" style="--ls-color:#38bdf8">
+        <div>
+          <div class="ls-name">System Prompt</div>
+          <div class="ls-path">CLAUDE.md · GEMINI.md · copilot-instructions.md</div>
+        </div>
+        <div class="ls-desc">The bedrock instruction set. Defines the AI's role, constraints, output format, coding conventions, and what it must never do. Loaded on every session before any user input. The harness's "job contract" with the model.</div>
+        <span class="ls-badge">ALWAYS LOADED</span>
+      </div>
+
+      <div class="lstack-item stagger-child" style="--ls-color:#a78bfa">
+        <div>
+          <div class="ls-name">Agent Persona</div>
+          <div class="ls-path">agents/*.md · .github/agents/</div>
+        </div>
+        <div class="ls-desc">A Markdown file that injects a specialist role into the model's identity — "you are a senior security engineer reviewing for OWASP Top 10." Loaded per-task, not globally, to maintain context window discipline.</div>
+        <span class="ls-badge">PER-TASK</span>
+      </div>
+
+      <div class="lstack-item stagger-child" style="--ls-color:#34d399">
+        <div>
+          <div class="ls-name">Skill / Workflow</div>
+          <div class="ls-path">skills/*/SKILL.md · .github/skills/</div>
+        </div>
+        <div class="ls-desc">Step-by-step procedural guides the model follows before acting. Encodes senior engineering practice — spec-driven dev, TDD, code review protocols. The model consults the skill the way a contractor reads a blueprint.</div>
+        <span class="ls-badge">PER-TASK</span>
+      </div>
+
+      <div class="lstack-item stagger-child" style="--ls-color:#fbbf24">
+        <div>
+          <div class="ls-name">Project Context</div>
+          <div class="ls-path">.ai-sdlc/project-context.md · project-profile.yaml</div>
+        </div>
+        <div class="ls-desc">A structured knowledge base about this specific codebase — language, frameworks, conventions, architecture decisions, team norms, and known constraints. Generated once via /onboard, loaded at session start.</div>
+        <span class="ls-badge">SESSION START</span>
+      </div>
+
+      <div class="lstack-item stagger-child" style="--ls-color:#f87171">
+        <div>
+          <div class="ls-name">Tool Schemas</div>
+          <div class="ls-path">tools/ · adapter packs · MCP servers</div>
+        </div>
+        <div class="ls-desc">Function definitions the model can invoke: read a file, run tests, query an issue tracker, call an API, trigger a deployment. The harness resolves tool calls and feeds results back into the context loop.</div>
+        <span class="ls-badge">CAPABILITY LAYER</span>
+      </div>
+
+      <div class="lstack-item stagger-child" style="--ls-color:var(--muted)">
+        <div>
+          <div class="ls-name">Conversation History</div>
+          <div class="ls-path">Session state · summarized prior turns</div>
+        </div>
+        <div class="ls-desc">Prior turns give coherence across a multi-step task. The harness manages truncation — compressing older turns into summaries — to stay within the token budget while preserving key decisions and context.</div>
+        <span class="ls-badge">MANAGED</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- § 03 — SIGNAL FLOW (INTERACTIVE) -->
+  <div class="section" id="s2">
+    <div class="sec-head">
+      <span class="sec-num">§ 03</span>
+      <span class="sec-title">Signal Flow — One Request</span>
+    </div>
+
+    <div class="signal-flow">
+      <div class="sf-header">
+        <div class="sf-header-left">
+          <div class="sf-dot-r"></div>
+          <div class="sf-dot-y"></div>
+          <div class="sf-dot-g"></div>
+          <span class="sf-title">FIG. C — A SINGLE /review INVOCATION</span>
+        </div>
+        <button class="sf-play" id="playBtn" onclick="playFlow()">▶ Animate</button>
+      </div>
+      <div class="sf-body" id="sfBody">
+
+        <div class="sf-step active" data-step="0">
+          <div class="sf-dot">1</div>
+          <div class="sf-content">
+            <div class="sf-step-name">Developer fires a command</div>
+            <div class="sf-step-desc">Developer types <code>/review</code> in their AI CLI session. The harness intercepts the raw slash command before it reaches the model.</div>
+            <div class="sf-step-code">input: "/review src/auth/login.ts"</div>
+          </div>
+        </div>
+
+        <div class="sf-connector">↓</div>
+
+        <div class="sf-step" data-step="1">
+          <div class="sf-dot">2</div>
+          <div class="sf-content">
+            <div class="sf-step-name">Harness assembles context</div>
+            <div class="sf-step-desc">Loads system prompt + security-reviewer agent + code-review skill + project-context.md. Fetches the file contents. Slots each piece into the token-budget-aware context window.</div>
+            <div class="sf-step-code">context: [system_prompt, agent, skill, project_ctx, file_content, user_msg]</div>
+          </div>
+        </div>
+
+        <div class="sf-connector">↓</div>
+
+        <div class="sf-step" data-step="2">
+          <div class="sf-dot">3</div>
+          <div class="sf-content">
+            <div class="sf-step-name">Model reasons + may invoke tools</div>
+            <div class="sf-step-desc">The model processes the assembled context. If it needs to run tests or read a dependency, it emits a tool call. The harness executes it, appends the result, and sends the model another turn.</div>
+            <div class="sf-step-code">tool_call: { name: "run_tests", args: { path: "auth/login.test.ts" } }</div>
+          </div>
+        </div>
+
+        <div class="sf-connector">↓</div>
+
+        <div class="sf-step" data-step="3">
+          <div class="sf-dot">4</div>
+          <div class="sf-content">
+            <div class="sf-step-name">Output parsed and routed</div>
+            <div class="sf-step-desc">The harness extracts structured findings from the model's response — severity levels, line references, suggested fixes. Renders them as an inline review comment in the IDE or terminal.</div>
+            <div class="sf-step-code">output: { findings: [...], severity: "medium", pr_comment: true }</div>
+          </div>
+        </div>
+
+        <div class="sf-connector">↓</div>
+
+        <div class="sf-step" data-step="4">
+          <div class="sf-dot">5</div>
+          <div class="sf-content">
+            <div class="sf-step-name">State updated — loop ready</div>
+            <div class="sf-step-desc">Findings logged to project context. Conversation history compressed and saved. If follow-up is needed, the next turn starts with enriched shared state — the harness gets smarter with each cycle.</div>
+            <div class="sf-step-code">state: { memory: updated, history: compressed, next_turn: ready }</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- § 04 — THREE HARNESS PATTERNS -->
+  <div class="section" id="s3">
+    <div class="sec-head">
+      <span class="sec-num">§ 04</span>
+      <span class="sec-title">Three Harness Patterns</span>
+    </div>
+
+    <div class="harness-types">
+
+      <div class="ht-card stagger-child" style="--ht-color:#38bdf8">
+        <div class="ht-body">
+          <div class="ht-icon">🖥️</div>
+          <div class="ht-name">CLI Harness</div>
+          <div class="ht-sub">Terminal-Native</div>
+          <div class="ht-desc">Instructions live in root markdown files. Commands are slash-prefixed. The AI CLI reads config files from the repo root, linking agents, skills, and project context at session start.</div>
+          <div class="ht-examples">
+            <span class="ht-ex">Claude Code</span>
+            <span class="ht-ex">Gemini CLI</span>
+            <span class="ht-ex">Codex CLI</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ht-card stagger-child" style="--ht-color:#34d399">
+        <div class="ht-body">
+          <div class="ht-icon">🧩</div>
+          <div class="ht-name">IDE Plugin Harness</div>
+          <div class="ht-sub">Editor-Embedded</div>
+          <div class="ht-desc">Lives inside the editor. Reads workspace config, open files, cursor position, and diagnostics. Agents and skills attach as prompt files referenced via inline context handles.</div>
+          <div class="ht-examples">
+            <span class="ht-ex">GitHub Copilot</span>
+            <span class="ht-ex">Cursor</span>
+            <span class="ht-ex">Continue</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ht-card stagger-child" style="--ht-color:#fbbf24">
+        <div class="ht-body">
+          <div class="ht-icon">⚙️</div>
+          <div class="ht-name">Pipeline Harness</div>
+          <div class="ht-sub">CI/CD-Integrated</div>
+          <div class="ht-desc">Runs as an automated step in a build pipeline. Triggered by PR events, test failures, or deployment hooks. No human in the loop — the harness enforces policy and routes decisions autonomously.</div>
+          <div class="ht-examples">
+            <span class="ht-ex">GitHub Actions</span>
+            <span class="ht-ex">n8n workflows</span>
+            <span class="ht-ex">Agentic CI</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- § 05 — WITH vs WITHOUT -->
+  <div class="section" id="s4">
+    <div class="sec-head">
+      <span class="sec-num">§ 05</span>
+      <span class="sec-title">With a Harness vs. Without</span>
+    </div>
+
+    <div class="compare-wrap">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Dimension</th>
+            <th>Without a Harness</th>
+            <th>With a Harness</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="feature">Context</td>
+            <td class="bad">Blank slate every session. No memory of codebase, conventions, or prior decisions.</td>
+            <td class="good">Project context, agent persona, and relevant skills loaded automatically at session start.</td>
+          </tr>
+          <tr>
+            <td class="feature">Consistency</td>
+            <td class="bad">Output quality varies wildly depending on how well the developer prompts each time.</td>
+            <td class="good">Same skill + agent combo fires for the same task type. Reproducible, reviewable results.</td>
+          </tr>
+          <tr>
+            <td class="feature">Tool Access</td>
+            <td class="bad">AI can only suggest code. Cannot run tests, read files, or call APIs without manual copy-paste.</td>
+            <td class="good">Tool schemas define callable actions. Model can read, write, test, deploy — in a controlled loop.</td>
+          </tr>
+          <tr>
+            <td class="feature">Constraints</td>
+            <td class="bad">No guardrails. Model can veer off, hallucinate, or ignore project conventions.</td>
+            <td class="good">System prompt enforces hard constraints. Skills define the process. Policy filters validate output.</td>
+          </tr>
+          <tr>
+            <td class="feature">Portability</td>
+            <td class="bad">Prompts live in developer's head or chat history. Cannot be versioned or shared.</td>
+            <td class="good">Harness is files in source control. Versioned, reviewed, diffable, team-shared.</td>
+          </tr>
+          <tr>
+            <td class="feature">Multi-Provider</td>
+            <td class="bad">Switching AI provider means re-writing all prompts from scratch.</td>
+            <td class="good">Provider-neutral files. Swap CLAUDE.md for GEMINI.md. Assets reuse across harnesses.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CLOSING -->
+  <div class="closing section" id="s5">
+    <div class="closing-bar"></div>
+    <div>
+      <div class="closing-text">
+        A harness doesn't limit what the AI can do — it <em>focuses</em> it.<br>
+        Raw intelligence becomes <em>reliable craftsmanship</em>.
+      </div>
+      <div class="closing-formula">
+        HARNESS = SYSTEM PROMPT + AGENTS + SKILLS + TOOLS + CONTEXT MANAGEMENT + OUTPUT ROUTING
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+// Intersection observer
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('vis');
+    [...e.target.querySelectorAll('.stagger-child')].forEach((c, i) => {
+      setTimeout(() => c.classList.add('vis'), 80 + i * 100);
+    });
+    io.unobserve(e.target);
+  });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.section').forEach(s => io.observe(s));
+
+// Signal flow animation
+let flowTimer = null;
+let currentStep = 0;
+const steps = document.querySelectorAll('.sf-step');
+
+function resetFlow() {
+  steps.forEach((s, i) => {
+    s.classList.toggle('active', i === 0);
+  });
+  currentStep = 0;
+}
+
+function playFlow() {
+  clearInterval(flowTimer);
+  resetFlow();
+  document.getElementById('playBtn').textContent = '↺ Restart';
+
+  flowTimer = setInterval(() => {
+    currentStep++;
+    if (currentStep >= steps.length) {
+      clearInterval(flowTimer);
+      setTimeout(() => {
+        document.getElementById('playBtn').textContent = '▶ Animate';
+      }, 800);
+      return;
+    }
+    steps[currentStep].classList.add('active');
+    steps[currentStep].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 900);
+}
+</script>
+</body>
+</html>

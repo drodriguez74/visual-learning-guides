@@ -16,6 +16,8 @@ Or jump directly to any guide:
 | **HCI Fusion Model** | `https://drodriguez74.github.io/visual-learning-guides/hci-fusion-model.html` |
 | **Vector Stores & Semantic Search** | `https://drodriguez74.github.io/visual-learning-guides/vector-stores.html` |
 | **Lean Six Sigma** | `https://drodriguez74.github.io/visual-learning-guides/lean-six-sigma-guide.html` |
+| **The Mainframe** | `https://drodriguez74.github.io/visual-learning-guides/mainframe-explainer.html` |
+| **AI Harness Explainer** | `https://drodriguez74.github.io/visual-learning-guides/ai-harness-explainer.html` |
 
 ## Guides
 
@@ -71,6 +73,33 @@ Or jump directly to any guide:
 | **Key Tools** | VSM, 5S, Kanban, Poka-Yoke, A3, Heijunka, SIPOC, Fishbone, Pareto, Control Charts, FMEA, 5 Whys, Gage R&R, DOE |
 | **Belt Levels** | 3D flip cards: White → Yellow → Green → Black → Master Black Belt |
 | **Interview Prep** | 11 Q&As with expandable answers + built-in flashcard quiz mode |
+
+---
+
+### 05 · The Mainframe
+`mainframe-explainer.html` — Dark Retro Terminal (Orbitron + Share Tech Mono + VT323)
+
+| Section | Contents |
+|---------|----------|
+| **System Architecture** | Hardware stack diagram — LPAR, z/OS, DASD, channel subsystem — with phosphor-glow styling |
+| **Programming Languages** | COBOL, PL/I, Assembler, Java, Python on z/OS — history, use cases, and comparison |
+| **Applications** | Industries still running mainframe workloads: banking, insurance, retail, government |
+| **Middleware Ecosystem** | CICS, IMS, MQ, DB2, VSAM — roles and relationships |
+| **Processing Pipeline** | JCL job lifecycle: Submit → Queue → Initiate → Execute → Output → Purge |
+| **Relevance** | Why mainframes still run 68% of global transaction processing in 2024 |
+
+---
+
+### 06 · AI Harness Explainer
+`ai-harness-explainer.html` — Dark (Syne + JetBrains Mono)
+
+| Section | Contents |
+|---------|----------|
+| **What Is a Harness?** | Definition, analogy, and 3-zone anatomy diagram (Human Intent / Harness Bridge / AI Model + Context + Output) |
+| **Anatomy — Layer by Layer** | 6-layer stack: System Prompt, Agent Persona, Skill/Workflow, Project Context, Tool Schemas, Conversation History |
+| **Signal Flow** | Interactive 5-step animated walkthrough of a single `/review` invocation |
+| **Three Harness Patterns** | CLI Harness, IDE Plugin Harness, Pipeline Harness — with real-world examples |
+| **With vs. Without** | 6-row comparison table across Context, Consistency, Tool Access, Constraints, Portability, Multi-Provider |
 
 ---
 
