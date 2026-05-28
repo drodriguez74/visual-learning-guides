@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Context Engineering</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #06090f;
+    --surface: #0d1117;
+    --border: #1e2738;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #a855f7;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --grid: rgba(0,229,255,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: 64px 0 48px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.1s forwards;
+  }
+
+  h1 {
+    font-size: clamp(36px, 7vw, 76px);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.25s forwards;
+  }
+
+  h1 span {
+    color: var(--text);
+    display: inline-block;
+    position: relative;
+  }
+
+  h1 span::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -6px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .hero-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    max-width: 520px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.4s forwards;
+  }
+
+  /* ── CONTEXT WINDOW DIAGRAM ── */
+  .diagram-section {
+    margin-bottom: 64px;
+    opacity: 0;
+    animation: fadeUp 0.7s 0.6s forwards;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .window-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .window-header {
+    background: #111827;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+
+  .window-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+
+  .token-bar-wrapper {
+    padding: 20px 24px 8px;
+  }
+
+  .token-bar {
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    overflow: hidden;
+    gap: 2px;
+    margin-bottom: 8px;
+  }
+
+  .token-seg {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    transition: flex 0.5s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .token-seg:hover { filter: brightness(1.25); }
+
+  .seg-system    { flex: 15; background: linear-gradient(90deg, #1e3a5f, #1e4a7f); color: #60a5fa; border-radius: 6px 0 0 6px; }
+  .seg-memory    { flex: 10; background: linear-gradient(90deg, #3b1f5e, #4c1d95); color: #c084fc; }
+  .seg-tools     { flex: 8;  background: linear-gradient(90deg, #1f3a2e, #14532d); color: #4ade80; }
+  .seg-history   { flex: 20; background: linear-gradient(90deg, #292524, #44403c); color: #a8a29e; }
+  .seg-rag       { flex: 12; background: linear-gradient(90deg, #422006, #7c2d12); color: #fb923c; }
+  .seg-user      { flex: 8;  background: linear-gradient(90deg, #164e63, #0e7490); color: #22d3ee; border-radius: 0 6px 6px 0; }
+
+  .token-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding: 0 24px 20px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .legend-item:hover { color: var(--text); }
+
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0;
+  }
+
+  /* tooltip */
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e2738;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 10;
+  }
+
+  .token-seg:hover .tooltip { opacity: 1; }
+
+  /* ── PILLARS GRID ── */
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 64px;
+  }
+
+  @media (max-width: 640px) { .pillars { grid-template-columns: 1fr; } }
+
+  .pillar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .pillar:hover {
+    border-color: var(--accent-color, var(--accent));
+    transform: translateY(-4px);
+  }
+
+  .pillar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-color, var(--accent));
+  }
+
+  .pillar-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-color, var(--accent));
+    margin-bottom: 12px;
+    letter-spacing: 0.1em;
+  }
+
+  .pillar h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .pillar p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .pillar-wm {
+    position: absolute;
+    top: -12px; right: 6px;
+    font-size: 80px;
+    font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    color: var(--accent-color, var(--accent));
+    opacity: 0.08;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.05em;
+  }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    margin-bottom: 64px;
+  }
+
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+    opacity: 0;
+  }
+
+  .flow-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 40px;
+    flex-shrink: 0;
+  }
+
+  .flow-node {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    border: 2px solid var(--node-color, var(--accent));
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--node-color, var(--accent));
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .flow-step:hover .flow-node {
+    background: var(--node-color, var(--accent));
+    color: var(--bg);
+  }
+
+  .flow-line {
+    flex: 1;
+    width: 2px;
+    background: var(--border);
+    margin: 4px auto;
+  }
+
+  .flow-content {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 12px;
+    transition: border-color 0.3s;
+  }
+
+  .flow-step:hover .flow-content {
+    border-color: var(--node-color, var(--accent));
+  }
+
+  .flow-content h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+
+  .flow-content p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .flow-tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: color-mix(in srgb, var(--node-color, var(--accent)) 15%, transparent);
+    color: var(--node-color, var(--accent));
+    text-transform: uppercase;
+  }
+
+  /* ── GOOD/BAD COMPARE ── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 64px;
+  }
+
+  @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
+
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    opacity: 0;
+  }
+
+  .compare-header {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  .compare-header.bad  { background: rgba(239,68,68,0.1); color: #f87171; border-bottom: 1px solid rgba(239,68,68,0.2); }
+  .compare-header.good { background: rgba(34,197,94,0.1); color: #4ade80; border-bottom: 1px solid rgba(34,197,94,0.2); }
+
+  .compare-body {
+    padding: 16px 20px;
+  }
+
+  .compare-line {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.9;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .compare-line::before {
+    content: var(--bullet, '·');
+    flex-shrink: 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .bad .compare-line { --bullet: '✗'; color: #f87171; opacity: 0.8; }
+  .good .compare-line { --bullet: '✓'; color: #4ade80; opacity: 0.85; }
+
+  /* ── QUOTE ── */
+  .quote-block {
+    border-left: 3px solid var(--accent);
+    padding: 20px 28px;
+    background: var(--surface);
+    border-radius: 0 12px 12px 0;
+    margin-bottom: 64px;
+    opacity: 0;
+    animation: fadeUp 0.6s 1.2s forwards;
+  }
+
+  .quote-text {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+
+  .quote-text span { color: var(--accent); }
+
+  .quote-attr {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* Token bar reveal */
+  @keyframes segIn {
+    from { opacity: 0; transform: scaleX(0); }
+    to   { opacity: 1; transform: scaleX(1); }
+  }
+  .token-seg {
+    transform-origin: left center;
+    animation: segIn 0.45s cubic-bezier(.4,0,.2,1) both;
+  }
+  .seg-system  { animation-delay: 0.80s; }
+  .seg-memory  { animation-delay: 0.95s; }
+  .seg-tools   { animation-delay: 1.10s; }
+  .seg-history { animation-delay: 1.25s; }
+  .seg-rag     { animation-delay: 1.40s; }
+  .seg-user    { animation-delay: 1.55s; }
+
+  /* Theme toggle */
+  .theme-toggle {
+    position: fixed;
+    top: 16px; right: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    padding: 6px 14px;
+    cursor: pointer;
+    z-index: 100;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .theme-toggle:hover { color: var(--text); border-color: var(--accent); }
+
+  /* Light mode overrides */
+  [data-theme="light"] {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --border: #d1dde8;
+    --text: #0f172a;
+    --muted: #64748b;
+    --grid: rgba(0,100,180,0.04);
+  }
+
+  /* ── animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s, transform 0.6s; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()">LIGHT / DARK</button>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="eyebrow">A Visual Guide</div>
+    <h1>Context<br><span>Engineering</span></h1>
+    <p class="hero-sub">The art and science of designing what an AI model sees — shaping its "working memory" to get precise, reliable, powerful outputs.</p>
+  </div>
+
+  <!-- WHAT IS CONTEXT -->
+  <div class="quote-block">
+    <div class="quote-text">Context is <span>not just a prompt</span> — it's the entire information environment the model reasons within.</div>
+    <div class="quote-attr">// The context window is the model's only reality</div>
+  </div>
+
+  <!-- CONTEXT WINDOW DIAGRAM -->
+  <div class="diagram-section">
+    <div class="section-label">The Context Window</div>
+    <div class="window-diagram">
+      <div class="window-header">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="window-title">context_window.json — 128k tokens</span>
+      </div>
+      <div class="token-bar-wrapper">
+        <div class="token-bar">
+          <div class="token-seg seg-system">
+            <span>SYS</span>
+            <div class="tooltip">System Prompt · ~15% · Persona, rules, output format</div>
+          </div>
+          <div class="token-seg seg-memory">
+            <span>MEM</span>
+            <div class="tooltip">Memory · ~10% · Retrieved facts, user history</div>
+          </div>
+          <div class="token-seg seg-tools">
+            <span>TOOLS</span>
+            <div class="tooltip">Tool Definitions · ~8% · API schemas, functions</div>
+          </div>
+          <div class="token-seg seg-history">
+            <span>HISTORY</span>
+            <div class="tooltip">Conversation History · ~20% · Prior turns, summaries</div>
+          </div>
+          <div class="token-seg seg-rag">
+            <span>RAG</span>
+            <div class="tooltip">Retrieved Docs · ~12% · Embeddings, knowledge chunks</div>
+          </div>
+          <div class="token-seg seg-user">
+            <span>USER</span>
+            <div class="tooltip">User Message · ~8% · The actual query</div>
+          </div>
+        </div>
+        <div class="token-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>System Prompt</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Memory</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>Tool Defs</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a8a29e"></div>Chat History</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>RAG / Docs</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>User Message</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 PILLARS -->
+  <div class="section-label reveal">Six Pillars of Context Engineering</div>
+  <div class="pillars">
+
+    <div class="pillar reveal" style="--accent-color:#60a5fa">
+      <div class="pillar-wm">01</div>
+      <div class="pillar-num">01 — SYSTEM PROMPT</div>
+      <h3>Identity & Rules</h3>
+      <p>Define persona, tone, constraints, and output format. The model's "job description" — read before every token generated.</p>
+    </div>
+
+    <div class="pillar reveal" style="--accent-color:#c084fc">
+      <div class="pillar-wm">02</div>
+      <div class="pillar-num">02 — MEMORY</div>
+      <h3>State Injection</h3>
+      <p>Long-term facts retrieved from vector stores or databases, injected as structured context so the model "remembers" across sessions.</p>
+    </div>
+
+    <div class="pillar reveal" style="--accent-color:#4ade80">
+      <div class="pillar-wm">03</div>
+      <div class="pillar-num">03 — TOOLS</div>
+      <h3>Capability Schemas</h3>
+      <p>Function definitions tell the model what actions it can take — search, write code, call APIs. Well-named tools reduce ambiguity.</p>
+    </div>
+
+    <div class="pillar reveal" style="--accent-color:#a8a29e">
+      <div class="pillar-wm">04</div>
+      <div class="pillar-num">04 — HISTORY</div>
+      <h3>Conversation State</h3>
+      <p>Prior turns give coherence. Engineering this means truncating smartly, summarizing older turns, and preserving key decisions.</p>
+    </div>
+
+    <div class="pillar reveal" style="--accent-color:#fb923c">
+      <div class="pillar-wm">05</div>
+      <div class="pillar-num">05 — RAG</div>
+      <h3>Knowledge Retrieval</h3>
+      <p>Embed queries, fetch semantically relevant chunks, and inject them as grounding evidence — reducing hallucinations dramatically.</p>
+    </div>
+
+    <div class="pillar reveal" style="--accent-color:#22d3ee">
+      <div class="pillar-wm">06</div>
+      <div class="pillar-num">06 — USER QUERY</div>
+      <h3>Input Shaping</h3>
+      <p>Pre-process, rewrite, or augment the user's raw message before it hits the model — adding examples, constraints, or format hints.</p>
+    </div>
+
+  </div>
+
+  <!-- FLOW DIAGRAM -->
+  <div class="flow">
+    <div class="section-label reveal">Engineering the Context Pipeline</div>
+    <div class="flow-steps">
+
+      <div class="flow-step reveal" style="--node-color:#60a5fa">
+        <div class="flow-left">
+          <div class="flow-node">1</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-tag">Input</div>
+          <h4>Receive & Parse User Message</h4>
+          <p>Capture raw input, detect intent, extract entities. Decide what type of context retrieval is needed.</p>
+        </div>
+      </div>
+
+      <div class="flow-step reveal" style="--node-color:#fb923c">
+        <div class="flow-left">
+          <div class="flow-node">2</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-tag">Retrieval</div>
+          <h4>Fetch Relevant Context</h4>
+          <p>Query vector DB for semantic matches, pull user memory records, load applicable tool schemas based on detected intent.</p>
+        </div>
+      </div>
+
+      <div class="flow-step reveal" style="--node-color:#c084fc">
+        <div class="flow-left">
+          <div class="flow-node">3</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-tag">Assembly</div>
+          <h4>Construct the Context Window</h4>
+          <p>Pack layers into a finite token budget: system → memory → tools → summarized history → retrieved docs → user message. Order matters.</p>
+        </div>
+      </div>
+
+      <div class="flow-step reveal" style="--node-color:#4ade80">
+        <div class="flow-left">
+          <div class="flow-node">4</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-tag">Inference</div>
+          <h4>Model Generates Response</h4>
+          <p>The LLM reasons over the assembled context, potentially invoking tools (which add more context in a loop) before final output.</p>
+        </div>
+      </div>
+
+      <div class="flow-step reveal" style="--node-color:#00e5ff">
+        <div class="flow-left">
+          <div class="flow-node">5</div>
+          <div class="flow-line" style="display:none"></div>
+        </div>
+        <div class="flow-content">
+          <div class="flow-tag">Output</div>
+          <h4>Post-process & Update State</h4>
+          <p>Parse structured response, update memory stores, log the turn, and feed back into context for the next interaction.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GOOD VS BAD -->
+  <div class="section-label reveal">Context Quality: Bad vs. Good</div>
+  <div class="compare">
+    <div class="compare-card reveal">
+      <div class="compare-header bad">✗ Poor Context Engineering</div>
+      <div class="compare-body bad">
+        <div class="compare-line">Vague system prompt with no constraints</div>
+        <div class="compare-line">Full untruncated conversation history</div>
+        <div class="compare-line">All tools injected regardless of intent</div>
+        <div class="compare-line">No retrieved knowledge, just raw query</div>
+        <div class="compare-line">User message passed verbatim, unprocessed</div>
+        <div class="compare-line">No token budget management</div>
+      </div>
+    </div>
+    <div class="compare-card reveal">
+      <div class="compare-header good">✓ Strong Context Engineering</div>
+      <div class="compare-body good">
+        <div class="compare-line">Precise system prompt with examples & format</div>
+        <div class="compare-line">Smart history summarization past N turns</div>
+        <div class="compare-line">Only relevant tool schemas injected</div>
+        <div class="compare-line">Top-K semantically ranked RAG chunks</div>
+        <div class="compare-line">Query rewriting and intent enrichment</div>
+        <div class="compare-line">Token budget allocated per layer</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleTheme() {
+    const html = document.documentElement;
+    html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+  }
+
+  // Intersection Observer for scroll reveals
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Pillar stagger
+  document.querySelectorAll('.pillar.reveal').forEach((el, i) => {
+    el.style.transitionDelay = `${i * 0.08}s`;
+  });
+
+  // Flow step stagger
+  document.querySelectorAll('.flow-step.reveal').forEach((el, i) => {
+    el.style.transitionDelay = `${i * 0.1}s`;
+  });
+
+  // Compare card stagger
+  document.querySelectorAll('.compare-card.reveal').forEach((el, i) => {
+    el.style.transitionDelay = `${i * 0.15}s`;
+  });
+</script>
+</body>
+</html>

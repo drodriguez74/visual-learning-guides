@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HCI Fusion Model</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0b0e14;
+  --surface:  #111520;
+  --raised:   #171c2b;
+  --border:   #232840;
+  --human:    #f97316;
+  --computer: #38bdf8;
+  --fusion:   #a78bfa;
+  --text:     #e8eaf0;
+  --muted:    #5a6080;
+  --glow-h:   rgba(249,115,22,0.18);
+  --glow-c:   rgba(56,189,248,0.18);
+  --glow-f:   rgba(167,139,250,0.18);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── animated constellation bg ── */
+#bgCanvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 28px 100px;
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 72px 0 56px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+@media(max-width:680px){ .hero { grid-template-columns:1fr; padding:48px 0 40px; } }
+
+.hero-left {}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fusion);
+  border: 1px solid var(--fusion);
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: up 0.5s 0.1s forwards;
+}
+
+.badge-dot { width:6px;height:6px;border-radius:50%;background:var(--fusion);animation:pulse 2s infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(48px, 8vw, 88px);
+  line-height: 0.9;
+  letter-spacing: 0.02em;
+  margin-bottom: 20px;
+  opacity: 0;
+  animation: up 0.5s 0.25s forwards;
+}
+
+h1 .h { color: var(--human); }
+h1 .c { color: var(--computer); }
+h1 .f { color: var(--fusion); }
+
+.hero-desc {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--muted);
+  max-width: 380px;
+  opacity: 0;
+  animation: up 0.5s 0.4s forwards;
+}
+
+.hero-desc strong { color: var(--text); font-weight: 500; }
+
+/* ring diagram */
+.hero-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  animation: up 0.6s 0.5s forwards;
+}
+
+.ring-wrap {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  flex-shrink: 0;
+}
+
+.ring-svg { width:100%;height:100%; }
+
+.ring-label {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.rl-human   { top: 10%;  left: -12%; color: var(--human); }
+.rl-ai      { top: 10%;  right:-14%; color: var(--computer); }
+.rl-fusion  { bottom:2%; left:50%; transform:translateX(-50%); color:var(--fusion); }
+
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ring-center-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: var(--fusion);
+}
+
+.ring-center-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+
+/* ── SECTION HEADS ── */
+.sec {
+  margin-bottom: 56px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s, transform 0.6s;
+}
+.sec.in { opacity: 1; transform: translateY(0); }
+
+.sec-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sec-eyebrow::before {
+  content: '';
+  width: 24px;
+  height: 2px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.sec-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+/* ── THREE PILLARS ── */
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media(max-width:600px) { .pillars { grid-template-columns:1fr; } }
+
+.pillar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 22px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.pillar:hover { transform: translateY(-6px); }
+
+.pillar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--p-color);
+}
+
+.pillar::after {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--p-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.pillar:hover { border-color: var(--p-color); }
+
+.pillar-icon {
+  font-size: 30px;
+  margin-bottom: 14px;
+}
+
+.pillar-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.05em;
+  color: var(--p-color);
+  margin-bottom: 6px;
+}
+
+.pillar-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.pillar-desc {
+  font-size: 12px;
+  line-height: 1.75;
+  color: var(--muted);
+}
+
+.pillar-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--p-color) 12%, transparent);
+  color: var(--p-color);
+  border: 1px solid color-mix(in srgb, var(--p-color) 25%, transparent);
+}
+
+/* ── FUSION LOOP DIAGRAM ── */
+.loop-container {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.loop-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, var(--glow-h) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 50%, var(--glow-c) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 90%, var(--glow-f) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+#loopCanvas {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+}
+
+.loop-legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.ll-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+.ll-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+
+/* ── INTERACTION LAYERS ── */
+.layers-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.layer-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+
+.layer-row:hover { border-color: var(--l-color); }
+.layer-row:hover .layer-body { background: color-mix(in srgb, var(--l-color) 5%, var(--surface)); }
+
+.layer-name {
+  padding: 18px 20px;
+  background: var(--raised);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.layer-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--l-color);
+  letter-spacing: 0.15em;
+}
+
+.layer-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 17px;
+  letter-spacing: 0.05em;
+  color: var(--l-color);
+}
+
+.layer-body {
+  padding: 18px 22px;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.layer-desc {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+  flex: 1;
+  min-width: 160px;
+}
+
+.layer-examples {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.ex-chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+  background: color-mix(in srgb, var(--l-color) 10%, transparent);
+  color: var(--l-color);
+  border: 1px solid color-mix(in srgb, var(--l-color) 20%, transparent);
+}
+
+/* ── MICRO CYCLE ARC ── */
+.arc-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px 20px;
+  overflow: hidden;
+}
+
+.arc-svg { width: 100%; display: block; overflow: visible; }
+
+.arc-node-label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+}
+
+.arc-node-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  fill: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* ── COGNITIVE LOAD TABLE ── */
+.cog-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media(max-width:560px) { .cog-grid { grid-template-columns:1fr; } }
+
+.cog-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  transition: border-color 0.3s;
+}
+
+.cog-card:hover { border-color: var(--c-color); }
+
+.cog-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c-color);
+  margin-bottom: 8px;
+}
+
+.cog-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.cog-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.cog-bar-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  width: 90px;
+  flex-shrink: 0;
+  letter-spacing: 0.06em;
+}
+
+.cog-bar-bg {
+  flex: 1;
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cog-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--c-color);
+  transition: width 1s cubic-bezier(.4,0,.2,1);
+  width: 0;
+}
+
+.cog-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--c-color);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Venn fusion zone pulse */
+@keyframes fusionPulse {
+  0%, 100% { fill-opacity: 0.15; }
+  50%       { fill-opacity: 0.32; }
+}
+.fusion-zone { animation: fusionPulse 3s ease-in-out infinite; }
+
+/* Theme toggle */
+.theme-toggle {
+  position: fixed;
+  top: 16px; right: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 6px 14px;
+  cursor: pointer;
+  z-index: 100;
+  transition: color 0.2s, border-color 0.2s;
+}
+.theme-toggle:hover { color: var(--text); border-color: var(--fusion); }
+
+/* Light mode */
+[data-theme="light"] {
+  --bg:      #f4f5f7;
+  --surface: #ffffff;
+  --raised:  #eef0f4;
+  --border:  #d8dce8;
+  --text:    #111520;
+  --muted:   #6a7090;
+}
+
+/* ── animations ── */
+@keyframes up {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.stagger-child { opacity:0; transform:translateY(16px); transition:opacity 0.5s, transform 0.5s; }
+.stagger-child.in { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<button class="theme-toggle" onclick="toggleTheme()">LIGHT / DARK</button>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-left">
+      <div class="badge"><span class="badge-dot"></span>Interactive Explainer</div>
+      <h1><span class="h">Human</span><br><span class="c">Computer</span><br><span class="f">Fusion</span></h1>
+      <p class="hero-desc">The <strong>HCI Fusion Model</strong> describes how human cognition, AI capability, and interface design merge into a single integrated system — where the boundary between user and machine dissolves into <strong>collaborative intelligence</strong>.</p>
+    </div>
+    <div class="hero-right">
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 260 260">
+          <defs>
+            <filter id="gH"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="gC"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="gF"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <!-- Human circle -->
+          <circle cx="95" cy="105" r="72" fill="rgba(249,115,22,0.07)" stroke="#f97316" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <!-- Computer circle -->
+          <circle cx="165" cy="105" r="72" fill="rgba(56,189,248,0.07)" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <!-- Fusion bottom -->
+          <circle cx="130" cy="168" r="52" fill="rgba(167,139,250,0.1)" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <!-- Intersection center glow -->
+          <ellipse class="fusion-zone" cx="130" cy="128" rx="28" ry="24" fill="rgba(167,139,250,0.22)"/>
+          <!-- Labels inside circles -->
+          <text x="72" y="82" font-family="'Bebas Neue',sans-serif" font-size="13" fill="#f97316" text-anchor="middle" letter-spacing="2">HUMAN</text>
+          <text x="188" y="82" font-family="'Bebas Neue',sans-serif" font-size="13" fill="#38bdf8" text-anchor="middle" letter-spacing="2">AI</text>
+          <text x="130" y="215" font-family="'Bebas Neue',sans-serif" font-size="13" fill="#a78bfa" text-anchor="middle" letter-spacing="2">INTERFACE</text>
+          <!-- Center fusion -->
+          <text x="130" y="122" font-family="'Bebas Neue',sans-serif" font-size="11" fill="#e8eaf0" text-anchor="middle" letter-spacing="1.5">FUSION</text>
+          <text x="130" y="136" font-family="'JetBrains Mono',monospace" font-size="7.5" fill="#a78bfa" text-anchor="middle" letter-spacing="1">ZONE</text>
+          <!-- Animated orbit dot -->
+          <circle r="4" fill="#f97316" filter="url(#gH)" opacity="0.9">
+            <animateMotion dur="6s" repeatCount="indefinite">
+              <mpath href="#orbitH"/>
+            </animateMotion>
+          </circle>
+          <path id="orbitH" d="M 95,33 A 72,72 0 1,1 94.9,33" fill="none"/>
+          <circle r="4" fill="#38bdf8" filter="url(#gC)" opacity="0.9">
+            <animateMotion dur="5s" repeatCount="indefinite" begin="-2s">
+              <mpath href="#orbitC"/>
+            </animateMotion>
+          </circle>
+          <path id="orbitC" d="M 165,33 A 72,72 0 1,1 164.9,33" fill="none"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- THREE PILLARS -->
+  <div class="sec" id="s1">
+    <div class="sec-eyebrow" style="color:var(--fusion)">§ 01 — Core Components</div>
+    <div class="sec-title">The Three Pillars</div>
+    <div class="pillars">
+      <div class="pillar stagger-child" style="--p-color:var(--human);--p-glow:var(--glow-h)">
+        <div class="pillar-icon">🧠</div>
+        <div class="pillar-name">Human</div>
+        <div class="pillar-sub">Cognitive Layer</div>
+        <div class="pillar-desc">Goals, intent, creativity, emotion, context awareness, and ethical judgment. The irreducible human contribution that AI cannot replicate.</div>
+        <div class="pillar-tags">
+          <span class="tag">Intent</span>
+          <span class="tag">Context</span>
+          <span class="tag">Creativity</span>
+          <span class="tag">Ethics</span>
+        </div>
+      </div>
+      <div class="pillar stagger-child" style="--p-color:var(--computer);--p-glow:var(--glow-c)">
+        <div class="pillar-icon">⚡</div>
+        <div class="pillar-name">Machine</div>
+        <div class="pillar-sub">Computational Layer</div>
+        <div class="pillar-desc">Pattern recognition, memory, speed, scale, and consistency. The AI amplifies human reach far beyond biological limits.</div>
+        <div class="pillar-tags">
+          <span class="tag">Pattern Match</span>
+          <span class="tag">Memory</span>
+          <span class="tag">Scale</span>
+          <span class="tag">Speed</span>
+        </div>
+      </div>
+      <div class="pillar stagger-child" style="--p-color:var(--fusion);--p-glow:var(--glow-f)">
+        <div class="pillar-icon">🔀</div>
+        <div class="pillar-name">Interface</div>
+        <div class="pillar-sub">Mediation Layer</div>
+        <div class="pillar-desc">The translation layer — transforms human intent into machine instruction and machine output into human understanding. The fusion point.</div>
+        <div class="pillar-tags">
+          <span class="tag">Translation</span>
+          <span class="tag">Feedback</span>
+          <span class="tag">Affordance</span>
+          <span class="tag">Context</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUSION LOOP -->
+  <div class="sec" id="s2">
+    <div class="sec-eyebrow" style="color:var(--computer)">§ 02 — The Interaction Loop</div>
+    <div class="sec-title">Continuous Fusion Cycle</div>
+    <div class="loop-container">
+      <canvas id="loopCanvas" height="300"></canvas>
+      <div class="loop-legend">
+        <div class="ll-item"><div class="ll-dot" style="background:var(--human)"></div>Human signal</div>
+        <div class="ll-item"><div class="ll-dot" style="background:var(--computer)"></div>Machine response</div>
+        <div class="ll-item"><div class="ll-dot" style="background:var(--fusion)"></div>Fusion / output</div>
+        <div class="ll-item"><div class="ll-dot" style="background:#64748b"></div>Feedback loop</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERACTION LAYERS -->
+  <div class="sec" id="s3">
+    <div class="sec-eyebrow" style="color:var(--human)">§ 03 — Interaction Taxonomy</div>
+    <div class="sec-title">Layers of Fusion</div>
+    <div class="layers-grid">
+      <div class="layer-row stagger-child" style="--l-color:#f97316">
+        <div class="layer-name">
+          <div class="layer-num">L1 · INPUT</div>
+          <div class="layer-title">Perception</div>
+        </div>
+        <div class="layer-body">
+          <div class="layer-desc">How humans signal intent: touch, voice, gaze, gesture, keystrokes. The richer the input modality, the higher the bandwidth of intention transfer.</div>
+          <div class="layer-examples">
+            <span class="ex-chip">Voice</span>
+            <span class="ex-chip">Touch</span>
+            <span class="ex-chip">Gaze</span>
+            <span class="ex-chip">Gesture</span>
+          </div>
+        </div>
+      </div>
+      <div class="layer-row stagger-child" style="--l-color:#fb923c">
+        <div class="layer-name">
+          <div class="layer-num">L2 · PARSE</div>
+          <div class="layer-title">Interpretation</div>
+        </div>
+        <div class="layer-body">
+          <div class="layer-desc">Decoding raw signals into structured intent. NLP, computer vision, and context models resolve ambiguity — mapping surface behavior to underlying goals.</div>
+          <div class="layer-examples">
+            <span class="ex-chip">NLP</span>
+            <span class="ex-chip">Intent Model</span>
+            <span class="ex-chip">Context</span>
+          </div>
+        </div>
+      </div>
+      <div class="layer-row stagger-child" style="--l-color:#a78bfa">
+        <div class="layer-name">
+          <div class="layer-num">L3 · FUSE</div>
+          <div class="layer-title">Synthesis</div>
+        </div>
+        <div class="layer-body">
+          <div class="layer-desc">The AI merges parsed intent with knowledge, memory, and constraints to construct a response. Highest-value fusion occurs here — human + machine co-creation.</div>
+          <div class="layer-examples">
+            <span class="ex-chip">LLM</span>
+            <span class="ex-chip">RAG</span>
+            <span class="ex-chip">Reasoning</span>
+          </div>
+        </div>
+      </div>
+      <div class="layer-row stagger-child" style="--l-color:#38bdf8">
+        <div class="layer-name">
+          <div class="layer-num">L4 · OUTPUT</div>
+          <div class="layer-title">Presentation</div>
+        </div>
+        <div class="layer-body">
+          <div class="layer-desc">Rendering machine output in human-comprehensible form. Modality, pacing, density, and progressive disclosure are engineered for cognitive fit.</div>
+          <div class="layer-examples">
+            <span class="ex-chip">Visual</span>
+            <span class="ex-chip">Audio</span>
+            <span class="ex-chip">Haptic</span>
+          </div>
+        </div>
+      </div>
+      <div class="layer-row stagger-child" style="--l-color:#34d399">
+        <div class="layer-name">
+          <div class="layer-num">L5 · ADAPT</div>
+          <div class="layer-title">Learning</div>
+        </div>
+        <div class="layer-body">
+          <div class="layer-desc">Both human and machine update models based on outcomes. The system improves through implicit feedback (dwell time, corrections) and explicit signals (ratings, edits).</div>
+          <div class="layer-examples">
+            <span class="ex-chip">RLHF</span>
+            <span class="ex-chip">Memory</span>
+            <span class="ex-chip">Fine-tune</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGES -->
+  <div class="sec" id="s4">
+    <div class="sec-eyebrow" style="color:var(--fusion)">§ 04 — Micro-Cycle</div>
+    <div class="sec-title">Every Interaction in 5 Beats</div>
+    <div class="arc-wrap">
+      <svg class="arc-svg" viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ah1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#f97316"/></marker>
+          <marker id="ah2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#fb923c"/></marker>
+          <marker id="ah3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#a78bfa"/></marker>
+          <marker id="ah4" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#38bdf8"/></marker>
+          <marker id="ah5" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><polygon points="0 0, 7 3.5, 0 7" fill="#34d399"/></marker>
+        </defs>
+        <!-- curved arc paths -->
+        <path d="M 90,145 C 130,60 185,45 235,90" stroke="#f97316" stroke-width="1.5" fill="none" stroke-dasharray="5,4" marker-end="url(#ah1)" opacity="0.7"/>
+        <path d="M 265,90 C 300,55 360,55 395,90" stroke="#fb923c" stroke-width="1.5" fill="none" stroke-dasharray="5,4" marker-end="url(#ah2)" opacity="0.7"/>
+        <path d="M 425,90 C 465,55 525,60 560,90" stroke="#a78bfa" stroke-width="1.5" fill="none" stroke-dasharray="5,4" marker-end="url(#ah3)" opacity="0.7"/>
+        <path d="M 590,115 C 620,145 630,155 620,165" stroke="#38bdf8" stroke-width="1.5" fill="none" stroke-dasharray="5,4" marker-end="url(#ah4)" opacity="0.7"/>
+        <!-- return arc -->
+        <path d="M 590,178 C 400,220 180,210 90,165" stroke="#34d399" stroke-width="1" fill="none" stroke-dasharray="4,5" opacity="0.4"/>
+        <!-- Node 1: Intent -->
+        <circle cx="60" cy="155" r="28" fill="rgba(249,115,22,0.12)" stroke="#f97316" stroke-width="1.5"/>
+        <text x="60" y="149" text-anchor="middle" class="arc-node-label" fill="#f97316">INTENT</text>
+        <text x="60" y="163" text-anchor="middle" class="arc-node-sub">human goal</text>
+        <!-- Node 2: Signal -->
+        <circle cx="250" cy="100" r="26" fill="rgba(251,146,60,0.12)" stroke="#fb923c" stroke-width="1.5"/>
+        <text x="250" y="94" text-anchor="middle" class="arc-node-label" fill="#fb923c">SIGNAL</text>
+        <text x="250" y="108" text-anchor="middle" class="arc-node-sub">input modality</text>
+        <!-- Node 3: Fusion -->
+        <circle cx="410" cy="80" r="32" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="2"/>
+        <text x="410" y="74" text-anchor="middle" class="arc-node-label" fill="#a78bfa" font-size="14">FUSION</text>
+        <text x="410" y="90" text-anchor="middle" class="arc-node-sub">AI synthesis</text>
+        <!-- Node 4: Output -->
+        <circle cx="575" cy="100" r="26" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="1.5"/>
+        <text x="575" y="94" text-anchor="middle" class="arc-node-label" fill="#38bdf8">OUTPUT</text>
+        <text x="575" y="108" text-anchor="middle" class="arc-node-sub">rendered result</text>
+        <!-- Node 5: Adapt -->
+        <circle cx="630" cy="172" r="24" fill="rgba(52,211,153,0.12)" stroke="#34d399" stroke-width="1.5"/>
+        <text x="630" y="166" text-anchor="middle" class="arc-node-label" fill="#34d399" font-size="12">ADAPT</text>
+        <text x="630" y="180" text-anchor="middle" class="arc-node-sub">both learn</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- COGNITIVE LOAD -->
+  <div class="sec" id="s5">
+    <div class="sec-eyebrow" style="color:var(--human)">§ 05 — Design Principle</div>
+    <div class="sec-title">Cognitive Load Distribution</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;max-width:560px">The Fusion Model aims to optimally distribute cognitive load — offloading rote tasks to machines while reserving judgment, creativity, and meaning-making for humans.</p>
+    <div class="cog-grid">
+      <div class="cog-card stagger-child" style="--c-color:var(--computer)">
+        <div class="cog-label">Machine Handles</div>
+        <div class="cog-title">Offload to AI</div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Memory recall</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="95"></div></div><span class="cog-val">95%</span></div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Pattern match</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="90"></div></div><span class="cog-val">90%</span></div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Data synthesis</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="88"></div></div><span class="cog-val">88%</span></div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Format output</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="80"></div></div><span class="cog-val">80%</span></div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Consistency</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="99"></div></div><span class="cog-val">99%</span></div>
+      </div>
+      <div class="cog-card stagger-child" style="--c-color:var(--human)">
+        <div class="cog-label">Human Retains</div>
+        <div class="cog-title">Keep with Human</div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Judgment</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="95"></div></div><span class="cog-val">95%</span></div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Ethics</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="100"></div></div><span class="cog-val">100%</span></div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Creative vision</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="85"></div></div><span class="cog-val">85%</span></div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Empathy</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="100"></div></div><span class="cog-val">100%</span></div>
+        <div class="cog-bar-row"><span class="cog-bar-label">Goal setting</span><div class="cog-bar-bg"><div class="cog-bar-fill" data-w="90"></div></div><span class="cog-val">90%</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+// ── BG CONSTELLATION ──
+const bgC = document.getElementById('bgCanvas');
+const bgX = bgC.getContext('2d');
+let bW, bH;
+const stars = Array.from({length:60}, () => ({
+  x: Math.random(), y: Math.random(),
+  vx: (Math.random()-0.5)*0.00015, vy: (Math.random()-0.5)*0.00015,
+  r: Math.random()*1.5+0.5,
+  col: ['#f97316','#38bdf8','#a78bfa'][Math.floor(Math.random()*3)],
+}));
+
+function bgResize() {
+  bW = bgC.width = window.innerWidth;
+  bH = bgC.height = window.innerHeight;
+}
+
+function bgDraw() {
+  bgX.clearRect(0,0,bW,bH);
+  stars.forEach(s => {
+    s.x += s.vx; s.y += s.vy;
+    if(s.x<0)s.x=1; if(s.x>1)s.x=0;
+    if(s.y<0)s.y=1; if(s.y>1)s.y=0;
+  });
+  // connections
+  for(let i=0;i<stars.length;i++) {
+    for(let j=i+1;j<stars.length;j++) {
+      const dx=(stars[i].x-stars[j].x)*bW, dy=(stars[i].y-stars[j].y)*bH;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<140) {
+        bgX.beginPath();
+        bgX.moveTo(stars[i].x*bW, stars[i].y*bH);
+        bgX.lineTo(stars[j].x*bW, stars[j].y*bH);
+        bgX.strokeStyle = stars[i].col + Math.round((1-d/140)*55).toString(16).padStart(2,'0');
+        bgX.lineWidth=0.5;
+        bgX.stroke();
+      }
+    }
+  }
+  stars.forEach(s => {
+    bgX.beginPath();
+    bgX.arc(s.x*bW, s.y*bH, s.r, 0, Math.PI*2);
+    bgX.fillStyle = s.col;
+    bgX.fill();
+  });
+  requestAnimationFrame(bgDraw);
+}
+window.addEventListener('resize', bgResize);
+bgResize(); bgDraw();
+
+// ── LOOP CANVAS ──
+const lc = document.getElementById('loopCanvas');
+const lx = lc.getContext('2d');
+let lW, lH;
+let t = 0;
+
+function lcResize() {
+  const rect = lc.parentElement.getBoundingClientRect();
+  lW = lc.width = rect.width * devicePixelRatio;
+  lH = 300 * devicePixelRatio;
+  lc.style.height = '300px';
+}
+
+const nodes = [
+  { label:'INTENT',    sub:'Human Goal',      x:0.14, y:0.38, col:'#f97316', r:28 },
+  { label:'SIGNAL',    sub:'Input/Expression', x:0.34, y:0.18, col:'#fb923c', r:22 },
+  { label:'FUSION',    sub:'AI Processing',   x:0.56, y:0.50, col:'#a78bfa', r:36 },
+  { label:'OUTPUT',    sub:'Rendered Result',  x:0.76, y:0.22, col:'#38bdf8', r:22 },
+  { label:'ADAPT',     sub:'Feedback Loop',   x:0.86, y:0.65, col:'#34d399', r:20 },
+  { label:'MEMORY',    sub:'Shared Context',  x:0.56, y:0.82, col:'#818cf8', r:20 },
+];
+
+const edges = [
+  [0,1,'#f97316'], [1,2,'#fb923c'], [2,3,'#a78bfa'],
+  [3,4,'#38bdf8'], [4,5,'#34d399'], [5,0,'#818cf8'], [4,0,'#64748b'],
+];
+
+// animated particle per edge
+const particles = edges.map(([a,b,col]) => ({
+  a, b, col, t: Math.random(),
+}));
+
+function drawArrow(x1,y1,x2,y2,col,alpha=1) {
+  const dx=x2-x1, dy=y2-y1, d=Math.sqrt(dx*dx+dy*dy);
+  const ux=dx/d, uy=dy/d;
+  const nA = nodes[edges[0][0]]; // shorten
+  // shorten to node edge
+  lx.beginPath();
+  lx.moveTo(x1,y1);
+  lx.lineTo(x2,y2);
+  lx.strokeStyle = col + Math.round(alpha*80).toString(16).padStart(2,'0');
+  lx.lineWidth = 1.5;
+  lx.setLineDash([5,5]);
+  lx.stroke();
+  lx.setLineDash([]);
+  // arrowhead
+  const ax = x2-ux*8, ay = y2-uy*8;
+  lx.beginPath();
+  lx.moveTo(x2,y2);
+  lx.lineTo(ax + uy*5, ay - ux*5);
+  lx.lineTo(ax - uy*5, ay + ux*5);
+  lx.closePath();
+  lx.fillStyle = col + Math.round(alpha*180).toString(16).padStart(2,'0');
+  lx.fill();
+}
+
+function lcDraw() {
+  lx.clearRect(0,0,lW,lH);
+  t += 0.004;
+
+  const scaleX = lW, scaleY = lH;
+
+  // draw edges
+  edges.forEach(([a,b,col], i) => {
+    const na = nodes[a], nb = nodes[b];
+    const x1=na.x*scaleX, y1=na.y*scaleY;
+    const x2=nb.x*scaleX, y2=nb.y*scaleY;
+    drawArrow(x1,y1,x2,y2,col,0.7);
+  });
+
+  // particles
+  particles.forEach(p => {
+    p.t = (p.t + 0.004) % 1;
+    const na=nodes[p.a], nb=nodes[p.b];
+    const px=(na.x + (nb.x-na.x)*p.t)*scaleX;
+    const py=(na.y + (nb.y-na.y)*p.t)*scaleY;
+    lx.beginPath();
+    lx.arc(px,py,4,0,Math.PI*2);
+    lx.fillStyle = p.col;
+    lx.fill();
+    // trail
+    for(let i=1;i<=4;i++){
+      const tt=p.t-i*0.02;
+      if(tt<0)continue;
+      const tx=(na.x+(nb.x-na.x)*tt)*scaleX;
+      const ty=(na.y+(nb.y-na.y)*tt)*scaleY;
+      lx.beginPath();
+      lx.arc(tx,ty,2,0,Math.PI*2);
+      lx.fillStyle=p.col+(5-i)*30 > 0 ? p.col+'44' : 'transparent';
+      lx.fill();
+    }
+  });
+
+  // nodes
+  nodes.forEach(n => {
+    const nx=n.x*scaleX, ny=n.y*scaleY;
+    const pulse = 1 + Math.sin(t*2+n.x*6)*0.06;
+    const nr = n.r * devicePixelRatio * pulse;
+
+    // glow
+    const g = lx.createRadialGradient(nx,ny,0,nx,ny,nr*2);
+    g.addColorStop(0, n.col+'44');
+    g.addColorStop(1, 'transparent');
+    lx.beginPath(); lx.arc(nx,ny,nr*2,0,Math.PI*2);
+    lx.fillStyle=g; lx.fill();
+
+    // circle
+    lx.beginPath(); lx.arc(nx,ny,nr,0,Math.PI*2);
+    lx.fillStyle = n.col+'22';
+    lx.fill();
+    lx.strokeStyle = n.col;
+    lx.lineWidth = 2;
+    lx.stroke();
+
+    // label
+    const fs = 11*devicePixelRatio;
+    lx.font = `bold ${fs}px 'Bebas Neue', sans-serif`;
+    lx.fillStyle = n.col;
+    lx.textAlign = 'center';
+    lx.textBaseline = 'middle';
+    lx.fillText(n.label, nx, ny - 4*devicePixelRatio);
+
+    lx.font = `${8.5*devicePixelRatio}px 'JetBrains Mono', monospace`;
+    lx.fillStyle = '#5a6080';
+    lx.fillText(n.sub, nx, ny + 9*devicePixelRatio);
+  });
+
+  requestAnimationFrame(lcDraw);
+}
+window.addEventListener('resize', () => { lcResize(); });
+setTimeout(() => { lcResize(); lcDraw(); }, 200);
+
+// ── INTERSECTION OBSERVER ──
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    e.target.classList.add('in');
+    // stagger children
+    e.target.querySelectorAll('.stagger-child').forEach((c,i) => {
+      setTimeout(() => c.classList.add('in'), i*100);
+    });
+    // bars
+    e.target.querySelectorAll('.cog-bar-fill').forEach(b => {
+      setTimeout(() => { b.style.width = b.dataset.w + '%'; }, 300);
+    });
+    io.unobserve(e.target);
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.sec').forEach(s => io.observe(s));
+</script>
+</body>
+</html>
