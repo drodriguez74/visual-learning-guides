@@ -770,6 +770,107 @@
   .race-preview .dim    { color: var(--muted); }
   .race-preview .empty  { color: var(--muted); font-style: italic; font-size: 11px; }
 
+  .revise-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    padding: 4px 14px;
+    border-radius: 6px;
+    border: 1px solid #fbbf24;
+    background: transparent;
+    color: #fbbf24;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .revise-btn:hover { background: color-mix(in srgb, #fbbf24 12%, transparent); }
+  .revise-btn:disabled { opacity: 0.4; cursor: wait; }
+
+  .reset-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .reset-btn:hover { color: var(--text); border-color: var(--muted); }
+
+  .revised-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.14em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: color-mix(in srgb, #fbbf24 12%, transparent);
+    color: #fbbf24;
+    border: 1px solid color-mix(in srgb, #fbbf24 24%, transparent);
+    text-transform: uppercase;
+  }
+
+  .api-key-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 24px;
+    background: color-mix(in srgb, #fbbf24 4%, transparent);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .api-key-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: #fbbf24;
+    letter-spacing: 0.14em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .api-key-input {
+    flex: 1;
+    min-width: 180px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .api-key-input:focus { border-color: #fbbf24; }
+  .api-key-input.error { border-color: #f87171; }
+
+  .api-key-save {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid #fbbf24;
+    background: color-mix(in srgb, #fbbf24 12%, transparent);
+    color: #fbbf24;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .api-key-save:hover { background: color-mix(in srgb, #fbbf24 22%, transparent); }
+
+  .api-key-note {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
   /* ── animations ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -1036,8 +1137,21 @@
     </div>
     <div class="race-preview-wrap">
       <div class="race-preview-header">
-        <span class="race-preview-label">// Composed prompt</span>
-        <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">Copy</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="race-preview-label">// Composed prompt</span>
+          <span class="revised-badge" id="revisedBadge" style="display:none">✦ AI-Revised</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="reset-btn" id="resetBtn" onclick="showOriginal()" style="display:none">← Original</button>
+          <button class="revise-btn" id="reviseBtn" onclick="revisePrompt()">✦ Revise</button>
+          <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">Copy</button>
+        </div>
+      </div>
+      <div class="api-key-row" id="apiKeyRow" style="display:none">
+        <span class="api-key-label">ANTHROPIC KEY</span>
+        <input class="api-key-input" id="apiKeyInput" type="password" placeholder="sk-ant-...">
+        <button class="api-key-save" onclick="saveAndRevise()">Save &amp; Revise</button>
+        <span class="api-key-note">Stored in localStorage · only sent to api.anthropic.com</span>
       </div>
       <div class="race-preview" id="racePreview"><span class="empty">Fill in the fields above to compose your optimized RACE prompt.</span></div>
     </div>
@@ -1151,24 +1265,142 @@
     el.innerHTML = html.trim();
   }
 
-  function copyPrompt() {
+  function getRawPrompt() {
     const r = document.getElementById('raceR').value.trim();
     const a = document.getElementById('raceA').value.trim();
     const c = document.getElementById('raceC').value.trim();
     const e = document.getElementById('raceE').value.trim();
-
     let text = '';
     if (r) text += `You are ${r}.\n\n`;
     if (a) text += `${a}.\n\n`;
     if (c) text += `Context: ${c}\n\n`;
     if (e) text += `Format: ${e}`;
+    return text.trim();
+  }
 
-    navigator.clipboard.writeText(text.trim()).then(() => {
+  function copyPrompt() {
+    const text = revisedText || getRawPrompt();
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
       const btn = document.getElementById('copyBtn');
       btn.textContent = 'Copied!';
       btn.classList.add('copied');
       setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
     });
+  }
+
+  // ── REVISE ──
+  let revisedText = null;
+
+  function revisePrompt() {
+    const raw = getRawPrompt();
+    if (!raw) {
+      document.getElementById('racePreview').innerHTML = '<span class="empty">Fill in the fields first before revising.</span>';
+      return;
+    }
+    const apiKey = localStorage.getItem('anthropic_api_key');
+    if (!apiKey) {
+      document.getElementById('apiKeyRow').style.display = 'flex';
+      document.getElementById('apiKeyInput').focus();
+      return;
+    }
+    callReviseAPI(raw, apiKey);
+  }
+
+  function saveAndRevise() {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    const input = document.getElementById('apiKeyInput');
+    if (!key) { input.classList.add('error'); return; }
+    input.classList.remove('error');
+    localStorage.setItem('anthropic_api_key', key);
+    document.getElementById('apiKeyRow').style.display = 'none';
+    callReviseAPI(getRawPrompt(), key);
+  }
+
+  async function callReviseAPI(rawPrompt, apiKey) {
+    const btn = document.getElementById('reviseBtn');
+    btn.textContent = '⟳ Revising…';
+    btn.disabled = true;
+    document.getElementById('racePreview').innerHTML = '<span class="empty" style="opacity:0.6">Calling Claude — fixing typos, elaborating, reformatting…</span>';
+
+    const r = document.getElementById('raceR').value.trim();
+    const a = document.getElementById('raceA').value.trim();
+    const c = document.getElementById('raceC').value.trim();
+    const e = document.getElementById('raceE').value.trim();
+
+    const userMsg = `Role: ${r || '(not provided)'}
+Action: ${a || '(not provided)'}
+Context: ${c || '(not provided)'}
+Expectation: ${e || '(not provided)'}`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 700,
+          system: `You are an expert prompt engineer specializing in VS Code Copilot custom instructions.
+
+The user has written a RACE-format prompt. Your job:
+1. Fix all typos and grammatical errors in every field
+2. Elaborate each field with more specific, actionable language — add detail where it's vague
+3. Reformat the whole thing as a clean VS Code Copilot custom instruction
+
+Output ONLY the finished instruction using this exact structure (no code fences, no commentary):
+
+You are [elaborated role with specific expertise and context].
+
+[Elaborated action as a direct, specific instruction starting with a strong verb].
+
+**Context:** [Elaborated context with relevant technical specifics].
+
+**Output format:** [Clear, specific output requirements based on the Expectation field].`,
+          messages: [{ role: 'user', content: `Please revise and reformat this RACE prompt for VS Code Copilot:\n\n${userMsg}` }]
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error?.message || `API error ${res.status}`);
+      }
+
+      const data = await res.json();
+      revisedText = data.content[0].text;
+      showRevised();
+
+    } catch (err) {
+      document.getElementById('racePreview').innerHTML = `<span style="color:#f87171;font-size:11px">Error: ${esc(err.message)}<br><span style="color:var(--muted);font-size:10px">Check your API key or network connection.</span></span>`;
+    } finally {
+      btn.textContent = '✦ Revise';
+      btn.disabled = false;
+    }
+  }
+
+  function renderMarkdown(text) {
+    return esc(text)
+      .replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--text)">$1</strong>')
+      .replace(/\n/g, '<br>');
+  }
+
+  function showRevised() {
+    document.getElementById('racePreview').innerHTML = renderMarkdown(revisedText);
+    document.getElementById('revisedBadge').style.display = '';
+    document.getElementById('resetBtn').style.display = '';
+    document.getElementById('reviseBtn').textContent = '✦ Re-revise';
+  }
+
+  function showOriginal() {
+    revisedText = null;
+    document.getElementById('revisedBadge').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'none';
+    document.getElementById('reviseBtn').textContent = '✦ Revise';
+    updatePreview();
   }
 
   ['raceR','raceA','raceC','raceE'].forEach(id => {
