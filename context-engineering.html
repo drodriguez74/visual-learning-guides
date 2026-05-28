@@ -531,6 +531,245 @@
     --grid: rgba(0,100,180,0.04);
   }
 
+  /* ── RACE FRAMEWORK ── */
+  .race-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 560px) { .race-grid { grid-template-columns: 1fr; } }
+
+  .race-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .race-card:hover { border-color: var(--r-color); transform: translateY(-3px); }
+
+  .race-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--r-color);
+  }
+
+  .race-card-wm {
+    position: absolute;
+    top: -10px; right: 8px;
+    font-size: 72px;
+    font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    color: var(--r-color);
+    opacity: 0.08;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.05em;
+  }
+
+  .race-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    color: var(--r-color);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .race-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+
+  .race-card p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .race-snippet {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--r-color);
+    background: color-mix(in srgb, var(--r-color) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--r-color) 18%, transparent);
+    padding: 8px 12px;
+    border-radius: 6px;
+    line-height: 1.65;
+  }
+
+  /* ── RACE BUILDER ── */
+  .race-builder-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 64px;
+  }
+
+  .race-builder-header {
+    background: #111827;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .race-builder-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .race-presets { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .preset-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .preset-chip:hover { color: var(--accent); border-color: var(--accent); }
+  .preset-chip.active {
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .race-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 580px) { .race-fields { grid-template-columns: 1fr; } }
+
+  .race-field {
+    padding: 20px 24px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .race-field:nth-child(2n) { border-right: none; }
+  .race-field:nth-last-child(-n+2) { border-bottom: none; }
+
+  @media (max-width: 580px) {
+    .race-field { border-right: none; }
+    .race-field:last-child { border-bottom: none; }
+    .race-field:nth-last-child(-n+2) { border-bottom: 1px solid var(--border); }
+  }
+
+  .race-field-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--f-color);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .race-field-label::before {
+    content: var(--f-letter);
+    font-size: 15px;
+    font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .race-textarea {
+    width: 100%;
+    background: var(--raised, #0f1624);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    resize: vertical;
+    min-height: 76px;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.65;
+  }
+
+  .race-textarea:focus { border-color: var(--f-color); }
+  .race-textarea::placeholder { color: var(--muted); }
+
+  .race-preview-wrap { border-top: 1px solid var(--border); }
+
+  .race-preview-header {
+    padding: 11px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: #111827;
+  }
+
+  .race-preview-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+  }
+
+  .copy-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    padding: 4px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .copy-btn:hover { color: #4ade80; border-color: #4ade80; }
+  .copy-btn.copied { color: #4ade80; border-color: #4ade80; }
+
+  .race-preview {
+    padding: 20px 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    line-height: 2;
+    min-height: 120px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .race-preview .r-part { color: #60a5fa; }
+  .race-preview .a-part { color: var(--accent); }
+  .race-preview .c-part { color: #fb923c; }
+  .race-preview .e-part { color: #c084fc; }
+  .race-preview .dim    { color: var(--muted); }
+  .race-preview .empty  { color: var(--muted); font-style: italic; font-size: 11px; }
+
   /* ── animations ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -723,6 +962,87 @@
     </div>
   </div>
 
+  <!-- RACE FRAMEWORK -->
+  <div class="section-label reveal">The RACE Framework</div>
+  <div class="race-grid reveal">
+
+    <div class="race-card" style="--r-color:#60a5fa">
+      <div class="race-card-wm">R</div>
+      <div class="race-badge">R — Role</div>
+      <h3>Who should the AI be?</h3>
+      <p>Define the persona, expertise level, and perspective the model should adopt before doing anything else.</p>
+      <div class="race-snippet">"You are a senior data engineer with 10 years of experience in distributed systems and PostgreSQL optimization."</div>
+    </div>
+
+    <div class="race-card" style="--r-color:#00e5ff">
+      <div class="race-card-wm">A</div>
+      <div class="race-badge">A — Action</div>
+      <h3>What should it do?</h3>
+      <p>Specify the exact task with a strong action verb. Be precise about the scope and output expected.</p>
+      <div class="race-snippet">"Review the following SQL query for performance issues and rewrite it with specific optimizations."</div>
+    </div>
+
+    <div class="race-card" style="--r-color:#fb923c">
+      <div class="race-card-wm">C</div>
+      <div class="race-badge">C — Context</div>
+      <h3>What's the situation?</h3>
+      <p>Provide background, constraints, audience, and any details that shape how the task should be approached.</p>
+      <div class="race-snippet">"The table has 50M rows, PostgreSQL 15, deployed on AWS RDS. This query runs in a user-facing API with a 200ms SLA."</div>
+    </div>
+
+    <div class="race-card" style="--r-color:#c084fc">
+      <div class="race-card-wm">E</div>
+      <div class="race-badge">E — Expectation</div>
+      <h3>What does great look like?</h3>
+      <p>Describe the output format, length, tone, and structure. Include examples of ideal responses when possible.</p>
+      <div class="race-snippet">"List 3–5 issues, each with: the problem, why it matters at scale, and the optimized query in a SQL code block."</div>
+    </div>
+
+  </div>
+
+  <!-- RACE BUILDER -->
+  <div class="section-label reveal">Build Your Prompt</div>
+  <div class="race-builder-wrap reveal">
+    <div class="race-builder-header">
+      <div class="race-builder-title">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        race_builder.prompt
+      </div>
+      <div class="race-presets">
+        <button class="preset-chip" data-preset="code">Code Review</button>
+        <button class="preset-chip" data-preset="copy">Marketing Copy</button>
+        <button class="preset-chip" data-preset="data">Data Analysis</button>
+      </div>
+    </div>
+    <div class="race-fields">
+      <div class="race-field" style="--f-color:#60a5fa;--f-letter:'R'">
+        <div class="race-field-label">Role</div>
+        <textarea class="race-textarea" id="raceR" placeholder="e.g. a senior backend engineer with expertise in Python and distributed systems"></textarea>
+      </div>
+      <div class="race-field" style="--f-color:#00e5ff;--f-letter:'A'">
+        <div class="race-field-label">Action</div>
+        <textarea class="race-textarea" id="raceA" placeholder="e.g. review the following code for bugs, security issues, and performance problems"></textarea>
+      </div>
+      <div class="race-field" style="--f-color:#fb923c;--f-letter:'C'">
+        <div class="race-field-label">Context</div>
+        <textarea class="race-textarea" id="raceC" placeholder="e.g. FastAPI endpoint, 10k req/s, AWS Lambda, Python 3.11, handles payment data"></textarea>
+      </div>
+      <div class="race-field" style="--f-color:#c084fc;--f-letter:'E'">
+        <div class="race-field-label">Expectation</div>
+        <textarea class="race-textarea" id="raceE" placeholder="e.g. numbered list of issues with severity rating, explanation, and corrected code block for each"></textarea>
+      </div>
+    </div>
+    <div class="race-preview-wrap">
+      <div class="race-preview-header">
+        <span class="race-preview-label">// Composed prompt</span>
+        <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">Copy</button>
+      </div>
+      <div class="race-preview" id="racePreview"><span class="empty">Fill in the fields above to compose your optimized RACE prompt.</span></div>
+    </div>
+  </div>
+
   <!-- GOOD VS BAD -->
   <div class="section-label reveal">Context Quality: Bad vs. Good</div>
   <div class="compare">
@@ -783,6 +1103,89 @@
   // Compare card stagger
   document.querySelectorAll('.compare-card.reveal').forEach((el, i) => {
     el.style.transitionDelay = `${i * 0.15}s`;
+  });
+
+  // ── RACE BUILDER ──
+  const racePresets = {
+    code: {
+      r: 'a senior backend engineer with 8 years of experience in Python, API security, and high-performance systems',
+      a: 'review the following code for bugs, security vulnerabilities, and performance bottlenecks',
+      c: 'this is a FastAPI endpoint handling 10,000 requests per second on AWS Lambda (Python 3.11). It processes payment data and must be PCI compliant.',
+      e: 'a numbered list of issues. For each: the problem, its severity (Critical / High / Medium / Low), why it matters, and the corrected code in a Python code block'
+    },
+    copy: {
+      r: 'an experienced B2B SaaS copywriter who specializes in converting technical features into compelling value propositions for engineering leaders',
+      a: 'write a product landing page headline, subheadline, and three hero bullet points',
+      c: 'the product is an AI-powered code review tool for engineering teams at startups (50–200 engineers). Key differentiator vs GitHub Copilot: it learns your codebase-specific patterns and enforces your team\'s conventions.',
+      e: '1 headline (max 10 words, punchy, no buzzwords), 1 subheadline (max 20 words), and 3 bullet points each starting with a strong verb. Conversion-focused, no filler.'
+    },
+    data: {
+      r: 'a data scientist with deep expertise in statistical analysis, pandas/scipy, and translating quantitative findings into executive-level business narratives',
+      a: 'analyze the following monthly revenue data and identify the top 3 trends, anomalies, and actionable recommendations',
+      c: 'this is 24 months of SaaS revenue across 5 product lines. The company is preparing for a Series B fundraise next quarter and needs to present to institutional investors.',
+      e: '(1) Executive Summary — 3 sentences max. (2) Top 3 Findings with supporting evidence. (3) 3 Recommendations prioritized by revenue impact. Use plain language — audience is the CEO, not a data team.'
+    }
+  };
+
+  function esc(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function updatePreview() {
+    const r = document.getElementById('raceR').value.trim();
+    const a = document.getElementById('raceA').value.trim();
+    const c = document.getElementById('raceC').value.trim();
+    const e = document.getElementById('raceE').value.trim();
+    const el = document.getElementById('racePreview');
+
+    if (!r && !a && !c && !e) {
+      el.innerHTML = '<span class="empty">Fill in the fields above to compose your optimized RACE prompt.</span>';
+      return;
+    }
+
+    let html = '';
+    if (r) html += `<span class="dim">You are </span><span class="r-part">${esc(r)}</span><span class="dim">.</span>\n\n`;
+    if (a) html += `<span class="a-part">${esc(a)}</span><span class="dim">.</span>\n\n`;
+    if (c) html += `<span class="dim">Context: </span><span class="c-part">${esc(c)}</span>\n\n`;
+    if (e) html += `<span class="dim">Format: </span><span class="e-part">${esc(e)}</span>`;
+    el.innerHTML = html.trim();
+  }
+
+  function copyPrompt() {
+    const r = document.getElementById('raceR').value.trim();
+    const a = document.getElementById('raceA').value.trim();
+    const c = document.getElementById('raceC').value.trim();
+    const e = document.getElementById('raceE').value.trim();
+
+    let text = '';
+    if (r) text += `You are ${r}.\n\n`;
+    if (a) text += `${a}.\n\n`;
+    if (c) text += `Context: ${c}\n\n`;
+    if (e) text += `Format: ${e}`;
+
+    navigator.clipboard.writeText(text.trim()).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  ['raceR','raceA','raceC','raceE'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updatePreview);
+  });
+
+  document.querySelectorAll('.preset-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const p = racePresets[chip.dataset.preset];
+      document.getElementById('raceR').value = p.r;
+      document.getElementById('raceA').value = p.a;
+      document.getElementById('raceC').value = p.c;
+      document.getElementById('raceE').value = p.e;
+      updatePreview();
+    });
   });
 </script>
 </body>
