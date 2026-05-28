@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visual Learning Guides</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0c0e12;
+  --surface: #13161e;
+  --raised:  #1a1e2a;
+  --border:  #252b3a;
+  --text:    #e8eaf0;
+  --muted:   #5a6080;
+  --subtle:  #2a3040;
+}
+
+[data-theme="light"] {
+  --bg:      #f4f5f7;
+  --surface: #ffffff;
+  --raised:  #eef0f4;
+  --border:  #d8dce8;
+  --text:    #111520;
+  --muted:   #6a7090;
+  --subtle:  #e4e6ee;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* grid bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="light"] body::before {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 28px 100px;
+}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  position: fixed;
+  top: 16px; right: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 6px 14px;
+  cursor: pointer;
+  z-index: 100;
+  text-transform: uppercase;
+  transition: color 0.2s, border-color 0.2s;
+}
+.theme-toggle:hover { color: var(--text); border-color: var(--text); }
+
+/* ── HEADER ── */
+.header {
+  padding: 72px 0 52px;
+  opacity: 0;
+  animation: up 0.6s 0.1s forwards;
+}
+
+.header-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.header-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(52px, 9vw, 96px);
+  letter-spacing: 0.03em;
+  line-height: 0.9;
+  margin-bottom: 20px;
+}
+
+.header-title span {
+  display: block;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--muted);
+  line-height: 1.1;
+}
+
+.header-desc {
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 480px;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+}
+
+.header-meta {
+  display: flex;
+  gap: 24px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.meta-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: up 0.6s 0.3s forwards;
+}
+
+.divider-line { flex: 1; height: 1px; background: var(--border); }
+
+.divider-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ── GUIDE CARDS ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.55s, transform 0.55s, border-color 0.3s, box-shadow 0.3s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card.in { opacity: 1; transform: translateY(0); }
+
+.card:hover {
+  border-color: var(--c-accent);
+  box-shadow: 0 0 32px color-mix(in srgb, var(--c-accent) 12%, transparent);
+}
+
+.card-top {
+  height: 4px;
+  background: var(--c-accent);
+}
+
+.card-body {
+  padding: 28px 26px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-number {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--c-accent);
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
+.card-tag {
+  display: inline-block;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--c-accent) 12%, transparent);
+  color: var(--c-accent);
+  border: 1px solid color-mix(in srgb, var(--c-accent) 24%, transparent);
+  margin-bottom: 14px;
+}
+
+.card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.card-desc {
+  font-size: 11px;
+  line-height: 1.75;
+  color: var(--muted);
+  flex: 1;
+  margin-bottom: 18px;
+}
+
+.card-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.topic-chip {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.card-footer {
+  border-top: 1px solid var(--border);
+  padding: 14px 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--raised);
+}
+
+.card-cta {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--c-accent);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.card-cta-arrow {
+  transition: transform 0.2s;
+}
+
+.card:hover .card-cta-arrow { transform: translateX(4px); }
+
+.card-flag {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: 72px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  opacity: 0;
+  animation: up 0.6s 1s forwards;
+}
+
+.footer-left {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+}
+
+.footer-right a {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.footer-right a:hover { color: var(--text); }
+
+/* ── ANIMATIONS ── */
+@keyframes up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()">Light / Dark</button>
+
+<div class="wrap">
+
+  <div class="header">
+    <div class="header-eyebrow">drodriguez74 / visual-learning-guides</div>
+    <h1 class="header-title">
+      Visual<br>Learning
+      <span>Guides</span>
+    </h1>
+    <p class="header-desc">Self-contained, single-file HTML references covering AI systems, process improvement, and interface design. No build step. No dependencies. Open and learn.</p>
+    <div class="header-meta">
+      <div class="meta-item">
+        <div class="meta-dot" style="background:#00e5ff"></div>
+        4 guides
+      </div>
+      <div class="meta-item">
+        <div class="meta-dot" style="background:#a78bfa"></div>
+        Interactive diagrams
+      </div>
+      <div class="meta-item">
+        <div class="meta-dot" style="background:#4ade80"></div>
+        Light &amp; dark mode
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-label">All Guides</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <div class="grid">
+
+    <!-- Context Engineering -->
+    <a class="card" href="context-engineering.html" style="--c-accent:#00e5ff">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-number">01 — AI Systems</div>
+        <div class="card-tag">Context Engineering</div>
+        <div class="card-title">Context Engineering</div>
+        <p class="card-desc">The art and science of designing what an AI model sees. Covers context window anatomy, token budget strategies, and the full retrieval-assembly-inference pipeline.</p>
+        <div class="card-topics">
+          <span class="topic-chip">Context window</span>
+          <span class="topic-chip">System prompts</span>
+          <span class="topic-chip">RAG</span>
+          <span class="topic-chip">Memory injection</span>
+          <span class="topic-chip">Token budgets</span>
+          <span class="topic-chip">Pipeline</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-cta">Open guide <span class="card-cta-arrow">→</span></span>
+        <span class="card-flag">Dark · Sci-fi</span>
+      </div>
+    </a>
+
+    <!-- HCI Fusion Model -->
+    <a class="card" href="hci-fusion-model.html" style="--c-accent:#a78bfa">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-number">02 — Human–Computer Interaction</div>
+        <div class="card-tag">HCI</div>
+        <div class="card-title">HCI Fusion Model</div>
+        <p class="card-desc">How human cognition, AI capability, and interface design merge into a single integrated system. Covers the fusion loop, interaction taxonomy, and cognitive load distribution.</p>
+        <div class="card-topics">
+          <span class="topic-chip">Fusion loop</span>
+          <span class="topic-chip">Interaction layers</span>
+          <span class="topic-chip">Micro-cycle</span>
+          <span class="topic-chip">Cognitive load</span>
+          <span class="topic-chip">Input modalities</span>
+          <span class="topic-chip">Affordance</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-cta">Open guide <span class="card-cta-arrow">→</span></span>
+        <span class="card-flag">Dark · Animated</span>
+      </div>
+    </a>
+
+    <!-- Vector Stores -->
+    <a class="card" href="vector-stores.html" style="--c-accent:#e05a4e">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-number">03 — AI Systems</div>
+        <div class="card-tag">Vector Stores</div>
+        <div class="card-title">Vector Stores &amp; Semantic Search</div>
+        <p class="card-desc">How language becomes geometry and why proximity means meaning. Covers embeddings, vector space visualization, cosine similarity, distance metrics, and the full RAG pipeline.</p>
+        <div class="card-topics">
+          <span class="topic-chip">Embeddings</span>
+          <span class="topic-chip">Vector space</span>
+          <span class="topic-chip">Cosine similarity</span>
+          <span class="topic-chip">Semantic search</span>
+          <span class="topic-chip">RAG pipeline</span>
+          <span class="topic-chip">FAISS / pgvector</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-cta">Open guide <span class="card-cta-arrow">→</span></span>
+        <span class="card-flag">Dark · Editorial</span>
+      </div>
+    </a>
+
+    <!-- Lean Six Sigma -->
+    <a class="card" href="lean-six-sigma-guide.html" style="--c-accent:#4ade80">
+      <div class="card-top"></div>
+      <div class="card-body">
+        <div class="card-number">04 — Process Improvement</div>
+        <div class="card-tag">Lean Six Sigma</div>
+        <div class="card-title">Lean Six Sigma</div>
+        <p class="card-desc">A complete Green Belt-level reference for process improvement interviews. Covers DMAIC, the 8 wastes, sigma levels, core tools, belt hierarchy, and 11 interview Q&amp;As with a built-in flashcard quiz.</p>
+        <div class="card-topics">
+          <span class="topic-chip">DMAIC</span>
+          <span class="topic-chip">8 Wastes</span>
+          <span class="topic-chip">Sigma levels</span>
+          <span class="topic-chip">VSM / FMEA / 5S</span>
+          <span class="topic-chip">Belt levels</span>
+          <span class="topic-chip">Flashcard quiz</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <span class="card-cta">Open guide <span class="card-cta-arrow">→</span></span>
+        <span class="card-flag">Dark · Interactive</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    <div class="footer-left">
+      Single-file HTML · No build step · No dependencies<br>
+      Each guide works offline — just open the file.
+    </div>
+    <div class="footer-right">
+      <a href="https://github.com/drodriguez74/visual-learning-guides" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+// Staggered card reveal
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    io.unobserve(e.target);
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.card').forEach((card, i) => {
+  card.style.transitionDelay = `${i * 0.1}s`;
+  io.observe(card);
+});
+</script>
+</body>
+</html>

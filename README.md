@@ -1,55 +1,115 @@
-# lean-sixsigma-visual-guide
+# Visual Learning Guides
 
-An interactive, single-file visual reference for Lean and Six Sigma — built for interview prep and quick review.
+A collection of interactive, single-file HTML visual references — built for deep study and quick review. No build step, no dependencies.
 
 ## Live Demo
 
-If you have GitHub Pages enabled, view it at:
-`https://drodriguez74.github.io/visual-learning-guides/lean-six-sigma-guide.html`
+View the index page at:
+`https://drodriguez74.github.io/visual-learning-guides/`
 
-## What's Inside
+Or jump directly to any guide:
 
-`lean-six-sigma-guide.html` — a self-contained interactive guide covering:
+| Guide | URL |
+|-------|-----|
+| **Index** | `https://drodriguez74.github.io/visual-learning-guides/` |
+| **Context Engineering** | `https://drodriguez74.github.io/visual-learning-guides/context-engineering.html` |
+| **HCI Fusion Model** | `https://drodriguez74.github.io/visual-learning-guides/hci-fusion-model.html` |
+| **Vector Stores & Semantic Search** | `https://drodriguez74.github.io/visual-learning-guides/vector-stores.html` |
+| **Lean Six Sigma** | `https://drodriguez74.github.io/visual-learning-guides/lean-six-sigma-guide.html` |
+
+## Guides
+
+### 01 · Context Engineering
+`context-engineering.html` — Dark sci-fi aesthetic (Syne + IBM Plex Mono)
+
+| Section | Contents |
+|---------|----------|
+| **Context Window** | Animated token bar showing SYS / MEM / TOOLS / HISTORY / RAG / USER segments |
+| **Six Pillars** | System prompt, Memory, Tools, History, RAG, User query — with watermark numbers |
+| **Pipeline** | 5-step context assembly flow: Receive → Fetch → Construct → Infer → Post-process |
+| **Good vs. Bad** | Side-by-side comparison of poor vs. strong context engineering |
+
+---
+
+### 02 · HCI Fusion Model
+`hci-fusion-model.html` — Dark animated maximalist (Bebas Neue + Outfit + JetBrains Mono)
+
+| Section | Contents |
+|---------|----------|
+| **Hero** | SVG Venn diagram with animated orbiting dots and pulsing fusion zone |
+| **Three Pillars** | Human (cognitive), Machine (computational), Interface (mediation) |
+| **Fusion Loop** | Animated canvas loop: INTENT → SIGNAL → FUSION → OUTPUT → ADAPT → MEMORY |
+| **Interaction Taxonomy** | 5 layers: Perception → Interpretation → Synthesis → Presentation → Learning |
+| **Micro-Cycle** | 5-beat SVG arc diagram with curved bezier paths |
+| **Cognitive Load** | Animated bar charts — what AI offloads vs. what humans retain |
+
+---
+
+### 03 · Vector Stores & Semantic Search
+`vector-stores.html` — Dark editorial / newspaper (DM Serif Display + DM Mono)
+
+| Section | Contents |
+|---------|----------|
+| **Embedding** | Word → model → vector diagram with 3 clickable newspaper-clipping example cards |
+| **Vector Space** | Interactive canvas: 6 semantic clusters with hover tooltips and query dot |
+| **Semantic Search** | Live demo with preset query chips and cosine similarity score bars |
+| **Distance Metrics** | Cosine, Euclidean, Dot Product with inline geometric SVG diagrams |
+| **RAG Pipeline** | 5-stage horizontal strip: Chunk → Embed → Store → Query → Generate |
+
+---
+
+### 04 · Lean Six Sigma
+`lean-six-sigma-guide.html` — Dark (Bebas Neue + DM Sans + JetBrains Mono)
 
 | Tab | Contents |
 |-----|----------|
-| **Overview** | Lean vs Six Sigma comparison table — goals, metrics, tools, origins |
-| **Lean Principles** | The 5 core principles with key tools for each phase |
-| **8 Wastes** | TIMWOODS visual reference with definitions |
+| **Overview** | Lean vs Six Sigma comparison table |
+| **Lean Principles** | 5 core principles with key tools per phase |
+| **8 Wastes** | TIMWOODS visual reference |
 | **Six Sigma** | Sigma levels (1σ–6σ DPMO chart), Cp/Cpk, CTQ, variation types |
 | **DMAIC** | Full Define → Measure → Analyze → Improve → Control breakdown |
 | **Key Tools** | VSM, 5S, Kanban, Poka-Yoke, A3, Heijunka, SIPOC, Fishbone, Pareto, Control Charts, FMEA, 5 Whys, Gage R&R, DOE |
-| **Belt Levels** | White → Yellow → Green → Black → Master Black Belt |
-| **Interview Prep** | 11 common questions with expandable model answers + quick-reference cheat sheet |
+| **Belt Levels** | 3D flip cards: White → Yellow → Green → Black → Master Black Belt |
+| **Interview Prep** | 11 Q&As with expandable answers + built-in flashcard quiz mode |
+
+---
 
 ## Usage
 
-No dependencies. No build step. Just open the file:
+No dependencies. No build step. Open the index:
 
 ```bash
+open index.html
+```
+
+Or any guide directly:
+
+```bash
+open context-engineering.html
+open hci-fusion-model.html
+open vector-stores.html
 open lean-six-sigma-guide.html
 ```
 
-Or serve it locally:
+Or serve locally:
 
 ```bash
 npx serve .
-# then visit http://localhost:3000/lean-six-sigma-guide.html
+# then visit http://localhost:3000
 ```
 
-## Topics Covered
+All guides support **light and dark mode** via a toggle in the top-right corner (default: dark).
 
-- Lean vs Six Sigma — key differences and when to use each
-- The 5 Lean Principles (Value → Value Stream → Flow → Pull → Perfection)
-- 8 Wastes (TIMWOODS mnemonic)
-- DMAIC methodology — phases, tools, and outputs
-- Six Sigma levels — DPMO, the 1.5σ shift, Cp/Cpk vs Pp/Ppk, CTQ, common vs special-cause variation
-- The 3 MU's — Muda, Mura, Muri
-- Core tools: VSM, Fishbone, Pareto, Control Charts, FMEA, Poka-Yoke, SIPOC, 5 Whys, 5S, Kanban, Gage R&R, DOE, A3, Heijunka
-- Tollgate reviews and the DMAIC gate structure
-- Belt certification hierarchy
-- Interview Q&A with structured model answers
+## Design
+
+Each guide is a distinct aesthetic but shares a set of conventions:
+
+- Single self-contained HTML file — CSS, JS, and fonts bundled inline or via Google Fonts CDN
+- Dark mode default with light/dark toggle
+- Scroll-triggered reveals via `IntersectionObserver`
+- Interactive elements: canvas visualizations, clickable cards, animated diagrams
+- No frameworks, no dependencies, no build step
 
 ## Background
 
-Built as a personal study reference for process improvement interviews. Covers Green Belt-level knowledge of Lean Six Sigma concepts and tools.
+Built as personal study references for technical interviews and concept review. Covers AI systems (context engineering, vector stores), interface design (HCI Fusion), and process improvement (Lean Six Sigma).
