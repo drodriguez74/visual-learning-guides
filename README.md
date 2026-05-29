@@ -18,6 +18,7 @@ Or jump directly to any guide:
 | **Lean Six Sigma** | `https://drodriguez74.github.io/visual-learning-guides/lean-six-sigma-guide.html` |
 | **The Mainframe** | `https://drodriguez74.github.io/visual-learning-guides/mainframe-explainer.html` |
 | **AI Harness Explainer** | `https://drodriguez74.github.io/visual-learning-guides/ai-harness-explainer.html` |
+| **The Ralph Wiggum Loop** | `https://drodriguez74.github.io/visual-learning-guides/ralph-wiggum-loop.html` |
 
 ## Guides
 
@@ -100,6 +101,20 @@ Or jump directly to any guide:
 | **Signal Flow** | Interactive 5-step animated walkthrough of a single `/review` invocation |
 | **Three Harness Patterns** | CLI Harness, IDE Plugin Harness, Pipeline Harness — with real-world examples |
 | **With vs. Without** | 6-row comparison table across Context, Consistency, Tool Access, Constraints, Portability, Multi-Provider |
+
+---
+
+### 07 · The Ralph Wiggum Loop
+`ralph-wiggum-loop.html` — Light Hand-drawn / Notebook (Permanent Marker + Caveat + Special Elite)
+
+| Section | Contents |
+|---------|----------|
+| **The Core Idea** | What the Ralph Wiggum Loop is and why it works — fresh context as a feature, not a bug |
+| **The Loop — Visualised** | Animated diagram of the full agentic cycle |
+| **The Context Window Secret** | Context rot vs. clean slate each iteration — why resetting wins |
+| **What Happens Each Iteration** | 6-step breakdown: Load → Pick → Implement → Test → Commit → Repeat |
+| **Why "Dumb" Wins** | Counter-intuitive argument for simplicity over elaborate orchestration |
+| **Ralph Grows Up** | Gas Town — parallel multi-agent loops, Kubernetes for agents |
 
 ---
 
