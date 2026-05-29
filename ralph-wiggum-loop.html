@@ -1,39 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Ralph Wiggum Loop</title>
-<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand+SC&family=Caveat:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Caveat:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
 
-/* ══ DESIGN: Chaotic Classroom / Notebook Doodle ══
-   Looks like a mad engineer's whiteboard covered in
-   marker drawings, sticky notes, arrows, and coffee rings.
-   Warm yellowish paper, hand-drawn vibes, ink smears.
-   Completely different from every prior explainer. */
+/* ══ DESIGN: Notebook / Classroom · Dark (default) + Light modes ══
+   Dark: chalkboard-at-night — deep dark brown, chalk-white ink, ruled lines barely visible
+   Light: warm yellow paper, ink smears, red margin line, coffee ring */
 
 :root {
-  --paper:     #f7f3e8;
-  --paper2:    #ede8d6;
-  --paper3:    #e4dcc8;
-  --line:      #d4cbb8;
-  --ink:       #1a1510;
-  --ink2:      #2a2218;
-  --muted:     #7a6f5a;
-  --faint:     #b8af9a;
+  /* ── DARK (default) ── */
+  --paper:       #0e0c0a;
+  --paper2:      #171410;
+  --paper3:      #201c17;
+  --line:        rgba(255,255,255,0.032);
+  --margin:      rgba(220,80,60,0.10);
+  --ink:         #e8e2d8;
+  --ink2:        #c8c0b4;
+  --muted:       #7a6e5e;
+  --faint:       #322c24;
+  --card-bg:     #1a1714;
+  --surface2:    #1e1a14;
+  --cmp-bad:     rgba(230,68,34,0.10);
+  --cmp-good:    rgba(51,187,85,0.10);
+  --sticky-bg:   #2a2418;
+  --sticky-bd:   #3a3218;
+  --insight-bg:  rgba(255,136,34,0.07);
+  --quote-mark:  rgba(255,255,255,0.06);
 
-  --red:       #cc2200;
-  --blue:      #1144cc;
-  --green:     #116622;
-  --orange:    #cc6600;
-  --purple:    #551188;
-  --yellow:    #f5cc00;
-  --pink:      #cc2266;
+  --red:    #e64422;
+  --blue:   #4488ff;
+  --green:  #33bb55;
+  --orange: #ff8822;
+  --purple: #aa55ff;
+  --yellow: #ffdd22;
+  --pink:   #ff3388;
+}
+
+[data-theme="light"] {
+  --paper:       #f7f3e8;
+  --paper2:      #ede8d6;
+  --paper3:      #e4dcc8;
+  --line:        rgba(180,165,140,0.4);
+  --margin:      rgba(220,80,60,0.25);
+  --ink:         #1a1510;
+  --ink2:        #2a2218;
+  --muted:       #7a6f5a;
+  --faint:       #b8af9a;
+  --card-bg:     #ffffff;
+  --surface2:    #fffbe6;
+  --cmp-bad:     #fff0f0;
+  --cmp-good:    #f0fff4;
+  --sticky-bg:   #fff9c4;
+  --sticky-bd:   #e0d870;
+  --insight-bg:  #fffbe6;
+  --quote-mark:  rgba(0,0,0,0.06);
+
+  --red:    #cc2200;
+  --blue:   #1144cc;
+  --green:  #116622;
+  --orange: #cc6600;
+  --purple: #551188;
+  --yellow: #f5cc00;
+  --pink:   #cc2266;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
 
 body {
@@ -42,21 +77,19 @@ body {
   font-family: 'Caveat', cursive;
   font-size: 16px;
   overflow-x: hidden;
-  /* Ruled notebook lines */
-  background-image:
-    linear-gradient(var(--line) 1px, transparent 1px);
+  background-image: linear-gradient(var(--line) 1px, transparent 1px);
   background-size: 100% 36px;
   background-attachment: local;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 /* Red margin line */
 body::before {
   content: '';
   position: fixed;
-  left: 68px;
-  top: 0; bottom: 0;
+  left: 68px; top: 0; bottom: 0;
   width: 2px;
-  background: rgba(220,80,60,0.25);
+  background: var(--margin);
   pointer-events: none;
   z-index: 0;
 }
@@ -65,15 +98,34 @@ body::before {
 body::after {
   content: '';
   position: fixed;
-  bottom: 10%;
-  right: 5%;
+  bottom: 10%; right: 5%;
   width: 120px; height: 120px;
   border-radius: 50%;
-  border: 8px solid rgba(140,100,60,0.08);
-  box-shadow: 0 0 0 3px rgba(140,100,60,0.04);
+  border: 8px solid rgba(140,100,60,0.06);
+  box-shadow: 0 0 0 3px rgba(140,100,60,0.03);
   pointer-events: none;
   z-index: 0;
 }
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  position: fixed;
+  top: 16px; right: 16px;
+  background: var(--card-bg);
+  border: 2px solid var(--ink2);
+  border-radius: 4px;
+  color: var(--muted);
+  font-family: 'Special Elite', serif;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  padding: 5px 12px;
+  cursor: pointer;
+  z-index: 100;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 0 var(--faint);
+  transition: color 0.2s, border-color 0.2s;
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--orange); }
 
 .page {
   max-width: 960px;
@@ -111,16 +163,15 @@ h1 {
   line-height: 0.95;
   color: var(--ink);
   margin-bottom: 14px;
-  /* Slightly uneven, like marker on whiteboard */
-  text-shadow: 3px 3px 0 rgba(0,0,0,0.06);
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.15);
 }
 
-h1 .wiggle { color: var(--red); display: inline-block; animation: wiggle 3s ease-in-out infinite; }
+h1 .wiggle { color: var(--red);  display: inline-block; animation: wiggle 3s ease-in-out infinite; }
 h1 .loop   { color: var(--blue); }
 
 @keyframes wiggle {
   0%,100% { transform: rotate(-2deg); }
-  50%      { transform: rotate(2deg); }
+  50%      { transform: rotate(2deg);  }
 }
 
 .title-sub {
@@ -132,7 +183,6 @@ h1 .loop   { color: var(--blue); }
   border-left: 4px solid var(--orange);
   padding-left: 14px;
 }
-
 .title-sub strong { color: var(--orange); font-weight: 700; }
 
 /* Sticky note */
@@ -140,11 +190,11 @@ h1 .loop   { color: var(--blue); }
   position: absolute;
   top: 40px; right: 0;
   width: 160px;
-  background: #fff9c4;
-  border: 1px solid #e0d870;
+  background: var(--sticky-bg);
+  border: 1px solid var(--sticky-bd);
   padding: 14px;
   transform: rotate(3deg);
-  box-shadow: 3px 4px 8px rgba(0,0,0,0.12);
+  box-shadow: 3px 4px 10px rgba(0,0,0,0.25);
   font-size: 13px;
   line-height: 1.55;
   color: var(--ink2);
@@ -155,8 +205,8 @@ h1 .loop   { color: var(--blue); }
   position: absolute;
   top: -8px; left: 50%; transform: translateX(-50%);
   width: 30px; height: 16px;
-  background: rgba(255,220,0,0.7);
-  border-bottom: 1px solid #ddc000;
+  background: rgba(255,220,0,0.5);
+  border-bottom: 1px solid rgba(200,160,0,0.35);
 }
 
 .sticky-author {
@@ -169,7 +219,7 @@ h1 .loop   { color: var(--blue); }
 
 @media(max-width:600px){ .sticky { display:none; } }
 
-/* ── SECTION ── */
+/* ── SECTIONS ── */
 .section {
   margin-bottom: 60px;
   opacity: 0;
@@ -207,7 +257,7 @@ h1 .loop   { color: var(--blue); }
   text-decoration-thickness: 2px;
 }
 
-/* ── CORE CONCEPT BOX ── */
+/* ── CONCEPT BOX ── */
 .concept-box {
   background: var(--paper2);
   border: 3px solid var(--ink2);
@@ -216,13 +266,13 @@ h1 .loop   { color: var(--blue); }
   margin-bottom: 28px;
   position: relative;
   transform: rotate(-0.5deg);
-  box-shadow: 4px 4px 0 var(--ink2);
+  box-shadow: 4px 4px 0 var(--faint);
 }
 
 .concept-box .quote-mark {
   font-family: 'Permanent Marker', cursive;
   font-size: 60px;
-  color: var(--faint);
+  color: var(--quote-mark);
   position: absolute;
   top: -10px; left: 10px;
   line-height: 1;
@@ -238,26 +288,14 @@ h1 .loop   { color: var(--blue); }
 .concept-box p strong { color: var(--blue); }
 .concept-box p em { color: var(--red); font-style: normal; font-weight: 700; }
 
-/* ── THE LOOP DIAGRAM (core visual) ── */
-.loop-diagram {
-  position: relative;
-  margin: 8px 0 28px;
-}
-
-#loopCanvas {
-  width: 100%;
-  display: block;
-  border-radius: 8px;
-}
-
-/* ── BASH SNIPPET ── */
+/* ── BASH CARD ── */
 .bash-card {
-  background: #1a1a1a;
+  background: #0d0b09;
   border: 3px solid var(--ink2);
   border-radius: 6px;
   padding: 22px 24px;
   margin-bottom: 20px;
-  box-shadow: 5px 5px 0 var(--ink2);
+  box-shadow: 5px 5px 0 var(--faint);
   position: relative;
   transform: rotate(0.4deg);
 }
@@ -267,12 +305,12 @@ h1 .loop   { color: var(--blue); }
   position: absolute;
   top: -12px; left: 12px;
   background: var(--yellow);
-  color: var(--ink);
+  color: #1a1510;
   font-family: 'Special Elite', serif;
   font-size: 9px;
   letter-spacing: 0.18em;
   padding: 2px 8px;
-  border: 1px solid #c8a800;
+  border: 1px solid rgba(0,0,0,0.15);
 }
 
 .bash-code {
@@ -288,21 +326,19 @@ h1 .loop   { color: var(--blue); }
 .bash-code .com { color: #888888; }
 .bash-code .num { color: #ffcc44; }
 
-/* ── CONTEXT WINDOW DIAGRAM ── */
+/* ── CONTEXT DIAGRAM ── */
 .context-diagram {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 20px;
 }
-
 @media(max-width:600px){ .context-diagram { grid-template-columns:1fr; } }
 
 .ctx-box {
   border: 3px solid var(--ink2);
   border-radius: 6px;
   padding: 20px;
-  position: relative;
 }
 
 .ctx-title {
@@ -318,7 +354,7 @@ h1 .loop   { color: var(--blue); }
   overflow: hidden;
   gap: 2px;
   margin-bottom: 8px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--faint);
 }
 
 .ctx-seg {
@@ -332,60 +368,52 @@ h1 .loop   { color: var(--blue); }
   color: white;
 }
 
-.ctx-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.ctx-leg-item {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.ctx-leg-dot {
-  width: 10px; height: 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
 .ctx-annotation {
   font-size: 12px;
   color: var(--muted);
   margin-top: 10px;
   line-height: 1.5;
 }
-
 .ctx-annotation strong { color: var(--ink); }
 
-/* ── STEPS (hand-drawn cards) ── */
+/* ── INSIGHT BOX ── */
+.insight-box {
+  background: var(--insight-bg);
+  border: 2px solid var(--orange);
+  border-radius: 6px;
+  padding: 16px 20px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+  transform: rotate(-0.3deg);
+  box-shadow: 3px 3px 0 var(--orange);
+}
+.insight-box strong { color: var(--orange); }
+
+/* ── STEP CARDS ── */
 .steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
-
 @media(max-width:640px){ .steps { grid-template-columns: 1fr; } }
 
 .step-card {
-  background: white;
+  background: var(--card-bg);
   border: 3px solid var(--ink2);
   border-radius: 6px;
   padding: 18px 16px;
   position: relative;
-  box-shadow: 4px 4px 0 var(--ink2);
-  transition: transform 0.2s;
+  box-shadow: 4px 4px 0 var(--faint);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.step-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink2); }
+.step-card:hover { box-shadow: 6px 6px 0 var(--ink2); }
 
-.step-card:nth-child(odd) { transform: rotate(-0.8deg); }
-.step-card:nth-child(odd):hover { transform: rotate(-0.8deg) translate(-2px, -2px); }
-.step-card:nth-child(even) { transform: rotate(0.6deg); }
-.step-card:nth-child(even):hover { transform: rotate(0.6deg) translate(-2px, -2px); }
+.step-card:nth-child(odd)        { transform: rotate(-0.8deg); }
+.step-card:nth-child(odd):hover  { transform: rotate(-0.8deg) translate(-2px,-2px); }
+.step-card:nth-child(even)       { transform: rotate(0.6deg);  }
+.step-card:nth-child(even):hover { transform: rotate(0.6deg)  translate(-2px,-2px); }
 
 .step-num {
   font-family: 'Permanent Marker', cursive;
@@ -396,7 +424,7 @@ h1 .loop   { color: var(--blue); }
   line-height: 1;
 }
 
-.step-icon { font-size: 28px; margin-bottom: 8px; }
+.step-icon  { font-size: 28px; margin-bottom: 8px; }
 
 .step-name {
   font-family: 'Permanent Marker', cursive;
@@ -405,28 +433,22 @@ h1 .loop   { color: var(--blue); }
   margin-bottom: 6px;
 }
 
-.step-desc {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.6;
-}
+.step-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-/* ── COMPARE — WITH/WITHOUT ── */
+/* ── COMPARE ── */
 .compare {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0;
   border: 3px solid var(--ink2);
   border-radius: 6px;
   overflow: hidden;
-  box-shadow: 5px 5px 0 var(--ink2);
+  box-shadow: 5px 5px 0 var(--faint);
 }
-
 @media(max-width:560px){ .compare { grid-template-columns:1fr; } }
 
 .cmp-col { padding: 20px; }
-.cmp-col:first-child { background: #fff0f0; border-right: 2px solid var(--ink2); }
-.cmp-col:last-child  { background: #f0fff4; }
+.cmp-col:first-child { background: var(--cmp-bad);  border-right: 2px solid var(--ink2); }
+.cmp-col:last-child  { background: var(--cmp-good); }
 
 .cmp-head {
   font-family: 'Permanent Marker', cursive;
@@ -446,27 +468,24 @@ h1 .loop   { color: var(--blue); }
   margin-bottom: 8px;
   line-height: 1.55;
 }
+.cmp-bullet { flex-shrink:0; font-size:14px; margin-top:1px; }
 
-.cmp-bullet { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
-
-/* ── GAS TOWN (extensions) ── */
+/* ── EXTENSIONS ── */
 .extensions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
 }
-
 @media(max-width:560px){ .extensions { grid-template-columns: 1fr; } }
 
 .ext-card {
-  background: white;
+  background: var(--card-bg);
   border: 2px solid var(--ink2);
   border-radius: 6px;
-  padding: 18px 18px;
+  padding: 18px;
   box-shadow: 3px 3px 0 var(--faint);
   transition: box-shadow 0.2s, transform 0.2s;
 }
-
 .ext-card:hover { box-shadow: 5px 5px 0 var(--ink2); transform: translate(-1px,-1px); }
 
 .ext-name {
@@ -487,7 +506,7 @@ h1 .loop   { color: var(--blue); }
 
 .ext-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
 
-/* ── HAND-DRAWN ARROW (decorative) ── */
+/* ── DOODLE ARROW ── */
 .doodle-arrow {
   display: flex;
   justify-content: center;
@@ -497,46 +516,52 @@ h1 .loop   { color: var(--blue); }
   margin: -8px 0;
   animation: bounce-arrow 1.5s ease-in-out infinite;
 }
+@keyframes bounce-arrow { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
 
-@keyframes bounce-arrow { 0%,100%{transform:translateY(0)}50%{transform:translateY(6px)} }
-
-/* ── CLOSING CHALKBOARD ── */
+/* ── CHALKBOARD CLOSING ── */
 .chalkboard {
-  background: #2a3a2a;
-  border: 6px solid #3a4a3a;
+  background: #1c2a1c;
+  border: 6px solid #283828;
   border-radius: 8px;
   padding: 32px;
-  color: #ddefdd;
+  color: #d8eed8;
   font-family: 'Permanent Marker', cursive;
   font-size: 22px;
   line-height: 1.55;
   text-align: center;
-  box-shadow: inset 0 0 40px rgba(0,0,0,0.4), 6px 6px 0 var(--ink2);
-  position: relative;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 6px 6px 0 var(--faint);
 }
 
-.chalkboard em { color: #aaffaa; font-style: normal; }
-.chalkboard span { color: #ffff88; }
+.chalkboard em    { color: #aaffaa; font-style: normal; }
+.chalkboard span  { color: #ffff88; }
 .chalkboard small {
   display: block;
   font-family: 'Special Elite', serif;
   font-size: 11px;
   letter-spacing: 0.2em;
-  color: rgba(200,220,200,0.5);
+  color: rgba(200,220,200,0.4);
   text-transform: uppercase;
   margin-top: 14px;
 }
 
-/* ── animations ── */
+/* ── CANVAS ── */
+#loopCanvas { width: 100%; display: block; border-radius: 8px; }
+
+/* ── STAGGER ANIMATION ── */
 .stagger > * {
   opacity: 0;
   transform: translateY(14px) rotate(var(--sr, 0deg));
   transition: opacity 0.45s, transform 0.45s;
 }
 .stagger.in > * { opacity:1; transform: translateY(0) rotate(var(--sr, 0deg)); }
+
+@media(max-width:640px){ .page { padding-left: 32px; } body::before { display: none; } }
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" onclick="toggleTheme()">Light / Dark</button>
+
 <div class="page">
 
   <!-- TITLE -->
@@ -597,10 +622,7 @@ h1 .loop   { color: var(--blue); }
       <div class="sec-num">2</div>
       <div class="sec-title">The Loop — Visualised</div>
     </div>
-
-    <div class="loop-diagram">
-      <canvas id="loopCanvas" height="380"></canvas>
-    </div>
+    <canvas id="loopCanvas" height="380"></canvas>
   </div>
 
   <!-- § 03 — CONTEXT STACK -->
@@ -637,7 +659,7 @@ h1 .loop   { color: var(--blue); }
           <div class="ctx-seg" style="flex:30;background:#116622">PLAN.md</div>
           <div class="ctx-seg" style="flex:30;background:#338844">SPECS</div>
           <div class="ctx-seg" style="flex:20;background:#115511">ONE TASK</div>
-          <div class="ctx-seg" style="flex:20;background:#777;opacity:0.4">free</div>
+          <div class="ctx-seg" style="flex:20;background:#3a3a3a;opacity:0.5">free</div>
         </div>
         <div class="ctx-annotation">
           Window is <strong>fresh</strong> every iteration. Only the plan + specs + one chosen task. Errors from last loop don't contaminate this one. Git is the memory, not the context window.
@@ -646,8 +668,8 @@ h1 .loop   { color: var(--blue); }
 
     </div>
 
-    <div style="background:#fffbe6;border:2px solid var(--orange);border-radius:6px;padding:16px 20px;font-size:14px;line-height:1.7;transform:rotate(-0.3deg);box-shadow:3px 3px 0 var(--orange)">
-      <strong style="color:var(--orange)">Key Insight:</strong> Don't fight context rot by adding memory systems. <strong>Kill it at birth</strong> — fresh context every loop. Let the filesystem accumulate progress. Git commits = the loop's long-term memory.
+    <div class="insight-box">
+      <strong>Key Insight:</strong> Don't fight context rot by adding memory systems. <strong>Kill it at birth</strong> — fresh context every loop. Let the filesystem accumulate progress. Git commits = the loop's long-term memory.
     </div>
   </div>
 
@@ -705,7 +727,7 @@ h1 .loop   { color: var(--blue); }
     </div>
   </div>
 
-  <!-- § 05 — NAIVE PERSISTENCE ADVANTAGE -->
+  <!-- § 05 — WHY DUMB WINS -->
   <div class="section" id="s4">
     <div class="sec-head">
       <div class="sec-num">5</div>
@@ -718,8 +740,8 @@ h1 .loop   { color: var(--blue); }
         <div class="cmp-item"><span class="cmp-bullet">💔</span>Complex memory graph gets corrupted over time</div>
         <div class="cmp-item"><span class="cmp-bullet">💔</span>State machines fail in unexpected edge cases</div>
         <div class="cmp-item"><span class="cmp-bullet">💔</span>Errors compound — one bad step poisons everything downstream</div>
-        <div class="cmp-item"><span class="cmp-bullet">💔</span>Debugging the orchestration is harder than debugging the code</div>
-        <div class="cmp-item"><span class="cmp-bullet">💔</span>Context "compaction" silently loses critical earlier decisions</div>
+        <div class="cmp-item"><span class="cmp-bullet">💔</span>Debugging the orchestration is harder than the code</div>
+        <div class="cmp-item"><span class="cmp-bullet">💔</span>Context compaction silently loses critical decisions</div>
         <div class="cmp-item"><span class="cmp-bullet">💔</span>Lots of engineering to build the agent itself</div>
       </div>
       <div class="cmp-col">
@@ -782,219 +804,168 @@ h1 .loop   { color: var(--blue); }
     </div>
   </div>
 
-</div>
+</div><!-- /page -->
 
 <script>
-// ── LOOP DIAGRAM CANVAS ──
-const canvas = document.getElementById('loopCanvas');
-const ctx = canvas.getContext('2d');
-let W, H;
-
-function resize() {
-  const rect = canvas.parentElement.getBoundingClientRect();
-  W = canvas.width = rect.width * devicePixelRatio;
-  H = canvas.height = 380 * devicePixelRatio;
-  canvas.style.width = rect.width + 'px';
-  canvas.style.height = '380px';
-  draw();
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
 }
 
-let animT = 0;
-let particleT = 0;
-
-// The loop nodes arranged in a circle
-const NODES = [
-  { label: 'LOAD\nCONTEXT', sub: 'plan.md + specs', icon: '📋', angle: -90, color: '#1144cc' },
-  { label: 'AI PICKS\nONE TASK', sub: 'most important', icon: '🤔', angle: -18, color: '#551188' },
-  { label: 'WRITE\nCODE', sub: 'real files', icon: '⌨️', angle: 54, color: '#cc6600' },
-  { label: 'RUN\nTESTS', sub: 'pass or fail?', icon: '🧪', angle: 126, color: '#cc2200' },
-  { label: 'COMMIT\nOR SKIP', sub: 'git = memory', icon: '✅', angle: 198, color: '#116622' },
-];
-
-function toRad(deg) { return deg * Math.PI / 180; }
-
-function nodePos(n, cx, cy, r) {
+// ── CANVAS LOOP DIAGRAM ──
+function getThemeColors() {
+  const dark = document.documentElement.dataset.theme === 'dark';
   return {
-    x: cx + r * Math.cos(toRad(n.angle)),
-    y: cy + r * Math.sin(toRad(n.angle)),
+    bg:        dark ? '#0e0c0a' : '#f7f3e8',
+    line:      dark ? 'rgba(255,255,255,0.04)' : 'rgba(180,165,140,0.4)',
+    path:      dark ? 'rgba(232,226,216,0.12)' : 'rgba(26,21,16,0.15)',
+    arrow:     dark ? 'rgba(232,226,216,0.28)' : 'rgba(26,21,16,0.3)',
+    arrowFill: dark ? 'rgba(232,226,216,0.35)' : 'rgba(26,21,16,0.35)',
+    nodeFill:  dark ? '#1a1714' : '#ffffff',
+    shadow:    dark ? 'rgba(0,0,0,0.35)'        : 'rgba(26,21,16,0.12)',
+    center:    dark ? 'rgba(232,226,216,0.16)'  : 'rgba(26,21,16,0.15)',
+    sub:       dark ? 'rgba(160,145,125,0.65)'  : 'rgba(120,110,90,0.5)',
   };
 }
 
+const canvas = document.getElementById('loopCanvas');
+const c = canvas.getContext('2d');
+let W, H;
+
+const NODES = [
+  { label:'LOAD\nCONTEXT',    sub:'plan.md + specs',  icon:'📋', angle:-90,  color:'#4488ff' },
+  { label:'AI PICKS\nONE TASK', sub:'most important', icon:'🤔', angle:-18,  color:'#aa55ff' },
+  { label:'WRITE\nCODE',      sub:'real files',       icon:'⌨️', angle: 54,  color:'#ff8822' },
+  { label:'RUN\nTESTS',       sub:'pass or fail?',    icon:'🧪', angle:126,  color:'#e64422' },
+  { label:'COMMIT\nOR SKIP',  sub:'git = memory',     icon:'✅', angle:198,  color:'#33bb55' },
+];
+
+function toRad(d) { return d * Math.PI / 180; }
+function nPos(n, cx, cy, R) {
+  return { x: cx + R * Math.cos(toRad(n.angle)), y: cy + R * Math.sin(toRad(n.angle)) };
+}
+
+let pT = 0;
 function draw() {
-  ctx.clearRect(0, 0, W, H);
+  if (!W || !H) { requestAnimationFrame(draw); return; }
+  const tc = getThemeColors();
+  c.clearRect(0, 0, W, H);
 
-  const cx = W / 2;
-  const cy = H / 2;
-  const R = Math.min(W, H) * 0.33;
-  const nr = 32 * devicePixelRatio; // node radius
+  c.fillStyle = tc.bg;
+  c.fillRect(0, 0, W, H);
 
-  // Background paper texture (light)
-  ctx.fillStyle = '#f7f3e8';
-  ctx.fillRect(0, 0, W, H);
-
-  // Faint notebook lines
-  ctx.strokeStyle = 'rgba(180,165,140,0.4)';
-  ctx.lineWidth = 1;
+  c.strokeStyle = tc.line;
+  c.lineWidth = 1;
   for (let y = 0; y < H; y += 36 * devicePixelRatio) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke();
   }
 
-  // Circular path (dashed)
-  ctx.beginPath();
-  ctx.arc(cx, cy, R, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(26,21,16,0.15)';
-  ctx.lineWidth = 2 * devicePixelRatio;
-  ctx.setLineDash([8 * devicePixelRatio, 6 * devicePixelRatio]);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  const cx = W/2, cy = H/2;
+  const R  = Math.min(W, H) * 0.33;
+  const nr = 32 * devicePixelRatio;
 
-  // Calculate positions
-  const positions = NODES.map(n => nodePos(n, cx, cy, R));
+  c.beginPath();
+  c.arc(cx, cy, R, 0, Math.PI*2);
+  c.strokeStyle = tc.path;
+  c.lineWidth = 2 * devicePixelRatio;
+  c.setLineDash([8*devicePixelRatio, 6*devicePixelRatio]);
+  c.stroke();
+  c.setLineDash([]);
 
-  // Draw arrows between nodes
+  const pos = NODES.map(n => nPos(n, cx, cy, R));
+
   NODES.forEach((n, i) => {
-    const from = positions[i];
-    const to = positions[(i + 1) % NODES.length];
-
-    // Arrow direction
-    const dx = to.x - from.x, dy = to.y - from.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const ux = dx / dist, uy = dy / dist;
-
-    const startX = from.x + ux * (nr + 4 * devicePixelRatio);
-    const startY = from.y + uy * (nr + 4 * devicePixelRatio);
-    const endX   = to.x - ux * (nr + 4 * devicePixelRatio);
-    const endY   = to.y - uy * (nr + 4 * devicePixelRatio);
-
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    ctx.lineTo(endX, endY);
-    ctx.strokeStyle = 'rgba(26,21,16,0.3)';
-    ctx.lineWidth = 2 * devicePixelRatio;
-    ctx.setLineDash([6 * devicePixelRatio, 4 * devicePixelRatio]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Arrowhead
-    const arrLen = 10 * devicePixelRatio;
-    ctx.beginPath();
-    ctx.moveTo(endX, endY);
-    ctx.lineTo(endX - ux * arrLen + uy * 5 * devicePixelRatio, endY - uy * arrLen - ux * 5 * devicePixelRatio);
-    ctx.lineTo(endX - ux * arrLen - uy * 5 * devicePixelRatio, endY - uy * arrLen + ux * 5 * devicePixelRatio);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(26,21,16,0.35)';
-    ctx.fill();
+    const f = pos[i], t = pos[(i+1) % NODES.length];
+    const dx = t.x-f.x, dy = t.y-f.y, dist = Math.sqrt(dx*dx+dy*dy);
+    const ux = dx/dist, uy = dy/dist;
+    const sx = f.x+ux*(nr+4*devicePixelRatio), sy = f.y+uy*(nr+4*devicePixelRatio);
+    const ex = t.x-ux*(nr+4*devicePixelRatio), ey = t.y-uy*(nr+4*devicePixelRatio);
+    c.beginPath(); c.moveTo(sx,sy); c.lineTo(ex,ey);
+    c.strokeStyle = tc.arrow;
+    c.lineWidth = 2*devicePixelRatio;
+    c.setLineDash([6*devicePixelRatio,4*devicePixelRatio]);
+    c.stroke(); c.setLineDash([]);
+    const al = 10*devicePixelRatio;
+    c.beginPath();
+    c.moveTo(ex, ey);
+    c.lineTo(ex-ux*al+uy*5*devicePixelRatio, ey-uy*al-ux*5*devicePixelRatio);
+    c.lineTo(ex-ux*al-uy*5*devicePixelRatio, ey-uy*al+ux*5*devicePixelRatio);
+    c.closePath(); c.fillStyle = tc.arrowFill; c.fill();
   });
 
-  // Animated particle traveling the loop
-  particleT = (particleT + 0.004) % 1;
-  const totalSegs = NODES.length;
-  const segIdx = Math.floor(particleT * totalSegs);
-  const segFrac = (particleT * totalSegs) - segIdx;
-  const fromPos = positions[segIdx];
-  const toPos = positions[(segIdx + 1) % NODES.length];
-  const px = fromPos.x + (toPos.x - fromPos.x) * segFrac;
-  const py = fromPos.y + (toPos.y - fromPos.y) * segFrac;
+  pT = (pT + 0.004) % 1;
+  const si = Math.floor(pT * NODES.length);
+  const sf = (pT * NODES.length) - si;
+  const fp = pos[si], tp2 = pos[(si+1)%NODES.length];
+  const px = fp.x+(tp2.x-fp.x)*sf, py = fp.y+(tp2.y-fp.y)*sf;
 
-  ctx.beginPath();
-  ctx.arc(px, py, 7 * devicePixelRatio, 0, Math.PI * 2);
-  ctx.fillStyle = NODES[segIdx].color;
-  ctx.fill();
-  // trail
-  for (let t = 1; t <= 4; t++) {
-    const tt = ((particleT * totalSegs - t * 0.06) / totalSegs + 1) % 1;
-    const si = Math.floor(tt * totalSegs);
-    const sf = (tt * totalSegs) - si;
-    const tp = positions[si];
-    const tn = positions[(si + 1) % NODES.length];
-    const tx = tp.x + (tn.x - tp.x) * sf;
-    const ty = tp.y + (tn.y - tp.y) * sf;
-    ctx.beginPath();
-    ctx.arc(tx, ty, (6 - t) * devicePixelRatio, 0, Math.PI * 2);
-    ctx.fillStyle = NODES[si].color + (4 - t) * 30 > 0 ? NODES[si].color + '55' : 'transparent';
-    ctx.fill();
+  for (let t = 4; t >= 1; t--) {
+    const tt = ((pT*NODES.length - t*0.06)/NODES.length + 1) % 1;
+    const s2 = Math.floor(tt*NODES.length), sf2 = (tt*NODES.length)-s2;
+    const a = pos[s2], b = pos[(s2+1)%NODES.length];
+    const tx = a.x+(b.x-a.x)*sf2, ty = a.y+(b.y-a.y)*sf2;
+    c.beginPath(); c.arc(tx, ty, (5-t)*devicePixelRatio, 0, Math.PI*2);
+    c.fillStyle = NODES[s2].color+'44'; c.fill();
   }
+  c.beginPath(); c.arc(px, py, 7*devicePixelRatio, 0, Math.PI*2);
+  c.fillStyle = NODES[si].color; c.fill();
 
-  // Draw nodes
   NODES.forEach((n, i) => {
-    const pos = positions[i];
-    const isActive = Math.floor(particleT * NODES.length) === i;
-
-    // Shadow
-    ctx.beginPath();
-    ctx.arc(pos.x + 4 * devicePixelRatio, pos.y + 4 * devicePixelRatio, nr, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(26,21,16,0.12)';
-    ctx.fill();
-
-    // Circle
-    ctx.beginPath();
-    ctx.arc(pos.x, pos.y, nr, 0, Math.PI * 2);
-    ctx.fillStyle = isActive ? n.color : '#fff';
-    ctx.fill();
-    ctx.strokeStyle = n.color;
-    ctx.lineWidth = 3 * devicePixelRatio;
-    ctx.stroke();
-
-    // Emoji
-    ctx.font = `${20 * devicePixelRatio}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(n.icon, pos.x, pos.y);
-
-    // Label outside
-    const labelR = R + nr + 22 * devicePixelRatio;
-    const lx = cx + labelR * Math.cos(toRad(n.angle));
-    const ly = cy + labelR * Math.sin(toRad(n.angle));
-
-    ctx.font = `bold ${11 * devicePixelRatio}px 'Caveat', cursive`;
-    ctx.fillStyle = n.color;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    const p = pos[i];
+    const active = Math.floor(pT*NODES.length) === i;
+    c.beginPath(); c.arc(p.x+4*devicePixelRatio, p.y+4*devicePixelRatio, nr, 0, Math.PI*2);
+    c.fillStyle = tc.shadow; c.fill();
+    c.beginPath(); c.arc(p.x, p.y, nr, 0, Math.PI*2);
+    c.fillStyle = active ? n.color : tc.nodeFill; c.fill();
+    c.strokeStyle = n.color; c.lineWidth = 3*devicePixelRatio; c.stroke();
+    c.font = `${20*devicePixelRatio}px serif`;
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(n.icon, p.x, p.y);
+    const lx = cx + (R+nr+22*devicePixelRatio)*Math.cos(toRad(n.angle));
+    const ly = cy + (R+nr+22*devicePixelRatio)*Math.sin(toRad(n.angle));
     const lines = n.label.split('\n');
-    lines.forEach((line, li) => {
-      ctx.fillText(line, lx, ly + (li - (lines.length - 1) / 2) * 14 * devicePixelRatio);
-    });
-
-    // Sub label
-    ctx.font = `${9 * devicePixelRatio}px 'Special Elite', serif`;
-    ctx.fillStyle = 'rgba(100,90,70,0.7)';
-    ctx.fillText(n.sub, lx, ly + lines.length * 14 * devicePixelRatio / 2 + 10 * devicePixelRatio);
+    c.font = `bold ${11*devicePixelRatio}px 'Caveat', cursive`;
+    c.fillStyle = n.color; c.textAlign = 'center'; c.textBaseline = 'middle';
+    lines.forEach((l, li) => c.fillText(l, lx, ly+(li-(lines.length-1)/2)*14*devicePixelRatio));
+    c.font = `${9*devicePixelRatio}px 'Special Elite', serif`;
+    c.fillStyle = tc.sub;
+    c.fillText(n.sub, lx, ly+lines.length*14*devicePixelRatio/2+10*devicePixelRatio);
   });
 
-  // Center label
-  ctx.font = `bold ${14 * devicePixelRatio}px 'Permanent Marker', cursive`;
-  ctx.fillStyle = 'rgba(26,21,16,0.15)';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('∞ LOOP', cx, cy - 10 * devicePixelRatio);
-  ctx.font = `${10 * devicePixelRatio}px 'Special Elite', serif`;
-  ctx.fillStyle = 'rgba(120,110,90,0.5)';
-  ctx.fillText('git = memory', cx, cy + 10 * devicePixelRatio);
+  c.font = `bold ${14*devicePixelRatio}px 'Permanent Marker', cursive`;
+  c.fillStyle = tc.center; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText('∞ LOOP', cx, cy-10*devicePixelRatio);
+  c.font = `${10*devicePixelRatio}px 'Special Elite', serif`;
+  c.fillStyle = tc.sub;
+  c.fillText('git = memory', cx, cy+10*devicePixelRatio);
 
   requestAnimationFrame(draw);
 }
 
-window.addEventListener('resize', resize);
-setTimeout(resize, 80);
+function resize() {
+  const r = canvas.parentElement.getBoundingClientRect();
+  W = canvas.width  = r.width * devicePixelRatio;
+  H = canvas.height = 380 * devicePixelRatio;
+  canvas.style.width  = r.width + 'px';
+  canvas.style.height = '380px';
+}
 
-// Intersection Observer
+window.addEventListener('resize', resize);
+setTimeout(() => { resize(); draw(); }, 80);
+
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (!e.isIntersecting) return;
     e.target.classList.add('in');
-    [...e.target.querySelectorAll('.stagger > *')].forEach((c, i) => {
-      setTimeout(() => c.style.cssText += 'opacity:1;transform:translateY(0) rotate(var(--sr,0deg))', i * 90);
+    [...e.target.querySelectorAll('.stagger > *')].forEach((ch, i) => {
+      setTimeout(() => ch.style.cssText += 'opacity:1;transform:translateY(0) rotate(var(--sr,0deg))', i*90);
     });
     io.unobserve(e.target);
   });
 }, { threshold: 0.07 });
 
 document.querySelectorAll('.section').forEach(s => io.observe(s));
-
-// Stagger transition init
-document.querySelectorAll('.stagger > *').forEach((el, i) => {
-  el.style.transitionDelay = i * 0.08 + 's';
-});
+document.querySelectorAll('.stagger > *').forEach((el, i) => { el.style.transitionDelay = i*0.08+'s'; });
 </script>
 </body>
 </html>

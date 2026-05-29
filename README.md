@@ -105,7 +105,7 @@ Or jump directly to any guide:
 ---
 
 ### 07 · The Ralph Wiggum Loop
-`ralph-wiggum-loop.html` — Light Hand-drawn / Notebook (Permanent Marker + Caveat + Special Elite)
+`ralph-wiggum-loop.html` — Dark · Hand-drawn / Notebook (Permanent Marker + Caveat + Special Elite)
 
 | Section | Contents |
 |---------|----------|
