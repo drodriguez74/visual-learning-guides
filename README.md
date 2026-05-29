@@ -77,7 +77,7 @@ Or jump directly to any guide:
 ---
 
 ### 05 · The Mainframe
-`mainframe-explainer.html` — Dark Retro Terminal (Orbitron + Share Tech Mono + VT323)
+`mainframe-explainer.html` — Dark Retro Terminal (Orbitron + Share Tech Mono + VT323) · Green / Amber phosphor toggle
 
 | Section | Contents |
 |---------|----------|
@@ -127,14 +127,14 @@ npx serve .
 # then visit http://localhost:3000
 ```
 
-All guides support **light and dark mode** via a toggle in the top-right corner (default: dark).
+Most guides support **light and dark mode** via a toggle in the top-right corner (default: dark). The Mainframe guide uses a **Green / Amber phosphor mode** toggle instead — switching between two retro terminal palettes that preserve the CRT aesthetic.
 
 ## Design
 
 Each guide is a distinct aesthetic but shares a set of conventions:
 
 - Single self-contained HTML file — CSS, JS, and fonts bundled inline or via Google Fonts CDN
-- Dark mode default with light/dark toggle
+- Dark mode default with light/dark toggle (Mainframe: Green / Amber phosphor toggle)
 - Scroll-triggered reveals via `IntersectionObserver`
 - Interactive elements: canvas visualizations, clickable cards, animated diagrams
 - No frameworks, no dependencies, no build step

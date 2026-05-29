@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-phosphor="green">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,6 +80,46 @@ body::after {
   z-index: 9997;
 }
 
+/* ─── AMBER PHOSPHOR MODE ─── */
+[data-phosphor="amber"] {
+  --green:     #ffaa00;
+  --green2:    #ff8800;
+  --green3:    #cc5500;
+  --green-dim: #603300;
+  --green-bg:  rgba(255,170,0,0.06);
+  --green-glow:rgba(255,170,0,0.15);
+  --amber:     #00e832;
+  --amber2:    #00c228;
+  --amber-bg:  rgba(0,232,50,0.07);
+  --text:      #f0c860;
+  --muted:     #6b4a18;
+  --dim:       #201200;
+  --void:      #070400;
+  --surface:   #0a0600;
+  --card:      #0d0800;
+  --border:    #1a0e00;
+  --border2:   #2a1800;
+}
+
+/* ─── PHOSPHOR TOGGLE ─── */
+.phosphor-toggle {
+  position: fixed;
+  top: 16px; right: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 3px;
+  color: var(--muted);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  padding: 6px 12px;
+  cursor: pointer;
+  z-index: 9999;
+  text-transform: uppercase;
+  transition: color 0.2s, border-color 0.2s;
+}
+.phosphor-toggle:hover { color: var(--green); border-color: var(--green); }
+
 /* ─── TEXT GLOW UTILITY ─── */
 .glow { text-shadow: 0 0 10px var(--green), 0 0 20px var(--green3); }
 .glow-amber { text-shadow: 0 0 10px var(--amber), 0 0 20px var(--amber2); }
@@ -144,18 +184,30 @@ h1 span { color: var(--amber); text-shadow: 0 0 20px var(--amber), 0 0 40px var(
 
 .boot-stats {
   display: flex;
-  gap: 28px;
-  margin-top: 20px;
+  gap: 0;
+  margin-top: 24px;
   flex-wrap: wrap;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .bstat {
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.12em;
   color: var(--muted);
   text-transform: uppercase;
+  flex: 1;
+  min-width: 110px;
+  padding: 14px 18px;
+  border-right: 1px solid var(--border2);
+  border-left: 3px solid var(--amber);
+  background: var(--amber-bg);
+  transition: background 0.2s;
 }
-.bstat span { color: var(--amber); font-size: 18px; font-family: 'Orbitron', monospace; font-weight: 700; display: block; text-shadow: 0 0 10px var(--amber); }
+.bstat:last-child { border-right: none; }
+.bstat:hover { background: color-mix(in srgb, var(--amber) 10%, transparent); }
+.bstat span { color: var(--amber); font-size: 22px; font-family: 'Orbitron', monospace; font-weight: 700; display: block; margin-bottom: 4px; text-shadow: 0 0 12px var(--amber); }
 
 /* ─── SECTION ─── */
 .section {
@@ -167,8 +219,8 @@ h1 span { color: var(--amber); text-shadow: 0 0 20px var(--amber), 0 0 40px var(
 .section.in { opacity: 1; transform: translateY(0); }
 
 .sec-label {
-  font-size: 9px;
-  letter-spacing: 0.3em;
+  font-size: 10px;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--green3);
   display: flex;
@@ -176,7 +228,7 @@ h1 span { color: var(--amber); text-shadow: 0 0 20px var(--amber), 0 0 40px var(
   gap: 10px;
   margin-bottom: 14px;
 }
-.sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
+.sec-label::after { content: ''; flex: 1; height: 1px; background: color-mix(in srgb, var(--green) 18%, transparent); }
 
 .sec-title {
   font-family: 'Orbitron', monospace;
@@ -505,11 +557,14 @@ h1 span { color: var(--amber); text-shadow: 0 0 20px var(--amber), 0 0 40px var(
 
 .pipe-num {
   font-family: 'VT323', monospace;
-  font-size: 36px;
-  color: var(--border2);
+  font-size: 52px;
+  color: var(--green);
+  opacity: 0.12;
   position: absolute;
-  top: 6px; right: 10px;
+  top: 4px; right: 8px;
   line-height: 1;
+  text-shadow: none;
+  pointer-events: none;
 }
 
 .pipe-icon { font-size: 22px; margin-bottom: 8px; }
@@ -641,6 +696,7 @@ h1 { animation: flicker 8s infinite; }
 </style>
 </head>
 <body>
+<button class="phosphor-toggle" id="phosphorBtn" onclick="togglePhosphor()">◉ PHOSPHOR: GRN</button>
 <div class="page">
 
   <!-- BOOT HEADER -->
@@ -1219,6 +1275,19 @@ h1 { animation: flicker 8s infinite; }
 </div><!-- /page -->
 
 <script>
+// Phosphor mode toggle
+function togglePhosphor() {
+  const html = document.documentElement;
+  const btn = document.getElementById('phosphorBtn');
+  if (html.dataset.phosphor === 'green') {
+    html.dataset.phosphor = 'amber';
+    btn.textContent = '◉ PHOSPHOR: AMB';
+  } else {
+    html.dataset.phosphor = 'green';
+    btn.textContent = '◉ PHOSPHOR: GRN';
+  }
+}
+
 // Intersection observer
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => {

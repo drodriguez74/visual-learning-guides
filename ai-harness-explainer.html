@@ -345,14 +345,19 @@ body::before {
 .pipe-vline {
   width: 2px;
   flex: 1;
-  background: repeating-linear-gradient(
+  background: linear-gradient(
     to bottom,
-    var(--accent2) 0px,
-    var(--accent2) 5px,
-    transparent 5px,
-    transparent 10px
+    var(--accent) 0%,
+    var(--accent2) 100%
   );
-  opacity: 0.45;
+  background-size: 2px 200%;
+  animation: flowPipe 2s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes flowPipe {
+  0%   { background-position: 0 -100%; }
+  100% { background-position: 0 100%; }
 }
 
 .pipe-arrow-node {
@@ -431,7 +436,9 @@ body::before {
   text-transform: uppercase;
   color: var(--accent3);
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent3) 25%, transparent);
 }
 
 /* ── LAYER STACK ── */
@@ -736,7 +743,7 @@ code {
 .compare-table td {
   padding: 12px 18px;
   border-bottom: 1px solid var(--border);
-  font-size: 11px;
+  font-size: 12px;
   vertical-align: top;
   line-height: 1.65;
   color: var(--muted);
@@ -752,8 +759,14 @@ code {
   color: var(--text);
 }
 
-.compare-table td.good { color: var(--accent3); }
-.compare-table td.bad  { color: var(--accent4); opacity: 0.85; }
+.compare-table td.good {
+  color: var(--accent3);
+  background: color-mix(in srgb, var(--accent3) 4%, transparent);
+}
+.compare-table td.bad  {
+  color: var(--accent4);
+  background: color-mix(in srgb, var(--accent4) 4%, transparent);
+}
 
 /* ── CLOSING ── */
 .closing {
