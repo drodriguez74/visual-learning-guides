@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Ralph Wiggum Loop</title>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand+SC&family=Caveat:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+
+/* ══ DESIGN: Chaotic Classroom / Notebook Doodle ══
+   Looks like a mad engineer's whiteboard covered in
+   marker drawings, sticky notes, arrows, and coffee rings.
+   Warm yellowish paper, hand-drawn vibes, ink smears.
+   Completely different from every prior explainer. */
+
+:root {
+  --paper:     #f7f3e8;
+  --paper2:    #ede8d6;
+  --paper3:    #e4dcc8;
+  --line:      #d4cbb8;
+  --ink:       #1a1510;
+  --ink2:      #2a2218;
+  --muted:     #7a6f5a;
+  --faint:     #b8af9a;
+
+  --red:       #cc2200;
+  --blue:      #1144cc;
+  --green:     #116622;
+  --orange:    #cc6600;
+  --purple:    #551188;
+  --yellow:    #f5cc00;
+  --pink:      #cc2266;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Caveat', cursive;
+  font-size: 16px;
+  overflow-x: hidden;
+  /* Ruled notebook lines */
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px);
+  background-size: 100% 36px;
+  background-attachment: local;
+}
+
+/* Red margin line */
+body::before {
+  content: '';
+  position: fixed;
+  left: 68px;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: rgba(220,80,60,0.25);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Coffee ring watermark */
+body::after {
+  content: '';
+  position: fixed;
+  bottom: 10%;
+  right: 5%;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 8px solid rgba(140,100,60,0.08);
+  box-shadow: 0 0 0 3px rgba(140,100,60,0.04);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 32px 120px 90px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── TITLE BLOCK ── */
+.title-block {
+  padding: 52px 0 44px;
+  position: relative;
+  opacity: 0;
+  animation: slap 0.5s 0.1s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+
+@keyframes slap {
+  from { opacity:0; transform: rotate(-2deg) scale(0.95); }
+  to   { opacity:1; transform: rotate(0deg) scale(1); }
+}
+
+.title-eyebrow {
+  font-family: 'Special Elite', serif;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-family: 'Permanent Marker', cursive;
+  font-size: clamp(44px, 8vw, 88px);
+  line-height: 0.95;
+  color: var(--ink);
+  margin-bottom: 14px;
+  /* Slightly uneven, like marker on whiteboard */
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.06);
+}
+
+h1 .wiggle { color: var(--red); display: inline-block; animation: wiggle 3s ease-in-out infinite; }
+h1 .loop   { color: var(--blue); }
+
+@keyframes wiggle {
+  0%,100% { transform: rotate(-2deg); }
+  50%      { transform: rotate(2deg); }
+}
+
+.title-sub {
+  font-family: 'Caveat', cursive;
+  font-size: 19px;
+  color: var(--muted);
+  max-width: 520px;
+  line-height: 1.5;
+  border-left: 4px solid var(--orange);
+  padding-left: 14px;
+}
+
+.title-sub strong { color: var(--orange); font-weight: 700; }
+
+/* Sticky note */
+.sticky {
+  position: absolute;
+  top: 40px; right: 0;
+  width: 160px;
+  background: #fff9c4;
+  border: 1px solid #e0d870;
+  padding: 14px;
+  transform: rotate(3deg);
+  box-shadow: 3px 4px 8px rgba(0,0,0,0.12);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink2);
+}
+
+.sticky::before {
+  content: '';
+  position: absolute;
+  top: -8px; left: 50%; transform: translateX(-50%);
+  width: 30px; height: 16px;
+  background: rgba(255,220,0,0.7);
+  border-bottom: 1px solid #ddc000;
+}
+
+.sticky-author {
+  margin-top: 8px;
+  font-family: 'Special Elite', serif;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+@media(max-width:600px){ .sticky { display:none; } }
+
+/* ── SECTION ── */
+.section {
+  margin-bottom: 60px;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s, transform 0.55s;
+}
+.section.in { opacity:1; transform:translateY(0); }
+
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.sec-num {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 13px;
+  color: var(--red);
+  width: 28px;
+  text-align: center;
+  border: 2px solid var(--red);
+  border-radius: 50%;
+  line-height: 26px;
+  flex-shrink: 0;
+}
+
+.sec-title {
+  font-family: 'Permanent Marker', cursive;
+  font-size: clamp(20px, 3.5vw, 30px);
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: var(--blue);
+  text-decoration-thickness: 2px;
+}
+
+/* ── CORE CONCEPT BOX ── */
+.concept-box {
+  background: var(--paper2);
+  border: 3px solid var(--ink2);
+  border-radius: 4px;
+  padding: 22px 26px;
+  margin-bottom: 28px;
+  position: relative;
+  transform: rotate(-0.5deg);
+  box-shadow: 4px 4px 0 var(--ink2);
+}
+
+.concept-box .quote-mark {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 60px;
+  color: var(--faint);
+  position: absolute;
+  top: -10px; left: 10px;
+  line-height: 1;
+}
+
+.concept-box p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ink);
+  position: relative;
+}
+
+.concept-box p strong { color: var(--blue); }
+.concept-box p em { color: var(--red); font-style: normal; font-weight: 700; }
+
+/* ── THE LOOP DIAGRAM (core visual) ── */
+.loop-diagram {
+  position: relative;
+  margin: 8px 0 28px;
+}
+
+#loopCanvas {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+}
+
+/* ── BASH SNIPPET ── */
+.bash-card {
+  background: #1a1a1a;
+  border: 3px solid var(--ink2);
+  border-radius: 6px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  box-shadow: 5px 5px 0 var(--ink2);
+  position: relative;
+  transform: rotate(0.4deg);
+}
+
+.bash-card::before {
+  content: 'THE SIMPLEST VERSION — THAT\'S IT.';
+  position: absolute;
+  top: -12px; left: 12px;
+  background: var(--yellow);
+  color: var(--ink);
+  font-family: 'Special Elite', serif;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  padding: 2px 8px;
+  border: 1px solid #c8a800;
+}
+
+.bash-code {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.85;
+  color: #e8e8e8;
+}
+
+.bash-code .kw  { color: #ff8844; }
+.bash-code .str { color: #aaddff; }
+.bash-code .var { color: #88ffaa; }
+.bash-code .com { color: #888888; }
+.bash-code .num { color: #ffcc44; }
+
+/* ── CONTEXT WINDOW DIAGRAM ── */
+.context-diagram {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+@media(max-width:600px){ .context-diagram { grid-template-columns:1fr; } }
+
+.ctx-box {
+  border: 3px solid var(--ink2);
+  border-radius: 6px;
+  padding: 20px;
+  position: relative;
+}
+
+.ctx-title {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+
+.ctx-token-bar {
+  height: 22px;
+  border-radius: 3px;
+  display: flex;
+  overflow: hidden;
+  gap: 2px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+}
+
+.ctx-seg {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-family: 'Special Elite', serif;
+  letter-spacing: 0.05em;
+  color: white;
+}
+
+.ctx-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ctx-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ctx-leg-dot {
+  width: 10px; height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.ctx-annotation {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.ctx-annotation strong { color: var(--ink); }
+
+/* ── STEPS (hand-drawn cards) ── */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media(max-width:640px){ .steps { grid-template-columns: 1fr; } }
+
+.step-card {
+  background: white;
+  border: 3px solid var(--ink2);
+  border-radius: 6px;
+  padding: 18px 16px;
+  position: relative;
+  box-shadow: 4px 4px 0 var(--ink2);
+  transition: transform 0.2s;
+}
+
+.step-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink2); }
+
+.step-card:nth-child(odd) { transform: rotate(-0.8deg); }
+.step-card:nth-child(odd):hover { transform: rotate(-0.8deg) translate(-2px, -2px); }
+.step-card:nth-child(even) { transform: rotate(0.6deg); }
+.step-card:nth-child(even):hover { transform: rotate(0.6deg) translate(-2px, -2px); }
+
+.step-num {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 36px;
+  color: var(--faint);
+  position: absolute;
+  top: 6px; right: 12px;
+  line-height: 1;
+}
+
+.step-icon { font-size: 28px; margin-bottom: 8px; }
+
+.step-name {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 16px;
+  color: var(--s-color, var(--ink));
+  margin-bottom: 6px;
+}
+
+.step-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── COMPARE — WITH/WITHOUT ── */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 3px solid var(--ink2);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 5px 5px 0 var(--ink2);
+}
+
+@media(max-width:560px){ .compare { grid-template-columns:1fr; } }
+
+.cmp-col { padding: 20px; }
+.cmp-col:first-child { background: #fff0f0; border-right: 2px solid var(--ink2); }
+.cmp-col:last-child  { background: #f0fff4; }
+
+.cmp-head {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 18px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cmp-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  line-height: 1.55;
+}
+
+.cmp-bullet { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+
+/* ── GAS TOWN (extensions) ── */
+.extensions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media(max-width:560px){ .extensions { grid-template-columns: 1fr; } }
+
+.ext-card {
+  background: white;
+  border: 2px solid var(--ink2);
+  border-radius: 6px;
+  padding: 18px 18px;
+  box-shadow: 3px 3px 0 var(--faint);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.ext-card:hover { box-shadow: 5px 5px 0 var(--ink2); transform: translate(-1px,-1px); }
+
+.ext-name {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 18px;
+  color: var(--e-color, var(--ink));
+  margin-bottom: 4px;
+}
+
+.ext-sub {
+  font-family: 'Special Elite', serif;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.ext-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+/* ── HAND-DRAWN ARROW (decorative) ── */
+.doodle-arrow {
+  display: flex;
+  justify-content: center;
+  color: var(--red);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 28px;
+  margin: -8px 0;
+  animation: bounce-arrow 1.5s ease-in-out infinite;
+}
+
+@keyframes bounce-arrow { 0%,100%{transform:translateY(0)}50%{transform:translateY(6px)} }
+
+/* ── CLOSING CHALKBOARD ── */
+.chalkboard {
+  background: #2a3a2a;
+  border: 6px solid #3a4a3a;
+  border-radius: 8px;
+  padding: 32px;
+  color: #ddefdd;
+  font-family: 'Permanent Marker', cursive;
+  font-size: 22px;
+  line-height: 1.55;
+  text-align: center;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.4), 6px 6px 0 var(--ink2);
+  position: relative;
+}
+
+.chalkboard em { color: #aaffaa; font-style: normal; }
+.chalkboard span { color: #ffff88; }
+.chalkboard small {
+  display: block;
+  font-family: 'Special Elite', serif;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(200,220,200,0.5);
+  text-transform: uppercase;
+  margin-top: 14px;
+}
+
+/* ── animations ── */
+.stagger > * {
+  opacity: 0;
+  transform: translateY(14px) rotate(var(--sr, 0deg));
+  transition: opacity 0.45s, transform 0.45s;
+}
+.stagger.in > * { opacity:1; transform: translateY(0) rotate(var(--sr, 0deg)); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TITLE -->
+  <div class="title-block">
+
+    <div class="sticky">
+      <em>"It's not sophisticated.<br>It just works."</em>
+      <div class="sticky-author">— Geoffrey Huntley, Creator</div>
+    </div>
+
+    <div class="title-eyebrow">Agentic AI Technique · Invented 2025</div>
+    <h1>
+      The <span class="wiggle">Ralph</span><br>
+      <span class="loop">Wiggum</span> Loop
+    </h1>
+    <p class="title-sub">
+      Named after the lovably clueless Simpsons kid who <strong>never gives up</strong> — a technique so simple it shouldn't work, yet it's shipping entire codebases overnight.
+    </p>
+
+  </div>
+
+  <!-- § 01 — THE CORE IDEA -->
+  <div class="section" id="s0">
+    <div class="sec-head">
+      <div class="sec-num">1</div>
+      <div class="sec-title">The Core Idea</div>
+    </div>
+
+    <div class="concept-box">
+      <div class="quote-mark">"</div>
+      <p>Put a coding AI in a <strong>while loop</strong>. Feed it the same prompt. Let it <em>fail</em> repeatedly. Watch git collect the wins. It doesn't need to remember anything — <strong>your filesystem is its memory.</strong></p>
+    </div>
+
+    <div class="bash-card">
+      <pre class="bash-code"><span class="kw">while</span> <span class="kw">true</span>; <span class="kw">do</span>
+  <span class="com"># Load plan + specs fresh every single iteration</span>
+  <span class="var">CONTEXT</span>=<span class="str">"$(cat fix_plan.md specs/stdlib/*)"</span>
+
+  <span class="com"># Run the AI agent on ONE task — chosen by the AI</span>
+  claude <span class="str">"$CONTEXT</span>
+<span class="str">  Choose the most important unfinished task.</span>
+<span class="str">  Implement it. Run tests. Commit if passing."</span>
+
+  <span class="com"># Brief pause to prevent runaway API costs</span>
+  sleep <span class="num">2</span>
+<span class="kw">done</span></pre>
+    </div>
+
+    <p style="font-size:15px;color:var(--muted);line-height:1.65;max-width:620px">
+      That's literally it. No orchestration framework. No memory system. No complex agent graph.
+      Just bash, a prompt, an AI CLI, and infinite stubbornness. <strong style="color:var(--ink)">Deterministically dumb in an undeterministic world.</strong>
+    </p>
+  </div>
+
+  <!-- § 02 — THE LOOP DIAGRAM (canvas) -->
+  <div class="section" id="s1">
+    <div class="sec-head">
+      <div class="sec-num">2</div>
+      <div class="sec-title">The Loop — Visualised</div>
+    </div>
+
+    <div class="loop-diagram">
+      <canvas id="loopCanvas" height="380"></canvas>
+    </div>
+  </div>
+
+  <!-- § 03 — CONTEXT STACK -->
+  <div class="section" id="s2">
+    <div class="sec-head">
+      <div class="sec-num">3</div>
+      <div class="sec-title">The Context Window Secret</div>
+    </div>
+
+    <p style="font-size:15px;color:var(--muted);margin-bottom:18px;line-height:1.65">
+      The magic is <strong style="color:var(--ink)">what you put in the window each loop</strong>. Pick ONE task. Keep the window lean.
+      The more you cram in, the less the AI can "see" clearly — like trying to read a book through a keyhole.
+    </p>
+
+    <div class="context-diagram">
+
+      <div class="ctx-box" style="border-color:var(--red);box-shadow:4px 4px 0 var(--red)">
+        <div class="ctx-title" style="color:var(--red)">❌ Context Rot</div>
+        <div class="ctx-token-bar">
+          <div class="ctx-seg" style="flex:20;background:#cc2200">PLAN</div>
+          <div class="ctx-seg" style="flex:25;background:#884400">ALL SPECS</div>
+          <div class="ctx-seg" style="flex:20;background:#662266">HISTORY</div>
+          <div class="ctx-seg" style="flex:18;background:#114488">ALL ERRORS</div>
+          <div class="ctx-seg" style="flex:17;background:#446600">CODEBASE</div>
+        </div>
+        <div class="ctx-annotation">
+          Window is <strong>stuffed</strong>. AI struggles to focus. Generates confused, contradictory output. Context "rots" — stale errors confuse the next attempt.
+        </div>
+      </div>
+
+      <div class="ctx-box" style="border-color:var(--green);box-shadow:4px 4px 0 var(--green)">
+        <div class="ctx-title" style="color:var(--green)">✅ Clean Slate Each Loop</div>
+        <div class="ctx-token-bar">
+          <div class="ctx-seg" style="flex:30;background:#116622">PLAN.md</div>
+          <div class="ctx-seg" style="flex:30;background:#338844">SPECS</div>
+          <div class="ctx-seg" style="flex:20;background:#115511">ONE TASK</div>
+          <div class="ctx-seg" style="flex:20;background:#777;opacity:0.4">free</div>
+        </div>
+        <div class="ctx-annotation">
+          Window is <strong>fresh</strong> every iteration. Only the plan + specs + one chosen task. Errors from last loop don't contaminate this one. Git is the memory, not the context window.
+        </div>
+      </div>
+
+    </div>
+
+    <div style="background:#fffbe6;border:2px solid var(--orange);border-radius:6px;padding:16px 20px;font-size:14px;line-height:1.7;transform:rotate(-0.3deg);box-shadow:3px 3px 0 var(--orange)">
+      <strong style="color:var(--orange)">Key Insight:</strong> Don't fight context rot by adding memory systems. <strong>Kill it at birth</strong> — fresh context every loop. Let the filesystem accumulate progress. Git commits = the loop's long-term memory.
+    </div>
+  </div>
+
+  <!-- § 04 — HOW EACH ITERATION WORKS -->
+  <div class="section" id="s3">
+    <div class="sec-head">
+      <div class="sec-num">4</div>
+      <div class="sec-title">What Happens Each Iteration</div>
+    </div>
+
+    <div class="steps stagger" id="stepsGrid">
+
+      <div class="step-card" style="--s-color:var(--blue);--sr:-0.8deg">
+        <div class="step-num">1</div>
+        <div class="step-icon">📋</div>
+        <div class="step-name">Load the Stack</div>
+        <div class="step-desc">Fresh load of fix_plan.md and all spec files. These are deterministically allocated every single loop — always in the same slots. No surprises.</div>
+      </div>
+
+      <div class="step-card" style="--s-color:var(--purple);--sr:0.6deg">
+        <div class="step-num">2</div>
+        <div class="step-icon">🤔</div>
+        <div class="step-name">AI Picks ONE Task</div>
+        <div class="step-desc">The AI reads the plan and specs, then picks the single most important unimplemented thing. You trust it to decide. Yes, really. Full hands-off.</div>
+      </div>
+
+      <div class="step-card" style="--s-color:var(--orange);--sr:-0.4deg">
+        <div class="step-num">3</div>
+        <div class="step-icon">⌨️</div>
+        <div class="step-name">Implement It</div>
+        <div class="step-desc">The AI writes the code, creates files, edits existing ones. It works inside the actual repo — real files, not hypotheticals.</div>
+      </div>
+
+      <div class="step-card" style="--s-color:var(--red);--sr:0.9deg">
+        <div class="step-num">4</div>
+        <div class="step-icon">🧪</div>
+        <div class="step-name">Run the Tests</div>
+        <div class="step-desc">Tests run immediately. If they pass — great, commit. If they fail — the AI sees the error output and tries to fix within this same turn. Fail fast, retry fast.</div>
+      </div>
+
+      <div class="step-card" style="--s-color:var(--green);--sr:-0.7deg">
+        <div class="step-num">5</div>
+        <div class="step-icon">✅</div>
+        <div class="step-name">Commit or Abandon</div>
+        <div class="step-desc">Passing? Git commit. Progress is real and permanent. Failing still? Abandon the attempt, move on. The next loop will try something different.</div>
+      </div>
+
+      <div class="step-card" style="--s-color:var(--blue);--sr:0.5deg">
+        <div class="step-num">6</div>
+        <div class="step-icon">🔁</div>
+        <div class="step-name">Loop Again</div>
+        <div class="step-desc">Back to step 1. Fresh context. New task choice. The git history grows. The codebase builds itself — overnight, unsupervised, persistently.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- § 05 — NAIVE PERSISTENCE ADVANTAGE -->
+  <div class="section" id="s4">
+    <div class="sec-head">
+      <div class="sec-num">5</div>
+      <div class="sec-title">Why "Dumb" Wins</div>
+    </div>
+
+    <div class="compare">
+      <div class="cmp-col">
+        <div class="cmp-head" style="color:var(--red)">❌ Sophisticated Agent</div>
+        <div class="cmp-item"><span class="cmp-bullet">💔</span>Complex memory graph gets corrupted over time</div>
+        <div class="cmp-item"><span class="cmp-bullet">💔</span>State machines fail in unexpected edge cases</div>
+        <div class="cmp-item"><span class="cmp-bullet">💔</span>Errors compound — one bad step poisons everything downstream</div>
+        <div class="cmp-item"><span class="cmp-bullet">💔</span>Debugging the orchestration is harder than debugging the code</div>
+        <div class="cmp-item"><span class="cmp-bullet">💔</span>Context "compaction" silently loses critical earlier decisions</div>
+        <div class="cmp-item"><span class="cmp-bullet">💔</span>Lots of engineering to build the agent itself</div>
+      </div>
+      <div class="cmp-col">
+        <div class="cmp-head" style="color:var(--green)">✅ Ralph Loop</div>
+        <div class="cmp-item"><span class="cmp-bullet">💚</span>No memory to corrupt — fresh every iteration</div>
+        <div class="cmp-item"><span class="cmp-bullet">💚</span>No state to corrupt — bash has no state</div>
+        <div class="cmp-item"><span class="cmp-bullet">💚</span>Bad iterations are abandoned, not propagated</div>
+        <div class="cmp-item"><span class="cmp-bullet">💚</span>Zero framework — debug the AI's output, that's it</div>
+        <div class="cmp-item"><span class="cmp-bullet">💚</span>Each loop sees the current real filesystem state</div>
+        <div class="cmp-item"><span class="cmp-bullet">💚</span>~10 lines of bash — anyone can understand it</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- § 06 — EXTENSIONS -->
+  <div class="section" id="s5">
+    <div class="sec-head">
+      <div class="sec-num">6</div>
+      <div class="sec-title">Ralph Grows Up</div>
+    </div>
+
+    <div class="extensions stagger" id="extGrid">
+
+      <div class="ext-card" style="--e-color:var(--purple)">
+        <div class="ext-name">Gas Town</div>
+        <div class="ext-sub">Multi-agent orchestration</div>
+        <div class="ext-desc">If Ralph is one agent looping, Gas Town is a whole city of Ralphs. Multiple parallel Ralph loops, each picking non-overlapping tasks. Described as "Kubernetes for agents." Invented by Steve Yegge. An entire autonomous development assembly line.</div>
+      </div>
+
+      <div class="ext-card" style="--e-color:var(--orange)">
+        <div class="ext-name">Ralph TUI</div>
+        <div class="ext-sub">Visibility layer</div>
+        <div class="ext-desc">A terminal UI that watches the Ralph loop in real-time — shows what the AI is doing, what it committed, what it abandoned. Builds human trust in the autonomous process by making the "black box" visible.</div>
+      </div>
+
+      <div class="ext-card" style="--e-color:var(--blue)">
+        <div class="ext-name">MEOW Tasks</div>
+        <div class="ext-sub">Molecular Expression of Work</div>
+        <div class="ext-desc">Breaking down a PRD into tasks so granular they can be atomically picked, executed, and committed by a single Ralph iteration. The smaller the task definition, the higher Ralph's success rate per iteration.</div>
+      </div>
+
+      <div class="ext-card" style="--e-color:var(--green)">
+        <div class="ext-name">Co-Reg Loop (CRDAL)</div>
+        <div class="ext-sub">Academic extension (2026)</div>
+        <div class="ext-desc">Researchers added a "Metacognitive Co-Regulation Agent" — a second AI that watches Ralph's choices and prevents design fixation. Proven to generate better solutions without meaningfully increasing compute cost.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CHALKBOARD CLOSING -->
+  <div class="section" id="s6">
+    <div class="chalkboard">
+      <em>Ralph doesn't remember yesterday.</em><br>
+      <span>Ralph doesn't know what he failed at.</span><br>
+      <em>Ralph just tries again.</em><br><br>
+      And that's why <span>Ralph shipped 6 repos overnight</span><br>
+      at a Y Combinator hackathon.
+      <small>RALPH WIGGUM LOOP · INVENTED BY GEOFFREY HUNTLEY · 2025</small>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── LOOP DIAGRAM CANVAS ──
+const canvas = document.getElementById('loopCanvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  W = canvas.width = rect.width * devicePixelRatio;
+  H = canvas.height = 380 * devicePixelRatio;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '380px';
+  draw();
+}
+
+let animT = 0;
+let particleT = 0;
+
+// The loop nodes arranged in a circle
+const NODES = [
+  { label: 'LOAD\nCONTEXT', sub: 'plan.md + specs', icon: '📋', angle: -90, color: '#1144cc' },
+  { label: 'AI PICKS\nONE TASK', sub: 'most important', icon: '🤔', angle: -18, color: '#551188' },
+  { label: 'WRITE\nCODE', sub: 'real files', icon: '⌨️', angle: 54, color: '#cc6600' },
+  { label: 'RUN\nTESTS', sub: 'pass or fail?', icon: '🧪', angle: 126, color: '#cc2200' },
+  { label: 'COMMIT\nOR SKIP', sub: 'git = memory', icon: '✅', angle: 198, color: '#116622' },
+];
+
+function toRad(deg) { return deg * Math.PI / 180; }
+
+function nodePos(n, cx, cy, r) {
+  return {
+    x: cx + r * Math.cos(toRad(n.angle)),
+    y: cy + r * Math.sin(toRad(n.angle)),
+  };
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  const cx = W / 2;
+  const cy = H / 2;
+  const R = Math.min(W, H) * 0.33;
+  const nr = 32 * devicePixelRatio; // node radius
+
+  // Background paper texture (light)
+  ctx.fillStyle = '#f7f3e8';
+  ctx.fillRect(0, 0, W, H);
+
+  // Faint notebook lines
+  ctx.strokeStyle = 'rgba(180,165,140,0.4)';
+  ctx.lineWidth = 1;
+  for (let y = 0; y < H; y += 36 * devicePixelRatio) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Circular path (dashed)
+  ctx.beginPath();
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(26,21,16,0.15)';
+  ctx.lineWidth = 2 * devicePixelRatio;
+  ctx.setLineDash([8 * devicePixelRatio, 6 * devicePixelRatio]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Calculate positions
+  const positions = NODES.map(n => nodePos(n, cx, cy, R));
+
+  // Draw arrows between nodes
+  NODES.forEach((n, i) => {
+    const from = positions[i];
+    const to = positions[(i + 1) % NODES.length];
+
+    // Arrow direction
+    const dx = to.x - from.x, dy = to.y - from.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const ux = dx / dist, uy = dy / dist;
+
+    const startX = from.x + ux * (nr + 4 * devicePixelRatio);
+    const startY = from.y + uy * (nr + 4 * devicePixelRatio);
+    const endX   = to.x - ux * (nr + 4 * devicePixelRatio);
+    const endY   = to.y - uy * (nr + 4 * devicePixelRatio);
+
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.strokeStyle = 'rgba(26,21,16,0.3)';
+    ctx.lineWidth = 2 * devicePixelRatio;
+    ctx.setLineDash([6 * devicePixelRatio, 4 * devicePixelRatio]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Arrowhead
+    const arrLen = 10 * devicePixelRatio;
+    ctx.beginPath();
+    ctx.moveTo(endX, endY);
+    ctx.lineTo(endX - ux * arrLen + uy * 5 * devicePixelRatio, endY - uy * arrLen - ux * 5 * devicePixelRatio);
+    ctx.lineTo(endX - ux * arrLen - uy * 5 * devicePixelRatio, endY - uy * arrLen + ux * 5 * devicePixelRatio);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(26,21,16,0.35)';
+    ctx.fill();
+  });
+
+  // Animated particle traveling the loop
+  particleT = (particleT + 0.004) % 1;
+  const totalSegs = NODES.length;
+  const segIdx = Math.floor(particleT * totalSegs);
+  const segFrac = (particleT * totalSegs) - segIdx;
+  const fromPos = positions[segIdx];
+  const toPos = positions[(segIdx + 1) % NODES.length];
+  const px = fromPos.x + (toPos.x - fromPos.x) * segFrac;
+  const py = fromPos.y + (toPos.y - fromPos.y) * segFrac;
+
+  ctx.beginPath();
+  ctx.arc(px, py, 7 * devicePixelRatio, 0, Math.PI * 2);
+  ctx.fillStyle = NODES[segIdx].color;
+  ctx.fill();
+  // trail
+  for (let t = 1; t <= 4; t++) {
+    const tt = ((particleT * totalSegs - t * 0.06) / totalSegs + 1) % 1;
+    const si = Math.floor(tt * totalSegs);
+    const sf = (tt * totalSegs) - si;
+    const tp = positions[si];
+    const tn = positions[(si + 1) % NODES.length];
+    const tx = tp.x + (tn.x - tp.x) * sf;
+    const ty = tp.y + (tn.y - tp.y) * sf;
+    ctx.beginPath();
+    ctx.arc(tx, ty, (6 - t) * devicePixelRatio, 0, Math.PI * 2);
+    ctx.fillStyle = NODES[si].color + (4 - t) * 30 > 0 ? NODES[si].color + '55' : 'transparent';
+    ctx.fill();
+  }
+
+  // Draw nodes
+  NODES.forEach((n, i) => {
+    const pos = positions[i];
+    const isActive = Math.floor(particleT * NODES.length) === i;
+
+    // Shadow
+    ctx.beginPath();
+    ctx.arc(pos.x + 4 * devicePixelRatio, pos.y + 4 * devicePixelRatio, nr, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(26,21,16,0.12)';
+    ctx.fill();
+
+    // Circle
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, nr, 0, Math.PI * 2);
+    ctx.fillStyle = isActive ? n.color : '#fff';
+    ctx.fill();
+    ctx.strokeStyle = n.color;
+    ctx.lineWidth = 3 * devicePixelRatio;
+    ctx.stroke();
+
+    // Emoji
+    ctx.font = `${20 * devicePixelRatio}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(n.icon, pos.x, pos.y);
+
+    // Label outside
+    const labelR = R + nr + 22 * devicePixelRatio;
+    const lx = cx + labelR * Math.cos(toRad(n.angle));
+    const ly = cy + labelR * Math.sin(toRad(n.angle));
+
+    ctx.font = `bold ${11 * devicePixelRatio}px 'Caveat', cursive`;
+    ctx.fillStyle = n.color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const lines = n.label.split('\n');
+    lines.forEach((line, li) => {
+      ctx.fillText(line, lx, ly + (li - (lines.length - 1) / 2) * 14 * devicePixelRatio);
+    });
+
+    // Sub label
+    ctx.font = `${9 * devicePixelRatio}px 'Special Elite', serif`;
+    ctx.fillStyle = 'rgba(100,90,70,0.7)';
+    ctx.fillText(n.sub, lx, ly + lines.length * 14 * devicePixelRatio / 2 + 10 * devicePixelRatio);
+  });
+
+  // Center label
+  ctx.font = `bold ${14 * devicePixelRatio}px 'Permanent Marker', cursive`;
+  ctx.fillStyle = 'rgba(26,21,16,0.15)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('∞ LOOP', cx, cy - 10 * devicePixelRatio);
+  ctx.font = `${10 * devicePixelRatio}px 'Special Elite', serif`;
+  ctx.fillStyle = 'rgba(120,110,90,0.5)';
+  ctx.fillText('git = memory', cx, cy + 10 * devicePixelRatio);
+
+  requestAnimationFrame(draw);
+}
+
+window.addEventListener('resize', resize);
+setTimeout(resize, 80);
+
+// Intersection Observer
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    [...e.target.querySelectorAll('.stagger > *')].forEach((c, i) => {
+      setTimeout(() => c.style.cssText += 'opacity:1;transform:translateY(0) rotate(var(--sr,0deg))', i * 90);
+    });
+    io.unobserve(e.target);
+  });
+}, { threshold: 0.07 });
+
+document.querySelectorAll('.section').forEach(s => io.observe(s));
+
+// Stagger transition init
+document.querySelectorAll('.stagger > *').forEach((el, i) => {
+  el.style.transitionDelay = i * 0.08 + 's';
+});
+</script>
+</body>
+</html>
