@@ -639,25 +639,25 @@ footer {
     <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">Framework Structure (Maven + Playwright + Cucumber)</span></div>
     <p class="sec-intro">A clean separation of concerns is what keeps a suite maintainable. Features describe behaviour, step definitions translate it, page objects own all the Playwright selectors. <strong>Nothing in a step definition ever touches a raw selector.</strong></p>
     <div class="tree">
-<span class="dir">src/test/</span>
-├── <span class="dir">java/com/fiserv/qa/</span>
-│   ├── <span class="dir">runners/</span>
-│   │   └── <span class="step">TestRunner.java</span>          <span class="cmt"># @Cucumber JUnit5 entry point</span>
-│   ├── <span class="dir">stepdefs/</span>
-│   │   ├── <span class="step">LoginSteps.java</span>          <span class="cmt"># maps Gherkin → page object calls</span>
-│   │   └── <span class="step">CheckoutSteps.java</span>
-│   ├── <span class="dir">pages/</span>                     <span class="cmt"># Page Object Model — owns ALL selectors</span>
-│   │   ├── <span class="po">LoginPage.java</span>
-│   │   └── <span class="po">CheckoutPage.java</span>
-│   ├── <span class="dir">hooks/</span>
-│   │   └── <span class="step">PlaywrightHooks.java</span>     <span class="cmt"># @Before/@After: browser lifecycle</span>
-│   └── <span class="dir">support/</span>
-│       ├── <span class="step">World.java</span>               <span class="cmt"># shared Page/context per scenario</span>
-│       └── <span class="step">TestDataFactory.java</span>     <span class="cmt"># fixtures, users, products</span>
-└── <span class="dir">resources/</span>
-    ├── <span class="dir">features/</span>                  <span class="cmt"># plain-English specs</span>
-    │   ├── <span class="feat">login.feature</span>
-    │   └── <span class="feat">checkout.feature</span>
+<span class="dir">src/test/</span><br />
+├── <span class="dir">java/com/fiserv/qa/</span><br />
+│   ├── <span class="dir">runners/</span><br />
+│   │   └── <span class="step">TestRunner.java</span>          <span class="cmt"># @Cucumber JUnit5 entry point</span><br />
+│   ├── <span class="dir">stepdefs/</span><br />
+│   │   ├── <span class="step">LoginSteps.java</span>          <span class="cmt"># maps Gherkin → page object calls</span><br />
+│   │   └── <span class="step">CheckoutSteps.java</span><br />
+│   ├── <span class="dir">pages/</span>                     <span class="cmt"># Page Object Model — owns ALL selectors</span><br />
+│   │   ├── <span class="po">LoginPage.java</span><br />
+│   │   └── <span class="po">CheckoutPage.java</span><br />
+│   ├── <span class="dir">hooks/</span><br />
+│   │   └── <span class="step">PlaywrightHooks.java</span>     <span class="cmt"># @Before/@After: browser lifecycle</span><br />
+│   └── <span class="dir">support/</span><br />
+│       ├── <span class="step">World.java</span>               <span class="cmt"># shared Page/context per scenario</span><br />
+│       └── <span class="step">TestDataFactory.java</span>     <span class="cmt"># fixtures, users, products</span><br />
+└── <span class="dir">resources/</span><br />
+    ├── <span class="dir">features/</span>                  <span class="cmt"># plain-English specs</span><br />
+    │   ├── <span class="feat">login.feature</span><br />
+    │   └── <span class="feat">checkout.feature</span><br />
     └── <span class="file">cucumber.properties</span>
     </div>
   </section>
