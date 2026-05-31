@@ -19,6 +19,8 @@ Or jump directly to any guide:
 | **The Mainframe** | `https://drodriguez74.github.io/visual-learning-guides/mainframe-explainer.html` |
 | **AI Harness Explainer** | `https://drodriguez74.github.io/visual-learning-guides/ai-harness-explainer.html` |
 | **The Ralph Wiggum Loop** | `https://drodriguez74.github.io/visual-learning-guides/ralph-wiggum-loop.html` |
+| **QA Automation + AI** | `https://drodriguez74.github.io/visual-learning-guides/qa-automation-gherkin-ai.html` |
+| **E2E BDD Automation** | `https://drodriguez74.github.io/visual-learning-guides/e2e-bdd-playwright-ai.html` |
 
 ## Guides
 
@@ -115,6 +117,38 @@ Or jump directly to any guide:
 | **What Happens Each Iteration** | 6-step breakdown: Load → Pick → Implement → Test → Commit → Repeat |
 | **Why "Dumb" Wins** | Counter-intuitive argument for simplicity over elaborate orchestration |
 | **Ralph Grows Up** | Gas Town — parallel multi-agent loops, Kubernetes for agents |
+
+---
+
+---
+
+### 08 · QA Automation + AI
+`qa-automation-gherkin-ai.html` — Light editorial (Outfit + Fira Code)
+
+| Section | Contents |
+|---------|----------|
+| **Three-Layer Stack** | Gherkin (.feature) → Step Definitions → Cucumber runner — roles and flow diagram |
+| **Gherkin Syntax** | Feature, Scenario, Given/When/Then/And keyword reference with a full login.feature example |
+| **Step Definitions** | Java + Selenium annotated example with parameter capture, assertions, and Page Object pattern |
+| **AI Acceleration** | New UI (greenfield) vs. Existing UI (brownfield) — 5-step workflow with inline AI prompts |
+| **Strategy Table** | Side-by-side AI approach for every task: feature files, step defs, locators, flaky tests, CI/CD |
+| **Prompt Templates** | 4 copy-ready templates: generate feature from story, extend step defs, page object from screenshot, diagnose flaky test |
+
+---
+
+### 09 · E2E BDD Automation
+`e2e-bdd-playwright-ai.html` — Dark (Space Grotesk + JetBrains Mono)
+
+| Section | Contents |
+|---------|----------|
+| **7-Phase Pipeline** | Extract Journeys → Gherkin → Step Defs → Page Objects → Execute → Report + CI |
+| **Journey Recipe** | 6-question extraction process + Risk × Frequency priority matrix (P1–P4) |
+| **Framework Structure** | Maven + Playwright + Cucumber folder tree with annotated roles |
+| **Gherkin Layer** | Annotated checkout.feature with Background and Scenario Outline |
+| **Step Definitions** | Java Cucumber-JVM with World injection and no raw selectors in steps |
+| **Page Object Layer** | Playwright auto-waiting locators, role/label/testId strategy, web-first assertions |
+| **Two Starting Points** | Greenfield (generate) and Brownfield (assimilate) — 5 steps each with collapsible inline AI prompts |
+| **12 AI Prompts** | P0–P11 filterable by New UI / Existing / Both — all with copy-to-clipboard |
 
 ---
 
