@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jupyter + Plotly: Data Science Visual Guide</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&display=swap');
+
+:root {
+  --bg: #0c0e14;
+  --surface: #12151e;
+  --surface2: #1a1e2a;
+  --border: #1f2535;
+  --cyan: #00d4ff;
+  --green: #39ff14;
+  --orange: #ff7f00;
+  --pink: #ff2d78;
+  --purple: #9b5de5;
+  --yellow: #ffe600;
+  --text: #d8dce8;
+  --muted: #4a5068;
+  --code-bg: #090b10;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* Scanline effect */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Grid bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── HERO ── */
+.hero {
+  margin-bottom: 64px;
+  animation: fadeIn 0.8s ease both;
+}
+
+.hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hero-badge {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+  padding: 5px 12px;
+  margin-bottom: 18px;
+  display: inline-block;
+  box-shadow: 0 0 10px rgba(0,212,255,0.2);
+}
+
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  line-height: 0.95;
+  color: var(--text);
+}
+
+.hero h1 .j { color: var(--orange); }
+.hero h1 .p { color: var(--cyan); }
+
+.hero-desc {
+  margin-top: 20px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 500px;
+  border-left: 2px solid var(--green);
+  padding-left: 14px;
+}
+
+.hero-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  min-width: 180px;
+}
+
+.stat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-val {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--cyan);
+}
+
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ── SECTION LABEL ── */
+.sec-label {
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sec-label::before { content: '//'; color: var(--muted); }
+.sec-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── NOTEBOOK ANATOMY ── */
+.anatomy {
+  margin-bottom: 64px;
+  animation: fadeUp 0.7s 0.1s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.notebook-shell {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* Notebook toolbar */
+.nb-toolbar {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nb-dots { display: flex; gap: 6px; }
+.nb-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.nb-title {
+  font-size: 11px;
+  color: var(--muted);
+  flex: 1;
+}
+
+.nb-kernel {
+  font-size: 10px;
+  color: var(--green);
+  border: 1px solid rgba(57,255,20,0.3);
+  padding: 3px 10px;
+  box-shadow: 0 0 8px rgba(57,255,20,0.1);
+}
+
+/* Cell types */
+.nb-cell {
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 36px 1fr;
+}
+
+.cell-gutter {
+  background: var(--code-bg);
+  border-right: 1px solid var(--border);
+  padding: 14px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cell-type-tag {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  color: var(--muted);
+}
+
+.run-btn {
+  width: 16px;
+  height: 16px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.cell-body { padding: 12px 16px; }
+
+/* Code cell */
+.nb-cell.code-cell .cell-gutter { border-color: var(--cyan); }
+.nb-cell.code-cell .run-btn { border-color: var(--cyan); color: var(--cyan); }
+.nb-cell.code-cell .run-btn:hover { background: var(--cyan); color: #000; }
+
+/* Markdown cell */
+.nb-cell.md-cell .cell-gutter { border-color: var(--yellow); }
+.nb-cell.md-cell .run-btn { border-color: var(--yellow); color: var(--yellow); }
+
+/* Output cell */
+.nb-cell.out-cell .cell-gutter { border-color: var(--green); }
+
+.code-block {
+  background: var(--code-bg);
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.kw { color: var(--pink); }
+.fn { color: var(--cyan); }
+.str { color: var(--green); }
+.num { color: var(--orange); }
+.cm { color: #3a4060; }
+.var { color: var(--text); }
+.imp { color: var(--yellow); }
+
+.md-rendered {
+  font-family: 'Syne', sans-serif;
+  padding: 4px 0;
+}
+
+.md-h1 { font-size: 1.3rem; font-weight: 700; color: var(--yellow); margin-bottom: 6px; }
+.md-h2 { font-size: 1rem; font-weight: 700; color: var(--cyan); margin-bottom: 4px; }
+.md-p { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+.output-text {
+  font-size: 11px;
+  color: var(--green);
+  line-height: 1.6;
+}
+
+.cell-label-outside {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  padding: 4px 16px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cell-label-outside span { color: var(--cyan); }
+
+/* ── CELL TYPES LEGEND ── */
+.cell-types {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 64px;
+  animation: fadeUp 0.7s 0.2s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.ct-block {
+  background: var(--surface);
+  padding: 22px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ct-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.ct-block.code::before { background: var(--cyan); }
+.ct-block.markdown::before { background: var(--yellow); }
+.ct-block.raw::before { background: var(--muted); }
+
+.ct-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.ct-block.code .ct-name { color: var(--cyan); }
+.ct-block.markdown .ct-name { color: var(--yellow); }
+.ct-block.raw .ct-name { color: var(--muted); }
+
+.ct-desc { font-size: 11px; color: var(--muted); line-height: 1.65; margin-bottom: 10px; }
+.ct-example {
+  font-size: 10px;
+  padding: 6px 10px;
+  background: var(--code-bg);
+  border-left: 2px solid var(--border);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* ── DS WORKFLOW ── */
+.workflow {
+  margin-bottom: 64px;
+  animation: fadeUp 0.7s 0.3s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.flow-steps {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.flow-step {
+  flex: 1;
+  min-width: 130px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-right: none;
+  padding: 20px 14px;
+  position: relative;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+.flow-step:last-child { border-right: 1px solid var(--border); }
+.flow-step:hover { background: var(--surface2); }
+
+.flow-step::after {
+  content: '▶';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--border);
+  z-index: 2;
+  background: var(--bg);
+  padding: 2px 0;
+}
+
+.flow-step:last-child::after { display: none; }
+
+.flow-icon { font-size: 1.6rem; margin-bottom: 8px; display: block; }
+.flow-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.flow-lib {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.flow-tool {
+  font-size: 9px;
+  padding: 2px 6px;
+  border: 1px solid;
+  display: inline-block;
+}
+
+.flow-step:nth-child(1) .flow-tool { border-color: var(--cyan); color: var(--cyan); }
+.flow-step:nth-child(2) .flow-tool { border-color: var(--orange); color: var(--orange); }
+.flow-step:nth-child(3) .flow-tool { border-color: var(--yellow); color: var(--yellow); }
+.flow-step:nth-child(4) .flow-tool { border-color: var(--pink); color: var(--pink); }
+.flow-step:nth-child(5) .flow-tool { border-color: var(--green); color: var(--green); }
+.flow-step:nth-child(6) .flow-tool { border-color: var(--purple); color: var(--purple); }
+
+/* ── PLOTLY CHARTS SECTION ── */
+.charts-section {
+  margin-bottom: 64px;
+  animation: fadeUp 0.7s 0.4s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.charts-intro {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-bottom: 24px;
+  max-width: 680px;
+}
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.chart-card:hover { border-color: var(--cyan); }
+
+.chart-header {
+  background: var(--code-bg);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chart-title {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.chart-tag {
+  font-size: 9px;
+  padding: 2px 7px;
+  border: 1px solid;
+}
+
+.chart-body {
+  padding: 8px;
+}
+
+.chart-code {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.6;
+  background: var(--code-bg);
+  color: #3a4060;
+  overflow-x: auto;
+}
+
+.chart-code .active { color: var(--muted); }
+
+/* Wide chart */
+.chart-card.wide {
+  grid-column: 1 / -1;
+}
+
+/* ── MAGIC COMMANDS ── */
+.magic-section {
+  margin-bottom: 64px;
+  animation: fadeUp 0.7s 0.5s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.magic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.magic-row {
+  background: var(--surface);
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 16px;
+  align-items: start;
+  transition: background 0.2s;
+  cursor: default;
+}
+
+.magic-row:hover { background: var(--surface2); }
+
+.magic-cmd {
+  font-size: 12px;
+  color: var(--pink);
+  padding: 3px 8px;
+  background: rgba(255,45,120,0.08);
+  border: 1px solid rgba(255,45,120,0.2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.magic-desc { font-size: 11px; color: var(--muted); line-height: 1.55; }
+
+/* ── KEYBOARD SHORTCUTS ── */
+.shortcuts-section {
+  margin-bottom: 64px;
+  animation: fadeUp 0.7s 0.55s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.shortcuts-wrap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.shortcut {
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.15s;
+}
+
+.shortcut:hover { background: var(--surface2); }
+
+.kbd {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.key {
+  font-size: 10px;
+  padding: 3px 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--muted);
+  color: var(--cyan);
+  min-width: 24px;
+  text-align: center;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.shortcut-desc { font-size: 10px; color: var(--muted); line-height: 1.4; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #2a3040;
+  text-align: center;
+  animation: fadeUp 0.7s 0.6s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Plotly override to match dark theme */
+.js-plotly-plot .plotly { background: transparent !important; }
+
+@media (max-width: 680px) {
+  .chart-grid { grid-template-columns: 1fr; }
+  .chart-card.wide { grid-column: 1; }
+  .cell-types { grid-template-columns: 1fr; }
+  .shortcuts-wrap { grid-template-columns: 1fr 1fr; }
+  .magic-grid { grid-template-columns: 1fr; }
+  .magic-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">// DATA SCIENCE TOOLKIT</div>
+    <div class="hero-top">
+      <div>
+        <h1><span class="j">JUPYTER</span><br>NOTE<span class="p">BOOKS</span><br>+ PLOTLY</h1>
+        <p class="hero-desc">
+          A visual guide to the interactive computing environment used by data scientists, ML engineers, and researchers worldwide — and how Plotly turns raw data into interactive, publication-ready visualizations.
+        </p>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-row">
+          <div class="stat-val">10M+</div>
+          <div class="stat-label">Notebooks on GitHub</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-val">40+</div>
+          <div class="stat-label">Plotly chart types</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-val">3</div>
+          <div class="stat-label">Cell types</div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-val">100%</div>
+          <div class="stat-label">Interactive output</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTEBOOK ANATOMY -->
+  <section class="anatomy">
+    <div class="sec-label">Notebook Anatomy — What You're Actually Looking At</div>
+    <div class="notebook-shell">
+      <!-- Toolbar -->
+      <div class="nb-toolbar">
+        <div class="nb-dots">
+          <div class="nb-dot" style="background:#ff5f57"></div>
+          <div class="nb-dot" style="background:#febc2e"></div>
+          <div class="nb-dot" style="background:#28c840"></div>
+        </div>
+        <div class="nb-title">analysis.ipynb — Jupyter Lab</div>
+        <div class="nb-kernel">● Python 3.11</div>
+      </div>
+
+      <!-- CELL 1: Markdown -->
+      <div class="cell-label-outside"><span>MARKDOWN CELL</span> — Documentation & narrative. Rendered as formatted text.</div>
+      <div class="nb-cell md-cell">
+        <div class="cell-gutter">
+          <div class="run-btn">▶</div>
+          <div class="cell-type-tag">MD</div>
+        </div>
+        <div class="cell-body">
+          <div class="md-rendered">
+            <div class="md-h1"># Sales Analysis Q3 2024</div>
+            <div class="md-h2">## Overview</div>
+            <div class="md-p">This notebook explores revenue trends, regional performance, and product-level breakdowns using pandas and Plotly.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CELL 2: Code - import -->
+      <div class="cell-label-outside"><span>CODE CELL [1]</span> — Executable Python. Each cell runs independently and shares state.</div>
+      <div class="nb-cell code-cell">
+        <div class="cell-gutter">
+          <div class="run-btn">▶</div>
+          <div class="cell-type-tag">IN</div>
+        </div>
+        <div class="cell-body">
+          <div class="code-block">
+<span class="kw">import</span> <span class="imp">pandas</span> <span class="kw">as</span> <span class="var">pd</span>
+<span class="kw">import</span> <span class="imp">numpy</span> <span class="kw">as</span> <span class="var">np</span>
+<span class="kw">import</span> <span class="imp">plotly.express</span> <span class="kw">as</span> <span class="var">px</span>
+<span class="kw">import</span> <span class="imp">plotly.graph_objects</span> <span class="kw">as</span> <span class="var">go</span>
+<span class="cm"># plotly renders interactive charts directly in the notebook</span></div>
+        </div>
+      </div>
+
+      <!-- CELL 3: Code - data -->
+      <div class="cell-label-outside"><span>CODE CELL [2]</span> — Load and inspect data. Output appears directly below each cell.</div>
+      <div class="nb-cell code-cell">
+        <div class="cell-gutter">
+          <div class="run-btn">▶</div>
+          <div class="cell-type-tag">IN</div>
+        </div>
+        <div class="cell-body">
+          <div class="code-block">
+<span class="var">df</span> = <span class="fn">pd.read_csv</span>(<span class="str">'sales_data.csv'</span>)
+<span class="var">df</span>[<span class="str">'date'</span>] = <span class="fn">pd.to_datetime</span>(<span class="var">df</span>[<span class="str">'date'</span>])
+<span class="var">df</span>.<span class="fn">head</span>(<span class="num">5</span>)  <span class="cm"># outputs a formatted table below</span></div>
+        </div>
+      </div>
+
+      <!-- CELL 4: Output -->
+      <div class="nb-cell out-cell">
+        <div class="cell-gutter" style="background:rgba(57,255,20,0.04)">
+          <div class="cell-type-tag" style="color:var(--green)">OUT</div>
+        </div>
+        <div class="cell-body">
+          <div class="output-text">
+            <span style="color:var(--muted)">   date         region    product   revenue   units</span><br>
+            <span>0  2024-07-01   West      Pro Plan  48200     241</span><br>
+            <span>1  2024-07-01   East      Starter   12400     620</span><br>
+            <span>2  2024-07-02   West      Pro Plan  51300     256</span><br>
+            <span style="color:var(--muted)">... (892 rows × 5 columns)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CELL 5: Plotly code -->
+      <div class="cell-label-outside"><span>CODE CELL [3]</span> — One line with Plotly Express. Complex chart, minimal code.</div>
+      <div class="nb-cell code-cell">
+        <div class="cell-gutter">
+          <div class="run-btn">▶</div>
+          <div class="cell-type-tag">IN</div>
+        </div>
+        <div class="cell-body">
+          <div class="code-block">
+<span class="var">fig</span> = <span class="fn">px.line</span>(
+    <span class="var">df</span>, <span class="var">x</span>=<span class="str">'date'</span>, <span class="var">y</span>=<span class="str">'revenue'</span>,
+    <span class="var">color</span>=<span class="str">'region'</span>,
+    <span class="var">title</span>=<span class="str">'Revenue by Region Over Time'</span>
+)
+<span class="var">fig</span>.<span class="fn">show</span>()  <span class="cm"># renders interactive chart in notebook</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CELL TYPES -->
+  <section>
+    <div class="sec-label" style="animation: fadeUp 0.7s 0.18s ease both; opacity:0; animation-fill-mode:both;">The Three Cell Types</div>
+    <div class="cell-types">
+      <div class="ct-block code">
+        <div class="ct-name">Code Cell</div>
+        <div class="ct-desc">Executes Python (or R, Julia, etc). Output — text, tables, charts — appears immediately below. Cells share a common memory space (kernel state).</div>
+        <div class="ct-example"><span class="kw">df</span> = px.scatter(data, x=<span class="str">'x'</span>, y=<span class="str">'y'</span>)</div>
+      </div>
+      <div class="ct-block markdown">
+        <div class="ct-name">Markdown Cell</div>
+        <div class="ct-desc">Renders formatted documentation inline. Supports headers, bold, italic, bullet lists, LaTeX math equations, and embedded images.</div>
+        <div class="ct-example">## Analysis<br>**Key finding:** revenue grew 23%</div>
+      </div>
+      <div class="ct-block raw">
+        <div class="ct-name">Raw Cell</div>
+        <div class="ct-desc">Passes content through unmodified. Used when converting notebooks to other formats (PDF, HTML, slides) via nbconvert. Rarely needed day-to-day.</div>
+        <div class="ct-example">.. raw:: html<br>&lt;custom output here&gt;</div>
+      </div>
+    </div>
+  </section>
+
+  <div style="height:48px"></div>
+
+  <!-- DATA SCIENCE WORKFLOW -->
+  <section class="workflow">
+    <div class="sec-label">The Data Science Workflow in Jupyter</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <span class="flow-icon">📥</span>
+        <div class="flow-name">INGEST</div>
+        <div class="flow-lib">Load data</div>
+        <div class="flow-tool">pandas</div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-icon">🔍</span>
+        <div class="flow-name">EXPLORE</div>
+        <div class="flow-lib">EDA</div>
+        <div class="flow-tool">df.describe()</div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-icon">🧹</span>
+        <div class="flow-name">CLEAN</div>
+        <div class="flow-lib">Wrangle</div>
+        <div class="flow-tool">pandas</div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-icon">📊</span>
+        <div class="flow-name">VISUALIZE</div>
+        <div class="flow-lib">Charts</div>
+        <div class="flow-tool">plotly</div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-icon">🤖</span>
+        <div class="flow-name">MODEL</div>
+        <div class="flow-lib">ML</div>
+        <div class="flow-tool">sklearn</div>
+      </div>
+      <div class="flow-step">
+        <span class="flow-icon">📤</span>
+        <div class="flow-name">SHARE</div>
+        <div class="flow-lib">Export</div>
+        <div class="flow-tool">nbconvert</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLOTLY CHARTS -->
+  <section class="charts-section">
+    <div class="sec-label">Plotly Chart Types — Live & Interactive</div>
+    <p class="charts-intro">
+      Every chart below is real Plotly output — hover, zoom, and click the legend. Plotly renders directly in Jupyter notebooks as interactive HTML. No static images.
+    </p>
+
+    <div class="chart-grid">
+
+      <!-- Line chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Line Chart — Trend Over Time</div>
+          <div class="chart-tag" style="border-color:var(--cyan);color:var(--cyan)">px.line</div>
+        </div>
+        <div class="chart-body">
+          <div id="chart-line" style="height:240px"></div>
+        </div>
+        <div class="chart-code">
+          <span class="active">fig = px.line(df, x='month', y='revenue', color='product')</span>
+        </div>
+      </div>
+
+      <!-- Bar chart -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Bar Chart — Comparison</div>
+          <div class="chart-tag" style="border-color:var(--orange);color:var(--orange)">px.bar</div>
+        </div>
+        <div class="chart-body">
+          <div id="chart-bar" style="height:240px"></div>
+        </div>
+        <div class="chart-code">
+          <span class="active">fig = px.bar(df, x='region', y='sales', color='category', barmode='group')</span>
+        </div>
+      </div>
+
+      <!-- Scatter -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Scatter Plot — Correlation</div>
+          <div class="chart-tag" style="border-color:var(--pink);color:var(--pink)">px.scatter</div>
+        </div>
+        <div class="chart-body">
+          <div id="chart-scatter" style="height:240px"></div>
+        </div>
+        <div class="chart-code">
+          <span class="active">fig = px.scatter(df, x='spend', y='revenue', size='units', color='region')</span>
+        </div>
+      </div>
+
+      <!-- Heatmap -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">Heatmap — Correlation Matrix</div>
+          <div class="chart-tag" style="border-color:var(--purple);color:var(--purple)">go.Heatmap</div>
+        </div>
+        <div class="chart-body">
+          <div id="chart-heat" style="height:240px"></div>
+        </div>
+        <div class="chart-code">
+          <span class="active">fig = go.Figure(go.Heatmap(z=corr_matrix, colorscale='Viridis'))</span>
+        </div>
+      </div>
+
+      <!-- Wide: Sunburst -->
+      <div class="chart-card wide">
+        <div class="chart-header">
+          <div class="chart-title">Sunburst — Hierarchical Data Breakdown</div>
+          <div class="chart-tag" style="border-color:var(--green);color:var(--green)">px.sunburst</div>
+        </div>
+        <div class="chart-body" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center">
+          <div id="chart-sunburst" style="height:300px"></div>
+          <div style="padding:16px 8px">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--green);margin-bottom:12px">Why Sunburst?</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:10px">Visualizes nested categorical data — like region → product → SKU — in a single view. Click a segment to drill in.</div>
+            <div style="font-size:10px;padding:10px;background:var(--code-bg);color:var(--muted);line-height:1.6">fig = px.sunburst(<br>&nbsp;&nbsp;df,<br>&nbsp;&nbsp;path=[<span style="color:var(--green)">'region','product','sku'</span>],<br>&nbsp;&nbsp;values=<span style="color:var(--green)">'revenue'</span><br>)</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MAGIC COMMANDS -->
+  <section class="magic-section">
+    <div class="sec-label">Jupyter Magic Commands — Superpower Shortcuts</div>
+    <div class="magic-grid">
+      <div class="magic-row">
+        <div class="magic-cmd">%timeit code</div>
+        <div class="magic-desc">Benchmarks a line of code — runs it many times and reports average execution time.</div>
+      </div>
+      <div class="magic-row">
+        <div class="magic-cmd">%%time</div>
+        <div class="magic-desc">Times an entire cell's execution. Essential for optimizing slow operations.</div>
+      </div>
+      <div class="magic-row">
+        <div class="magic-cmd">%matplotlib inline</div>
+        <div class="magic-desc">Renders matplotlib charts inside the notebook (not needed for Plotly — it's automatic).</div>
+      </div>
+      <div class="magic-row">
+        <div class="magic-cmd">%who / %whos</div>
+        <div class="magic-desc">Lists all variables in the current kernel namespace. Useful for debugging memory.</div>
+      </div>
+      <div class="magic-row">
+        <div class="magic-cmd">%%writefile file.py</div>
+        <div class="magic-desc">Writes the cell's content to a Python file. Export code directly from a notebook.</div>
+      </div>
+      <div class="magic-row">
+        <div class="magic-cmd">%load_ext autoreload</div>
+        <div class="magic-desc">Auto-reloads imported modules when they change — no kernel restart needed during dev.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEYBOARD SHORTCUTS -->
+  <section class="shortcuts-section">
+    <div class="sec-label">Essential Keyboard Shortcuts</div>
+    <div class="shortcuts-wrap">
+      <div class="shortcut">
+        <div class="kbd"><div class="key">Shift</div><div class="key">↵</div></div>
+        <div class="shortcut-desc">Run cell + move to next</div>
+      </div>
+      <div class="shortcut">
+        <div class="kbd"><div class="key">Ctrl</div><div class="key">↵</div></div>
+        <div class="shortcut-desc">Run cell in place</div>
+      </div>
+      <div class="shortcut">
+        <div class="kbd"><div class="key">A</div></div>
+        <div class="shortcut-desc">Insert cell above</div>
+      </div>
+      <div class="shortcut">
+        <div class="kbd"><div class="key">B</div></div>
+        <div class="shortcut-desc">Insert cell below</div>
+      </div>
+      <div class="shortcut">
+        <div class="kbd"><div class="key">D</div><div class="key">D</div></div>
+        <div class="shortcut-desc">Delete current cell</div>
+      </div>
+      <div class="shortcut">
+        <div class="kbd"><div class="key">M</div></div>
+        <div class="shortcut-desc">Convert to Markdown</div>
+      </div>
+      <div class="shortcut">
+        <div class="kbd"><div class="key">Y</div></div>
+        <div class="shortcut-desc">Convert to Code</div>
+      </div>
+      <div class="shortcut">
+        <div class="kbd"><div class="key">Z</div></div>
+        <div class="shortcut-desc">Undo cell deletion</div>
+      </div>
+      <div class="shortcut">
+        <div class="kbd"><div class="key">00</div></div>
+        <div class="shortcut-desc">Restart kernel</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Jupyter Notebooks + Plotly · Data Science Visual Reference</footer>
+</div>
+
+<script>
+const DARK = {
+  plot_bgcolor: '#12151e',
+  paper_bgcolor: '#12151e',
+  font: { family: 'Share Tech Mono, monospace', color: '#4a5068', size: 10 },
+  xaxis: { gridcolor: '#1f2535', zerolinecolor: '#1f2535' },
+  yaxis: { gridcolor: '#1f2535', zerolinecolor: '#1f2535' },
+  legend: { bgcolor: 'rgba(0,0,0,0)', bordercolor: '#1f2535', borderwidth: 1 },
+  margin: { t: 16, b: 36, l: 44, r: 16 }
+};
+
+const CONFIG = { displayModeBar: false, responsive: true };
+
+// ── LINE CHART ──
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
+const products = ['Pro Plan','Starter','Enterprise'];
+const colors = ['#00d4ff','#39ff14','#ff7f00'];
+const lineTraces = products.map((p, i) => ({
+  x: months,
+  y: months.map(() => Math.round(Math.random()*40000 + (i===2?60000:i===0?30000:10000) + Math.random()*8000)),
+  name: p,
+  type: 'scatter',
+  mode: 'lines+markers',
+  line: { color: colors[i], width: 2 },
+  marker: { color: colors[i], size: 4 }
+}));
+
+Plotly.newPlot('chart-line', lineTraces, {
+  ...DARK,
+  showlegend: true,
+  xaxis: { ...DARK.xaxis, color: '#4a5068' },
+  yaxis: { ...DARK.yaxis, color: '#4a5068', tickformat: '$,.0f' }
+}, CONFIG);
+
+// ── BAR CHART ──
+const regions = ['West','East','North','South'];
+const cats = ['Hardware','Software','Services'];
+const barColors = ['#ff2d78','#9b5de5','#ffe600'];
+const barTraces = cats.map((c, i) => ({
+  x: regions,
+  y: regions.map(() => Math.round(Math.random()*80000+20000)),
+  name: c,
+  type: 'bar',
+  marker: { color: barColors[i], opacity: 0.85 }
+}));
+
+Plotly.newPlot('chart-bar', barTraces, {
+  ...DARK,
+  barmode: 'group',
+  showlegend: true,
+  xaxis: { ...DARK.xaxis, color: '#4a5068' },
+  yaxis: { ...DARK.yaxis, color: '#4a5068', tickformat: '$,.0f' }
+}, CONFIG);
+
+// ── SCATTER ──
+const scatRegions = ['West','East','North','South'];
+const scatColors = ['#00d4ff','#ff2d78','#39ff14','#ff7f00'];
+const scatterTraces = scatRegions.map((r, i) => {
+  const n = 18;
+  return {
+    x: Array.from({length:n}, () => Math.random()*80+20),
+    y: Array.from({length:n}, () => Math.random()*120000+10000),
+    mode: 'markers',
+    name: r,
+    marker: {
+      color: scatColors[i],
+      size: Array.from({length:n}, () => Math.random()*16+6),
+      opacity: 0.7,
+      line: { width: 0 }
+    }
+  };
+});
+
+Plotly.newPlot('chart-scatter', scatterTraces, {
+  ...DARK,
+  showlegend: true,
+  xaxis: { ...DARK.xaxis, color: '#4a5068', title: { text: 'Ad Spend ($k)', font:{color:'#4a5068',size:9} } },
+  yaxis: { ...DARK.yaxis, color: '#4a5068', title: { text: 'Revenue', font:{color:'#4a5068',size:9} }, tickformat: '$,.0f' }
+}, CONFIG);
+
+// ── HEATMAP ──
+const vars = ['Revenue','Units','Spend','CAC','Churn'];
+const heatZ = vars.map((_, i) => vars.map((__, j) => {
+  if (i === j) return 1;
+  const v = (Math.random() * 2 - 1).toFixed(2);
+  return parseFloat(v);
+}));
+
+Plotly.newPlot('chart-heat', [{
+  z: heatZ,
+  x: vars, y: vars,
+  type: 'heatmap',
+  colorscale: [
+    [0, '#c0392b'], [0.5, '#12151e'], [1, '#00d4ff']
+  ],
+  showscale: true,
+  zmin: -1, zmax: 1
+}], {
+  ...DARK,
+  xaxis: { ...DARK.xaxis, color: '#4a5068', side: 'bottom' },
+  yaxis: { ...DARK.yaxis, color: '#4a5068', autorange: 'reversed' },
+  margin: { t: 16, b: 48, l: 68, r: 16 }
+}, CONFIG);
+
+// ── SUNBURST ──
+Plotly.newPlot('chart-sunburst', [{
+  type: 'sunburst',
+  labels: [
+    'Total',
+    'West','East','South',
+    'W-Pro','W-Start','W-Ent',
+    'E-Pro','E-Start',
+    'S-Pro','S-Start','S-Ent'
+  ],
+  parents: [
+    '',
+    'Total','Total','Total',
+    'West','West','West',
+    'East','East',
+    'South','South','South'
+  ],
+  values: [0, 0, 0, 0, 48000,22000,61000, 31000,18000, 27000,12000,38000],
+  branchvalues: 'total',
+  marker: {
+    colors: ['#12151e','#00d4ff','#ff2d78','#39ff14',
+             '#0090aa','#007a55','#004b6b',
+             '#aa1f55','#6b0030',
+             '#1a8c00','#005c3a','#003d1a'],
+    line: { color: '#0c0e14', width: 2 }
+  },
+  textfont: { color: '#d8dce8', size: 11 },
+  hovertemplate: '<b>%{label}</b><br>Revenue: $%{value:,}<extra></extra>'
+}], {
+  ...DARK,
+  margin: { t: 0, b: 0, l: 0, r: 0 }
+}, CONFIG);
+</script>
+</body>
+</html>

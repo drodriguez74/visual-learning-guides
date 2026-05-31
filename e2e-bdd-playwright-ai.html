@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E2E BDD Automation · Playwright + Cucumber + AI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #0e1116;
+  --surface: #161b22;
+  --surface2: #1c2230;
+  --panel: #11151c;
+  --border: #242c38;
+  --border2: #2f3a4a;
+  --text: #e6edf3;
+  --text-dim: #8b98a8;
+  --muted: #5a6675;
+
+  --pw: #2ecc71;          /* playwright green */
+  --pw-dim: rgba(46,204,113,0.12);
+  --cuke: #27ae60;
+  --gherkin: #f1c40f;     /* spec yellow */
+  --gherkin-dim: rgba(241,196,15,0.1);
+  --step: #58a6ff;        /* code blue */
+  --step-dim: rgba(88,166,255,0.1);
+  --new: #a371f7;         /* greenfield purple */
+  --new-dim: rgba(163,113,247,0.1);
+  --exist: #f0883e;       /* brownfield orange */
+  --exist-dim: rgba(240,136,62,0.1);
+  --pink: #f778ba;
+  --red: #f85149;
+
+  /* code editor tokens */
+  --code-bg: #0a0d12;
+  --c-kw: #ff7b72;
+  --c-type: #79c0ff;
+  --c-fn: #d2a8ff;
+  --c-str: #a5d6ff;
+  --c-num: #79c0ff;
+  --c-cm: #5a6675;
+  --c-ann: #ffa657;
+  --c-punc: #8b98a8;
+  /* gherkin tokens */
+  --g-feat: #f1c40f;
+  --g-scen: #ffa657;
+  --g-given: #79c0ff;
+  --g-when: #d2a8ff;
+  --g-then: #56d4c4;
+  --g-and: #8b98a8;
+  --g-tag: #f778ba;
+  --g-str: #a5d6ff;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* subtle dotted bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 26px 100px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ════ HERO ════ */
+.hero {
+  margin-bottom: 64px;
+  animation: rise 0.7s ease both;
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.logo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 11px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+}
+.logo-chip .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+h1 {
+  font-weight: 700;
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+h1 .grad {
+  background: linear-gradient(120deg, var(--pw), var(--step));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-sub {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--text-dim);
+  max-width: 600px;
+  line-height: 1.7;
+}
+
+.hero-meta {
+  margin-top: 24px;
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.meta-item .meta-n {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--pw);
+}
+.meta-item .meta-l {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ════ SECTION ════ */
+.sec { margin-bottom: 60px; animation: rise 0.6s ease both; opacity: 0; animation-fill-mode: both; }
+
+.sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+.sec-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pw);
+  border: 1px solid var(--pw);
+  border-radius: 5px;
+  padding: 3px 8px;
+  flex-shrink: 0;
+}
+.sec-title { font-weight: 600; font-size: 1.55rem; letter-spacing: -0.01em; }
+.sec-intro { font-size: 13px; color: var(--text-dim); line-height: 1.7; max-width: 720px; margin: 10px 0 26px; }
+.sec-intro strong { color: var(--text); font-weight: 600; }
+
+/* ════ CODE EDITOR (IDE-quality) ════ */
+.editor {
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--code-bg);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  margin-bottom: 18px;
+}
+.editor-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border2);
+}
+.traffic { display: flex; gap: 7px; }
+.traffic i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+.editor-file {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.editor-file .ext {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.editor-lang {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+pre.code {
+  margin: 0;
+  padding: 16px 18px 16px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.75;
+  counter-reset: ln;
+  tab-size: 2;
+}
+pre.code .cl {
+  counter-increment: ln;
+  display: block;
+  white-space: pre;
+  padding-left: 8px;
+}
+pre.code .cl::before {
+  content: counter(ln);
+  display: inline-block;
+  width: 34px;
+  margin-right: 18px;
+  padding-right: 10px;
+  text-align: right;
+  color: #313b48;
+  border-right: 1px solid var(--border);
+  user-select: none;
+}
+pre.code .cl:hover { background: rgba(255,255,255,0.03); }
+
+/* code tokens */
+.kw { color: var(--c-kw); }
+.ty { color: var(--c-type); }
+.fn { color: var(--c-fn); }
+.st { color: var(--c-str); }
+.nu { color: var(--c-num); }
+.cm { color: var(--c-cm); font-style: italic; }
+.an { color: var(--c-ann); }
+.pu { color: var(--c-punc); }
+.df { color: var(--text); }
+
+/* gherkin tokens */
+.gfeat { color: var(--g-feat); font-weight: 600; }
+.gscen { color: var(--g-scen); font-weight: 600; }
+.ggiv { color: var(--g-given); font-weight: 500; }
+.gwhen { color: var(--g-when); font-weight: 500; }
+.gthen { color: var(--g-then); font-weight: 500; }
+.gand { color: var(--g-and); }
+.gtag { color: var(--g-tag); }
+.gstr { color: var(--g-str); }
+.gcm { color: var(--c-cm); font-style: italic; }
+.gtab { color: var(--text-dim); }
+
+/* ════ PIPELINE ════ */
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.pl-stage {
+  padding: 18px 14px;
+  border-right: 1px solid var(--border);
+  position: relative;
+  text-align: center;
+  transition: background 0.2s;
+}
+.pl-stage:last-child { border-right: none; }
+.pl-stage:hover { background: var(--surface2); }
+.pl-stage::after {
+  content: '›';
+  position: absolute; right: -7px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--border2); font-size: 20px; z-index: 2;
+  background: var(--surface); width: 14px; text-align: center;
+}
+.pl-stage:last-child::after { display: none; }
+.pl-ico { font-size: 1.3rem; margin-bottom: 8px; display: block; }
+.pl-name { font-size: 11px; font-weight: 600; margin-bottom: 5px; }
+.pl-tool {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; padding: 2px 6px; border-radius: 4px;
+  display: inline-block;
+}
+.pl-stage:nth-child(1) .pl-tool { background: var(--gherkin-dim); color: var(--gherkin); }
+.pl-stage:nth-child(2) .pl-tool { background: var(--gherkin-dim); color: var(--gherkin); }
+.pl-stage:nth-child(3) .pl-tool { background: var(--step-dim); color: var(--step); }
+.pl-stage:nth-child(4) .pl-tool { background: var(--pw-dim); color: var(--pw); }
+.pl-stage:nth-child(5) .pl-tool { background: var(--pw-dim); color: var(--pw); }
+.pl-stage:nth-child(6) .pl-tool { background: var(--new-dim); color: var(--new); }
+
+/* ════ JOURNEY RECIPE ════ */
+.recipe-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.rstep {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  transition: background 0.2s;
+}
+.rstep:last-child { border-bottom: none; }
+.rstep:hover { background: var(--surface2); }
+.rstep-n {
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600; font-size: 1.1rem;
+  color: var(--bg);
+  background: linear-gradient(160deg, var(--pw), var(--cuke));
+  border-right: 1px solid var(--border);
+}
+.rstep-body { padding: 16px 20px; }
+.rstep-t { font-weight: 600; font-size: 14px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+.rstep-t .q {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; font-weight: 500;
+  color: var(--pw); border: 1px solid var(--border2);
+  padding: 2px 7px; border-radius: 100px;
+}
+.rstep-d { font-size: 12.5px; color: var(--text-dim); line-height: 1.65; }
+.rstep-d code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; background: var(--panel);
+  padding: 1px 6px; border-radius: 4px; color: var(--c-type);
+}
+
+/* priority matrix */
+.matrix-wrap {
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.matrix-head {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 10px;
+}
+.matrix-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+}
+.mq {
+  padding: 18px;
+  background: var(--surface);
+  min-height: 110px;
+}
+.mq-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.05em;
+  margin-bottom: 8px; font-weight: 600;
+}
+.mq-verdict { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.mq-desc { font-size: 11px; color: var(--text-dim); line-height: 1.55; }
+.mq.p1 { background: rgba(46,204,113,0.06); }
+.mq.p1 .mq-label { color: var(--pw); }
+.mq.p2 { background: rgba(88,166,255,0.05); }
+.mq.p2 .mq-label { color: var(--step); }
+.mq.p3 { background: rgba(240,136,62,0.05); }
+.mq.p3 .mq-label { color: var(--exist); }
+.mq.p4 { background: rgba(248,81,73,0.04); }
+.mq.p4 .mq-label { color: var(--red); }
+
+/* ════ FOLDER TREE ════ */
+.tree {
+  background: var(--code-bg);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 18px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 1.85;
+  color: var(--text-dim);
+  overflow-x: auto;
+}
+.tree .dir { color: var(--c-type); }
+.tree .file { color: var(--text-dim); }
+.tree .feat { color: var(--gherkin); }
+.tree .step { color: var(--step); }
+.tree .po { color: var(--pw); }
+.tree .cmt { color: var(--muted); }
+
+/* ════ TWO PATHS ════ */
+.paths {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.path {
+  border: 1.5px solid;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.path.greenfield { border-color: var(--new); }
+.path.brownfield { border-color: var(--exist); }
+.path-head {
+  padding: 16px 20px;
+  display: flex; align-items: flex-start; gap: 13px;
+}
+.path.greenfield .path-head { background: var(--new-dim); }
+.path.brownfield .path-head { background: var(--exist-dim); }
+.path-ico { font-size: 1.6rem; }
+.path-title { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.01em; }
+.path.greenfield .path-title { color: var(--new); }
+.path.brownfield .path-title { color: var(--exist); }
+.path-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.path-body { padding: 18px 20px; }
+.pstep { display: grid; grid-template-columns: 22px 1fr; gap: 11px; padding: 11px 0; border-bottom: 1px dashed var(--border); }
+.pstep:last-of-type { border-bottom: none; }
+.pstep-n {
+  width: 20px; height: 20px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 600; flex-shrink: 0; margin-top: 1px;
+}
+.greenfield .pstep-n { background: var(--new); color: #fff; }
+.brownfield .pstep-n { background: var(--exist); color: #fff; }
+.pstep-t { font-size: 12.5px; font-weight: 600; margin-bottom: 2px; }
+.pstep-d { font-size: 11.5px; color: var(--text-dim); line-height: 1.6; }
+.path-gain {
+  margin-top: 14px; padding: 12px 16px;
+  border-radius: 8px; background: var(--panel);
+  display: flex; align-items: center; gap: 12px;
+}
+.gain-n { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 1.4rem; flex-shrink: 0; }
+.greenfield .gain-n { color: var(--new); }
+.brownfield .gain-n { color: var(--exist); }
+.gain-l { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+
+/* ════ PROMPT SKILL ════ */
+.skill-note {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 14px 18px; border-radius: 10px;
+  background: var(--pw-dim); border: 1px solid rgba(46,204,113,0.25);
+  margin-bottom: 22px; font-size: 12.5px; color: var(--text-dim); line-height: 1.6;
+}
+.skill-note strong { color: var(--pw); }
+
+.prompt {
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.prompt-head {
+  padding: 11px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; gap: 11px;
+}
+.prompt-idx {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; font-weight: 600;
+  color: var(--bg); background: var(--pw);
+  padding: 3px 8px; border-radius: 5px;
+}
+.prompt-title { font-weight: 600; font-size: 13px; }
+.prompt-badges { margin-left: auto; display: flex; gap: 6px; }
+.pb { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 8px; border-radius: 100px; font-weight: 500; }
+.pb.new { background: var(--new-dim); color: var(--new); border: 1px solid rgba(163,113,247,0.3); }
+.pb.exist { background: var(--exist-dim); color: var(--exist); border: 1px solid rgba(240,136,62,0.3); }
+.pb.both { background: var(--step-dim); color: var(--step); border: 1px solid rgba(88,166,255,0.3); }
+
+.prompt-body {
+  background: var(--code-bg);
+  padding: 14px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px; line-height: 1.7;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+}
+.prompt-body .ph { color: var(--c-ann); }
+.prompt-body .hd { color: var(--pw); font-weight: 600; }
+.prompt-body .em { color: var(--text); }
+
+/* ════ FOOTER ════ */
+footer {
+  border-top: 1px solid var(--border);
+  padding-top: 22px; margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted);
+  text-align: center;
+  animation: rise 0.6s 0.8s ease both; opacity: 0; animation-fill-mode: both;
+}
+
+@keyframes rise { from { opacity: 0; transform: translateY(18px);} to { opacity: 1; transform: none; } }
+
+@media (max-width: 760px) {
+  .pipeline { grid-template-columns: repeat(2,1fr); }
+  .pl-stage:nth-child(2)::after, .pl-stage:nth-child(4)::after { display:none; }
+  .matrix-grid { grid-template-columns: 1fr; }
+  .paths { grid-template-columns: 1fr; }
+  pre.code { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════ HERO ════ -->
+  <header class="hero">
+    <div class="hero-top">
+      <span class="logo-chip"><span class="dot" style="background:var(--pw)"></span>Playwright</span>
+      <span class="logo-chip"><span class="dot" style="background:var(--cuke)"></span>Cucumber</span>
+      <span class="logo-chip"><span class="dot" style="background:var(--gherkin)"></span>Gherkin</span>
+      <span class="logo-chip"><span class="dot" style="background:var(--new)"></span>AI-Accelerated</span>
+    </div>
+    <h1>End-to-End <span class="grad">BDD Automation</span><br>For Any UI</h1>
+    <p class="hero-sub">
+      A complete playbook for standing up or extending a behaviour-driven test suite with Playwright and Cucumber — including how to extract user journeys from any interface, structure the framework, and use AI to do it in a fraction of the time. Works for greenfield (no automation) and brownfield (existing automation) alike.
+    </p>
+    <div class="hero-meta">
+      <div class="meta-item"><div class="meta-n">7</div><div class="meta-l">Phase pipeline</div></div>
+      <div class="meta-item"><div class="meta-n">6</div><div class="meta-l">Journey recipe steps</div></div>
+      <div class="meta-item"><div class="meta-n">8</div><div class="meta-l">Reusable AI prompts</div></div>
+      <div class="meta-item"><div class="meta-n">~70%</div><div class="meta-l">Time saved w/ AI</div></div>
+    </div>
+  </header>
+
+  <!-- ════ 01 PIPELINE ════ -->
+  <section class="sec" style="animation-delay:0.05s">
+    <div class="sec-head"><span class="sec-num">01</span><span class="sec-title">The End-to-End BDD Loop</span></div>
+    <p class="sec-intro">Every automated journey flows through the same seven phases. The first two are plain English; the rest is code Playwright executes. <strong>AI can accelerate every single phase</strong> — and the loop closes with the CI report feeding the next round of journeys.</p>
+    <div class="pipeline">
+      <div class="pl-stage"><span class="pl-ico">🧭</span><div class="pl-name">Extract Journeys</div><span class="pl-tool">discovery</span></div>
+      <div class="pl-stage"><span class="pl-ico">📝</span><div class="pl-name">Write Gherkin</div><span class="pl-tool">.feature</span></div>
+      <div class="pl-stage"><span class="pl-ico">🔗</span><div class="pl-name">Step Defs</div><span class="pl-tool">Java</span></div>
+      <div class="pl-stage"><span class="pl-ico">🎭</span><div class="pl-name">Page Objects</div><span class="pl-tool">Playwright</span></div>
+      <div class="pl-stage"><span class="pl-ico">▶️</span><div class="pl-name">Execute</div><span class="pl-tool">Cucumber</span></div>
+      <div class="pl-stage"><span class="pl-ico">📊</span><div class="pl-name">Report + CI</div><span class="pl-tool">pipeline</span></div>
+    </div>
+  </section>
+
+  <!-- ════ 02 JOURNEY RECIPE ════ -->
+  <section class="sec" style="animation-delay:0.1s">
+    <div class="sec-head"><span class="sec-num">02</span><span class="sec-title">Recipe: Extracting User Journeys</span></div>
+    <p class="sec-intro">Before a single line of Gherkin, you decide <strong>what to automate</strong>. Point this six-question recipe at any UI — new or existing — and it yields a prioritized, decomposed set of journeys ready to become feature files. This is the step most teams skip, and it's why suites become brittle and bloated.</p>
+
+    <div class="recipe-steps">
+      <div class="rstep">
+        <div class="rstep-n">1</div>
+        <div class="rstep-body">
+          <div class="rstep-t">Inventory the surface <span class="q">WHAT exists?</span></div>
+          <div class="rstep-d">Walk every screen and list each page, modal, and state. For an existing app, crawl the sitemap or route table. Output: a flat list of every place a user can be. AI can parse a sitemap, route config, or screenshots into this inventory instantly.</div>
+        </div>
+      </div>
+      <div class="rstep">
+        <div class="rstep-n">2</div>
+        <div class="rstep-body">
+          <div class="rstep-t">Identify personas &amp; roles <span class="q">WHO uses it?</span></div>
+          <div class="rstep-d">List each distinct user type — <code>admin</code>, <code>standard</code>, <code>guest</code>, <code>read-only</code>. Each persona has different journeys and permissions. This directly seeds your <code>Scenario Outline</code> Examples tables later.</div>
+        </div>
+      </div>
+      <div class="rstep">
+        <div class="rstep-n">3</div>
+        <div class="rstep-body">
+          <div class="rstep-t">Map the critical paths <span class="q">WHAT delivers value?</span></div>
+          <div class="rstep-d">For each persona, trace the end-to-end flows that produce real outcomes: <em>"log in → search → add to cart → checkout"</em>. These are journeys, not pages. A journey crosses multiple screens toward a goal.</div>
+        </div>
+      </div>
+      <div class="rstep">
+        <div class="rstep-n">4</div>
+        <div class="rstep-body">
+          <div class="rstep-t">Score by risk × frequency <span class="q">WHAT first?</span></div>
+          <div class="rstep-d">Don't automate everything. Rank each journey on how often it runs and how costly its failure is. High-risk + high-frequency journeys get automated first (see the matrix below). This keeps the suite lean and high-value.</div>
+        </div>
+      </div>
+      <div class="rstep">
+        <div class="rstep-n">5</div>
+        <div class="rstep-body">
+          <div class="rstep-t">Decompose into atomic steps <span class="q">HOW does it flow?</span></div>
+          <div class="rstep-d">Break each journey into discrete user actions and expected outcomes. Each becomes a <code>Given</code> / <code>When</code> / <code>Then</code> line. Tag steps that recur across journeys — those become shared, reusable step definitions.</div>
+        </div>
+      </div>
+      <div class="rstep">
+        <div class="rstep-n">6</div>
+        <div class="rstep-body">
+          <div class="rstep-t">Define data &amp; preconditions <span class="q">WHAT state?</span></div>
+          <div class="rstep-d">Each journey needs test data (users, products, fixtures) and a starting state. Capture these now so your <code>Background</code> blocks and data factories write themselves. Output of this recipe = a ready-to-write feature backlog.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-wrap">
+      <div class="matrix-head">📐 Step 4 — Risk × Frequency Prioritization Matrix</div>
+      <div class="matrix-grid">
+        <div class="mq p1">
+          <div class="mq-label">HIGH RISK · HIGH FREQUENCY</div>
+          <div class="mq-verdict">→ Automate first (P1)</div>
+          <div class="mq-desc">Login, checkout, payment, core CRUD. Run on every commit. Your smoke + regression backbone.</div>
+        </div>
+        <div class="mq p2">
+          <div class="mq-label">HIGH RISK · LOW FREQUENCY</div>
+          <div class="mq-verdict">→ Automate next (P2)</div>
+          <div class="mq-desc">Account deletion, refunds, admin overrides. Rare but catastrophic if broken. Nightly runs.</div>
+        </div>
+        <div class="mq p3">
+          <div class="mq-label">LOW RISK · HIGH FREQUENCY</div>
+          <div class="mq-verdict">→ Automate selectively (P3)</div>
+          <div class="mq-desc">Search filters, sorting, navigation. Automate the happy path; skip exhaustive variants.</div>
+        </div>
+        <div class="mq p4">
+          <div class="mq-label">LOW RISK · LOW FREQUENCY</div>
+          <div class="mq-verdict">→ Leave manual (P4)</div>
+          <div class="mq-desc">Cosmetic settings, edge tooltips. Manual or exploratory testing. Don't pay the maintenance tax.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ 03 FRAMEWORK STRUCTURE ════ -->
+  <section class="sec" style="animation-delay:0.15s">
+    <div class="sec-head"><span class="sec-num">03</span><span class="sec-title">Framework Structure (Maven + Playwright + Cucumber)</span></div>
+    <p class="sec-intro">A clean separation of concerns is what keeps a suite maintainable. Features describe behaviour, step definitions translate it, page objects own all the Playwright selectors. <strong>Nothing in a step definition ever touches a raw selector.</strong></p>
+    <div class="tree">
+<span class="dir">src/test/</span>
+├── <span class="dir">java/com/fiserv/qa/</span>
+│   ├── <span class="dir">runners/</span>
+│   │   └── <span class="step">TestRunner.java</span>          <span class="cmt"># @Cucumber JUnit5 entry point</span>
+│   ├── <span class="dir">stepdefs/</span>
+│   │   ├── <span class="step">LoginSteps.java</span>          <span class="cmt"># maps Gherkin → page object calls</span>
+│   │   └── <span class="step">CheckoutSteps.java</span>
+│   ├── <span class="dir">pages/</span>                     <span class="cmt"># Page Object Model — owns ALL selectors</span>
+│   │   ├── <span class="po">LoginPage.java</span>
+│   │   └── <span class="po">CheckoutPage.java</span>
+│   ├── <span class="dir">hooks/</span>
+│   │   └── <span class="step">PlaywrightHooks.java</span>     <span class="cmt"># @Before/@After: browser lifecycle</span>
+│   └── <span class="dir">support/</span>
+│       ├── <span class="step">World.java</span>               <span class="cmt"># shared Page/context per scenario</span>
+│       └── <span class="step">TestDataFactory.java</span>     <span class="cmt"># fixtures, users, products</span>
+└── <span class="dir">resources/</span>
+    ├── <span class="dir">features/</span>                  <span class="cmt"># plain-English specs</span>
+    │   ├── <span class="feat">login.feature</span>
+    │   └── <span class="feat">checkout.feature</span>
+    └── <span class="file">cucumber.properties</span>
+    </div>
+  </section>
+
+  <!-- ════ 04 GHERKIN ════ -->
+  <section class="sec" style="animation-delay:0.2s">
+    <div class="sec-head"><span class="sec-num">04</span><span class="sec-title">Layer 1 — Gherkin Feature File</span></div>
+    <p class="sec-intro">Plain English, rigid grammar. This is the journey from Recipe Step 5, written down. Anyone — QA, BA, product — can read and validate it. <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--panel);padding:1px 6px;border-radius:4px;color:var(--c-type)">Background</code> runs before each scenario; <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--panel);padding:1px 6px;border-radius:4px;color:var(--c-type)">Scenario Outline</code> drives the same steps with multiple data rows.</p>
+    <div class="editor">
+      <div class="editor-bar">
+        <div class="traffic"><i style="background:#ff5f56"></i><i style="background:#ffbd2e"></i><i style="background:#27c93f"></i></div>
+        <div class="editor-file"><span class="ext" style="background:var(--gherkin-dim);color:var(--gherkin)">feature</span>checkout.feature</div>
+        <div class="editor-lang">Gherkin</div>
+      </div>
+<pre class="code"><span class="cl"><span class="gtag">@checkout @regression</span></span><span class="cl"><span class="gfeat">Feature:</span> Guest checkout flow</span><span class="cl"></span><span class="cl">  <span class="gcm"># Background runs before EVERY scenario below</span></span><span class="cl">  <span class="gscen">Background:</span></span><span class="cl">    <span class="ggiv">Given</span> the store is open at <span class="gstr">"https://shop.example.com"</span></span><span class="cl">    <span class="gand">And</span> the cart is empty</span><span class="cl"></span><span class="cl">  <span class="gscen">Scenario:</span> Guest completes a purchase with one item</span><span class="cl">    <span class="ggiv">Given</span> a guest user is browsing the catalog</span><span class="cl">    <span class="gwhen">When</span> they add <span class="gstr">"Wireless Mouse"</span> to the cart</span><span class="cl">    <span class="gand">And</span> they proceed to checkout</span><span class="cl">    <span class="gand">And</span> they enter valid shipping details</span><span class="cl">    <span class="gand">And</span> they submit payment <span class="gstr">"4242 4242 4242 4242"</span></span><span class="cl">    <span class="gthen">Then</span> an order confirmation number is displayed</span><span class="cl">    <span class="gand">And</span> a confirmation email is queued</span><span class="cl"></span><span class="cl">  <span class="gcm"># One scenario, many data rows — driven by the Examples table</span></span><span class="cl">  <span class="gscen">Scenario Outline:</span> Checkout is blocked with invalid cards</span><span class="cl">    <span class="ggiv">Given</span> a guest has <span class="gstr">"Wireless Mouse"</span> in the cart</span><span class="cl">    <span class="gwhen">When</span> they submit payment <span class="gstr">"&lt;card&gt;"</span></span><span class="cl">    <span class="gthen">Then</span> they see the error <span class="gstr">"&lt;message&gt;"</span></span><span class="cl"></span><span class="cl">    <span class="gscen">Examples:</span></span><span class="cl">      <span class="gtab">| card                | message              |</span></span><span class="cl">      <span class="gtab">| 4000 0000 0000 0002 | Card declined        |</span></span><span class="cl">      <span class="gtab">| 4000 0000 0000 0069 | Card expired         |</span></span><span class="cl">      <span class="gtab">| 1111 1111 1111 1111 | Invalid card number  |</span></span></pre>
+    </div>
+  </section>
+
+  <!-- ════ 05 STEP DEFS ════ -->
+  <section class="sec" style="animation-delay:0.25s">
+    <div class="sec-head"><span class="sec-num">05</span><span class="sec-title">Layer 2 — Step Definitions (the glue)</span></div>
+    <p class="sec-intro">Each annotation string matches a Gherkin line exactly; <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--panel);padding:1px 6px;border-radius:4px;color:var(--c-type)">{string}</code> captures the quoted value as a parameter. Notice the steps contain <strong>no selectors</strong> — they delegate to page objects. That's what makes them survive UI redesigns.</p>
+    <div class="editor">
+      <div class="editor-bar">
+        <div class="traffic"><i style="background:#ff5f56"></i><i style="background:#ffbd2e"></i><i style="background:#27c93f"></i></div>
+        <div class="editor-file"><span class="ext" style="background:var(--step-dim);color:var(--step)">java</span>CheckoutSteps.java</div>
+        <div class="editor-lang">Java · Cucumber-JVM</div>
+      </div>
+<pre class="code"><span class="cl"><span class="kw">package</span> com.fiserv.qa.stepdefs;</span><span class="cl"></span><span class="cl"><span class="kw">import</span> io.cucumber.java.en.*;</span><span class="cl"><span class="kw">import</span> com.fiserv.qa.pages.CheckoutPage;</span><span class="cl"><span class="kw">import</span> com.fiserv.qa.support.World;</span><span class="cl"></span><span class="cl"><span class="kw">public class</span> <span class="ty">CheckoutSteps</span> {</span><span class="cl"></span><span class="cl">  <span class="cm">// World holds the shared Playwright Page for this scenario</span></span><span class="cl">  <span class="kw">private final</span> <span class="ty">CheckoutPage</span> checkout;</span><span class="cl"></span><span class="cl">  <span class="kw">public</span> <span class="fn">CheckoutSteps</span>(<span class="ty">World</span> world) {</span><span class="cl">    <span class="kw">this</span>.checkout = <span class="kw">new</span> <span class="fn">CheckoutPage</span>(world.page);</span><span class="cl">  }</span><span class="cl"></span><span class="cl">  <span class="an">@When</span>(<span class="st">"they add {string} to the cart"</span>)</span><span class="cl">  <span class="kw">public void</span> <span class="fn">addToCart</span>(<span class="ty">String</span> product) {</span><span class="cl">    checkout.<span class="fn">addItem</span>(product);   <span class="cm">// page object does the work</span></span><span class="cl">  }</span><span class="cl"></span><span class="cl">  <span class="an">@When</span>(<span class="st">"they submit payment {string}"</span>)</span><span class="cl">  <span class="kw">public void</span> <span class="fn">submitPayment</span>(<span class="ty">String</span> cardNumber) {</span><span class="cl">    checkout.<span class="fn">payWith</span>(cardNumber);</span><span class="cl">  }</span><span class="cl"></span><span class="cl">  <span class="an">@Then</span>(<span class="st">"an order confirmation number is displayed"</span>)</span><span class="cl">  <span class="kw">public void</span> <span class="fn">verifyConfirmation</span>() {</span><span class="cl">    checkout.<span class="fn">assertConfirmationVisible</span>();</span><span class="cl">  }</span><span class="cl"></span><span class="cl">  <span class="an">@Then</span>(<span class="st">"they see the error {string}"</span>)</span><span class="cl">  <span class="kw">public void</span> <span class="fn">verifyError</span>(<span class="ty">String</span> message) {</span><span class="cl">    checkout.<span class="fn">assertErrorText</span>(message);</span><span class="cl">  }</span><span class="cl">}</span></pre>
+    </div>
+  </section>
+
+  <!-- ════ 06 PAGE OBJECT ════ -->
+  <section class="sec" style="animation-delay:0.3s">
+    <div class="sec-head"><span class="sec-num">06</span><span class="sec-title">Layer 3 — Playwright Page Object</span></div>
+    <p class="sec-intro">All selectors live here. Playwright's killer feature: <strong>locators auto-wait</strong> for elements to be visible, stable, and actionable — so you almost never write explicit waits, which is the #1 source of flaky Selenium tests. Prefer role-, label-, and test-id-based locators over CSS/XPath; they're far more resilient to redesigns.</p>
+    <div class="editor">
+      <div class="editor-bar">
+        <div class="traffic"><i style="background:#ff5f56"></i><i style="background:#ffbd2e"></i><i style="background:#27c93f"></i></div>
+        <div class="editor-file"><span class="ext" style="background:var(--pw-dim);color:var(--pw)">java</span>CheckoutPage.java</div>
+        <div class="editor-lang">Java · Playwright</div>
+      </div>
+<pre class="code"><span class="cl"><span class="kw">package</span> com.fiserv.qa.pages;</span><span class="cl"></span><span class="cl"><span class="kw">import</span> com.microsoft.playwright.*;</span><span class="cl"><span class="kw">import</span> com.microsoft.playwright.options.AriaRole;</span><span class="cl"><span class="kw">import static</span> com.microsoft.playwright.assertions</span><span class="cl">              .PlaywrightAssertions.<span class="fn">assertThat</span>;</span><span class="cl"></span><span class="cl"><span class="kw">public class</span> <span class="ty">CheckoutPage</span> {</span><span class="cl"></span><span class="cl">  <span class="kw">private final</span> <span class="ty">Page</span> page;</span><span class="cl"></span><span class="cl">  <span class="cm">// Locators defined once — resilient, role/test-id based</span></span><span class="cl">  <span class="kw">private final</span> <span class="ty">Locator</span> confirmation;</span><span class="cl">  <span class="kw">private final</span> <span class="ty">Locator</span> errorBanner;</span><span class="cl"></span><span class="cl">  <span class="kw">public</span> <span class="fn">CheckoutPage</span>(<span class="ty">Page</span> page) {</span><span class="cl">    <span class="kw">this</span>.page = page;</span><span class="cl">    <span class="kw">this</span>.confirmation = page.<span class="fn">getByTestId</span>(<span class="st">"order-confirmation"</span>);</span><span class="cl">    <span class="kw">this</span>.errorBanner  = page.<span class="fn">getByRole</span>(AriaRole.<span class="ty">ALERT</span>);</span><span class="cl">  }</span><span class="cl"></span><span class="cl">  <span class="kw">public void</span> <span class="fn">addItem</span>(<span class="ty">String</span> product) {</span><span class="cl">    <span class="cm">// auto-waits until the button is actionable — no sleep()</span></span><span class="cl">    page.<span class="fn">getByRole</span>(AriaRole.<span class="ty">LISTITEM</span>,</span><span class="cl">         <span class="kw">new</span> <span class="ty">Page</span>.<span class="fn">GetByRoleOptions</span>().<span class="fn">setName</span>(product))</span><span class="cl">        .<span class="fn">getByRole</span>(AriaRole.<span class="ty">BUTTON</span>,</span><span class="cl">         <span class="kw">new</span> <span class="ty">Locator</span>.<span class="fn">GetByRoleOptions</span>().<span class="fn">setName</span>(<span class="st">"Add"</span>))</span><span class="cl">        .<span class="fn">click</span>();</span><span class="cl">  }</span><span class="cl"></span><span class="cl">  <span class="kw">public void</span> <span class="fn">payWith</span>(<span class="ty">String</span> cardNumber) {</span><span class="cl">    page.<span class="fn">getByLabel</span>(<span class="st">"Card number"</span>).<span class="fn">fill</span>(cardNumber);</span><span class="cl">    page.<span class="fn">getByRole</span>(AriaRole.<span class="ty">BUTTON</span>,</span><span class="cl">         <span class="kw">new</span> <span class="ty">Page</span>.<span class="fn">GetByRoleOptions</span>().<span class="fn">setName</span>(<span class="st">"Pay now"</span>))</span><span class="cl">        .<span class="fn">click</span>();</span><span class="cl">  }</span><span class="cl"></span><span class="cl">  <span class="kw">public void</span> <span class="fn">assertConfirmationVisible</span>() {</span><span class="cl">    <span class="fn">assertThat</span>(confirmation).<span class="fn">isVisible</span>();  <span class="cm">// auto-retries</span></span><span class="cl">  }</span><span class="cl"></span><span class="cl">  <span class="kw">public void</span> <span class="fn">assertErrorText</span>(<span class="ty">String</span> expected) {</span><span class="cl">    <span class="fn">assertThat</span>(errorBanner).<span class="fn">hasText</span>(expected);</span><span class="cl">  }</span><span class="cl">}</span></pre>
+    </div>
+  </section>
+
+  <!-- ════ 07 TWO PATHS ════ -->
+  <section class="sec" style="animation-delay:0.35s">
+    <div class="sec-head"><span class="sec-num">07</span><span class="sec-title">Two Starting Points, One Destination</span></div>
+    <p class="sec-intro">Whether you're standing up automation from zero or extending a mature suite, the recipe is the same — only the AI strategy differs. <strong>Greenfield generates; brownfield assimilates.</strong></p>
+    <div class="paths">
+
+      <div class="path greenfield">
+        <div class="path-head">
+          <div class="path-ico">🌱</div>
+          <div>
+            <div class="path-title">Greenfield — New Suite</div>
+            <div class="path-sub">// no existing automation</div>
+          </div>
+        </div>
+        <div class="path-body">
+          <div class="pstep"><div class="pstep-n">1</div><div><div class="pstep-t">Run the journey recipe</div><div class="pstep-d">Feed AI the sitemap + screenshots → get a prioritized journey backlog.</div></div></div>
+          <div class="pstep"><div class="pstep-n">2</div><div><div class="pstep-t">Scaffold the framework</div><div class="pstep-d">AI generates the full Maven structure, pom.xml, runner, hooks, and World class.</div></div></div>
+          <div class="pstep"><div class="pstep-n">3</div><div><div class="pstep-t">Generate features from journeys</div><div class="pstep-d">Each prioritized journey → a .feature file with happy path, errors, and outlines.</div></div></div>
+          <div class="pstep"><div class="pstep-n">4</div><div><div class="pstep-t">Generate step defs + page objects together</div><div class="pstep-d">AI produces both layers wired to each other from the feature + a DOM snapshot.</div></div></div>
+          <div class="pstep"><div class="pstep-n">5</div><div><div class="pstep-t">Establish conventions as a "house style"</div><div class="pstep-d">Save the first reviewed files as exemplars AI must match going forward.</div></div></div>
+          <div class="path-gain">
+            <div class="gain-n">~70%</div>
+            <div class="gain-l">Framework + first 20 journeys in a day instead of a week.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="path brownfield">
+        <div class="path-head">
+          <div class="path-ico">🏗️</div>
+          <div>
+            <div class="path-title">Brownfield — Existing Suite</div>
+            <div class="path-sub">// some automation already exists</div>
+          </div>
+        </div>
+        <div class="path-body">
+          <div class="pstep"><div class="pstep-n">1</div><div><div class="pstep-t">Extract the existing patterns</div><div class="pstep-d">Give AI 2–3 existing files → it derives your conventions into a reusable style guide.</div></div></div>
+          <div class="pstep"><div class="pstep-n">2</div><div><div class="pstep-t">Audit coverage against the recipe</div><div class="pstep-d">Map existing features to the journey backlog → AI flags the gaps to fill.</div></div></div>
+          <div class="pstep"><div class="pstep-n">3</div><div><div class="pstep-t">Generate additively, in-style</div><div class="pstep-d">New steps reuse existing page objects and match naming — nothing existing is touched.</div></div></div>
+          <div class="pstep"><div class="pstep-n">4</div><div><div class="pstep-t">Diagnose &amp; de-flake</div><div class="pstep-d">Paste failing traces → AI finds missing waits / stale locators and migrates to Playwright auto-wait.</div></div></div>
+          <div class="pstep"><div class="pstep-n">5</div><div><div class="pstep-t">Refactor toward the target structure</div><div class="pstep-d">AI extracts inline selectors into page objects one file at a time, Gherkin unchanged.</div></div></div>
+          <div class="path-gain">
+            <div class="gain-n">~50%</div>
+            <div class="gain-l">New features automated same-sprint; flaky backlog cleared steadily.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ════ 08 PROMPT SKILL ════ -->
+  <section class="sec" style="animation-delay:0.4s">
+    <div class="sec-head"><span class="sec-num">08</span><span class="sec-title">The AI Build-Skill — Reusable Prompt Chain</span></div>
+    <p class="sec-intro">Run these in sequence to take any UI from zero to a working suite — or extend an existing one. The trick for consistency is <strong>Prompt 0</strong>: extract your house style once, then prepend it to every later prompt so AI always generates code that looks like your code.</p>
+
+    <div class="skill-note">
+      <span style="font-size:1.2rem">🧩</span>
+      <div><strong>How to use this as a skill:</strong> save these prompts as a workflow file in your AI-SDLC toolkit. Prompt 0 produces a <code style="font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--code-bg);padding:1px 6px;border-radius:4px">STYLE.md</code> you paste into every subsequent prompt's context. Greenfield starts at Prompt 1; brownfield starts at Prompt 0.</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="prompt-idx">P0</span><span class="prompt-title">Extract house style from existing code</span>
+        <span class="prompt-badges"><span class="pb exist">Existing</span></span>
+      </div>
+<div class="prompt-body"><span class="hd"># ROLE</span> You are a senior SDET reverse-engineering our conventions.
+
+<span class="hd"># INPUT</span> Here are 3 representative files from our suite:
+<span class="ph">[paste 1 .feature, 1 step def, 1 page object]</span>
+
+<span class="hd"># TASK</span> Produce a concise STYLE.md capturing:
+- naming conventions (classes, methods, step phrasing)
+- locator strategy preference order
+- how step defs delegate to page objects
+- assertion library + patterns used
+- folder + package layout
+Output only the STYLE.md. I will paste it into future prompts.</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="prompt-idx">P1</span><span class="prompt-title">Extract &amp; prioritize user journeys</span>
+        <span class="prompt-badges"><span class="pb both">Both</span></span>
+      </div>
+<div class="prompt-body"><span class="hd"># INPUT</span> App context: <span class="ph">[describe app]</span>
+Attached: <span class="ph">[sitemap / route table / screenshots]</span>
+Personas: <span class="ph">[admin, standard, guest...]</span>
+
+<span class="hd"># TASK</span> Apply the journey-extraction recipe:
+1. Inventory screens  2. Map critical paths per persona
+3. Score each journey on risk × frequency (P1–P4)
+4. For each P1/P2 journey, list the atomic steps
+   and the test data it needs.
+Output a prioritized journey backlog as a table.</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="prompt-idx">P2</span><span class="prompt-title">Scaffold the framework</span>
+        <span class="prompt-badges"><span class="pb new">New</span></span>
+      </div>
+<div class="prompt-body"><span class="hd"># TASK</span> Generate a Maven project for
+<span class="em">Playwright (Java) + Cucumber-JVM + JUnit5</span> with:
+- Page Object Model, shared World/DI for the Page
+- @Before/@After hooks managing browser lifecycle
+- ExtentReports + Cucumber HTML reporting
+- parallel execution config + tag filtering
+Give me pom.xml, folder tree, and the base classes.</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="prompt-idx">P3</span><span class="prompt-title">Journey → Gherkin feature file</span>
+        <span class="prompt-badges"><span class="pb both">Both</span></span>
+      </div>
+<div class="prompt-body"><span class="hd"># CONTEXT</span> <span class="ph">[paste STYLE.md from P0 if brownfield]</span>
+<span class="hd"># INPUT</span> This journey from the backlog: <span class="ph">[paste journey + steps]</span>
+
+<span class="hd"># TASK</span> Write a .feature file with:
+- a Background for shared preconditions
+- 1 happy-path Scenario
+- 2 negative Scenarios
+- 1 Scenario Outline w/ Examples for data variants
+- appropriate @tags. Match our existing phrasing.</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="prompt-idx">P4</span><span class="prompt-title">Generate step defs + page object (paired)</span>
+        <span class="prompt-badges"><span class="pb both">Both</span></span>
+      </div>
+<div class="prompt-body"><span class="hd"># CONTEXT</span> <span class="ph">[paste STYLE.md]</span> + <span class="ph">[existing page object if extending]</span>
+<span class="hd"># INPUT</span> Feature file: <span class="ph">[paste .feature]</span>
+DOM snapshot / screenshot: <span class="ph">[attach]</span>
+
+<span class="hd"># TASK</span> Generate the Cucumber step definitions AND the
+Playwright page object together.
+- step defs contain NO selectors — delegate to page object
+- prefer getByRole / getByLabel / getByTestId locators
+- rely on Playwright auto-waiting; no explicit sleeps
+- reuse existing page-object methods where they exist</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="prompt-idx">P5</span><span class="prompt-title">Audit existing coverage for gaps</span>
+        <span class="prompt-badges"><span class="pb exist">Existing</span></span>
+      </div>
+<div class="prompt-body"><span class="hd"># INPUT</span> Journey backlog: <span class="ph">[from P1]</span>
+Existing feature files: <span class="ph">[paste all .feature files]</span>
+
+<span class="hd"># TASK</span> Map existing scenarios to the backlog.
+Output: a coverage table marking each journey
+Covered / Partial / Missing, and for Partial/Missing
+list the exact scenarios to add. Flag any existing
+scenarios that are redundant or low-value (P4).</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="prompt-idx">P6</span><span class="prompt-title">Diagnose &amp; fix a flaky test</span>
+        <span class="prompt-badges"><span class="pb exist">Existing</span></span>
+      </div>
+<div class="prompt-body"><span class="hd"># INPUT</span>
+Failing step def + page object: <span class="ph">[paste]</span>
+Full stack trace: <span class="ph">[paste]</span>
+
+<span class="hd"># TASK</span>
+1. Diagnose the root cause (race, stale locator, timing)
+2. Explain why it's flaky
+3. Rewrite using Playwright auto-waiting locators and
+   web-first assertions (assertThat(...).isVisible())
+4. Suggest a more resilient locator if the cause is
+   selector fragility.</div>
+    </div>
+
+    <div class="prompt">
+      <div class="prompt-head">
+        <span class="prompt-idx">P7</span><span class="prompt-title">Refactor legacy steps → Page Object Model</span>
+        <span class="prompt-badges"><span class="pb exist">Existing</span></span>
+      </div>
+<div class="prompt-body"><span class="hd"># INPUT</span> Step def with inline selectors: <span class="ph">[paste]</span>
+
+<span class="hd"># TASK</span> Refactor to our POM pattern:
+- extract every selector + action into a Page class
+- step def becomes thin delegation only
+- keep the Gherkin and method signatures unchanged
+- migrate any Selenium-style waits to Playwright
+  auto-waiting. Output both files.</div>
+    </div>
+
+  </section>
+
+  <footer>E2E BDD Automation · Playwright + Cucumber + AI Build-Skill · Visual Reference</footer>
+
+</div>
+</body>
+</html>

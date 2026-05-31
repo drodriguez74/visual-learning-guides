@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Automation + AI Acceleration</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Fira+Code:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --ink: #1c1a17;
+  --border: #e0dbd0;
+  --gherkin: #2d6a2d;
+  --gherkin-light: #e8f5e8;
+  --gherkin-mid: #4a9e4a;
+  --step: #1a3a6b;
+  --step-light: #e8eef8;
+  --step-mid: #3060b0;
+  --cucumber: #23a55a;
+  --ai-new: #7c3aed;
+  --ai-new-light: #f3eeff;
+  --ai-exist: #d97706;
+  --ai-exist-light: #fff8e8;
+  --red: #dc2626;
+  --muted: #9a9080;
+  --tag-bg: #1c1a17;
+  --tag-text: #f7f5f0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 300;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+.page {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 52px 28px 100px;
+}
+
+/* ── HERO ── */
+.hero {
+  margin-bottom: 72px;
+  animation: riseIn 0.7s ease both;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 32px;
+  align-items: start;
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 36px;
+}
+
+.hero-left {}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 24px;
+  height: 2px;
+  background: var(--ink);
+}
+
+h1 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: clamp(2.2rem, 5.5vw, 4rem);
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+h1 .gh { color: var(--gherkin); }
+h1 .cu { color: var(--cucumber); }
+h1 .ai { color: var(--ai-new); }
+
+.hero-sub {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 540px;
+  line-height: 1.7;
+}
+
+.hero-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.pill {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border: 1.5px solid;
+  border-radius: 100px;
+}
+
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 160px;
+}
+
+.stat-box {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 14px 18px;
+  text-align: right;
+}
+
+.stat-n {
+  font-weight: 900;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: #fff;
+}
+
+.stat-l {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+
+/* ── SECTION HEADER ── */
+.sec {
+  margin-bottom: 56px;
+  animation: riseIn 0.6s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.sec-num {
+  font-weight: 900;
+  font-size: 3rem;
+  color: var(--border);
+  line-height: 1;
+  flex-shrink: 0;
+  letter-spacing: -0.04em;
+}
+
+.sec-title {
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+.sec-title .sub {
+  display: block;
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+/* ── BDD PYRAMID ── */
+.pyramid-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1.5px solid var(--ink);
+  margin-bottom: 24px;
+}
+
+.pyr-block {
+  background: var(--surface);
+  padding: 24px 20px;
+  position: relative;
+}
+
+.pyr-block::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+}
+
+.pyr-block.gherkin::after { background: var(--gherkin); }
+.pyr-block.step::after { background: var(--step); }
+.pyr-block.runner::after { background: var(--cucumber); }
+
+.pyr-icon { font-size: 1.5rem; margin-bottom: 10px; display: block; }
+.pyr-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.pyr-block.gherkin .pyr-name { color: var(--gherkin); }
+.pyr-block.step .pyr-name { color: var(--step); }
+.pyr-block.runner .pyr-name { color: var(--cucumber); }
+
+.pyr-desc { font-size: 11px; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
+.pyr-tag {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1.5px solid;
+  display: inline-block;
+}
+
+.pyr-block.gherkin .pyr-tag { border-color: var(--gherkin); color: var(--gherkin); }
+.pyr-block.step .pyr-tag { border-color: var(--step); color: var(--step); }
+.pyr-block.runner .pyr-tag { border-color: var(--cucumber); color: var(--cucumber); }
+
+/* ── CODE PANELS ── */
+.code-panel {
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.code-header {
+  background: var(--ink);
+  color: #fff;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.code-header .filename { color: rgba(255,255,255,0.5); }
+
+.code-body {
+  background: #1e1e1e;
+  padding: 16px 18px;
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+/* Syntax */
+.kw  { color: #c678dd; }
+.kw2 { color: #61afef; }
+.str { color: #98c379; }
+.cm  { color: #5c6370; font-style: italic; }
+.fn  { color: #e5c07b; }
+.tag { color: #e06c75; }
+.ann { color: #56b6c2; }
+.num { color: #d19a66; }
+.gh-feat { color: #98c379; font-weight: 500; }
+.gh-scen { color: #e5c07b; font-weight: 500; }
+.gh-given { color: #61afef; }
+.gh-when  { color: #c678dd; }
+.gh-then  { color: #56b6c2; }
+.gh-and   { color: #abb2bf; }
+.gh-tag   { color: #e06c75; }
+
+/* ── FLOW DIAGRAM ── */
+.flow-diagram {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  overflow-x: auto;
+  padding: 20px 16px;
+  margin-bottom: 8px;
+}
+
+.flow-node {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 14px 12px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  min-width: 100px;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: default;
+}
+
+.flow-node:hover {
+  background: var(--surface2);
+}
+
+.flow-node.active-gherkin { border-color: var(--gherkin); background: var(--gherkin-light); }
+.flow-node.active-step    { border-color: var(--step); background: var(--step-light); }
+.flow-node.active-cucumber{ border-color: var(--cucumber); background: rgba(35,165,90,0.08); }
+
+.flow-arrow {
+  flex-shrink: 0;
+  color: var(--border);
+  font-size: 1.2rem;
+  padding: 0 4px;
+}
+
+.fn-icon { font-size: 1.2rem; margin-bottom: 5px; display: block; }
+.fn-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: block;
+}
+
+/* ── GHERKIN KEYWORDS ── */
+.keyword-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1.5px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.kw-block {
+  background: var(--surface);
+  padding: 16px 14px;
+  cursor: default;
+  transition: background 0.15s;
+}
+
+.kw-block:hover { background: var(--surface2); }
+
+.kw-word {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.kw-block:nth-child(1) .kw-word { color: var(--gherkin); }
+.kw-block:nth-child(2) .kw-word { color: #1a3a6b; }
+.kw-block:nth-child(3) .kw-word { color: #c678dd; }
+.kw-block:nth-child(4) .kw-word { color: #56b6c2; }
+.kw-block:nth-child(5) .kw-word { color: #abb2bf; }
+
+.kw-desc { font-size: 10px; color: var(--muted); line-height: 1.55; }
+
+/* ── AI ACCELERATION SPLIT ── */
+.ai-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.ai-panel {
+  border: 2px solid;
+  overflow: hidden;
+}
+
+.ai-panel.new-ui { border-color: var(--ai-new); }
+.ai-panel.exist-ui { border-color: var(--ai-exist); }
+
+.ai-panel-head {
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.ai-panel.new-ui .ai-panel-head { background: var(--ai-new); color: #fff; }
+.ai-panel.exist-ui .ai-panel-head { background: var(--ai-exist); color: #fff; }
+
+.ai-icon { font-size: 1.8rem; flex-shrink: 0; }
+
+.ai-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.ai-subtitle {
+  font-size: 10px;
+  opacity: 0.75;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.ai-panel-body { padding: 20px; background: var(--surface); }
+
+.ai-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 16px;
+}
+
+.ai-step {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: start;
+}
+
+.ai-step:last-child { border-bottom: none; }
+
+.ai-step-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.new-ui .ai-step-num { background: var(--ai-new); color: #fff; }
+.exist-ui .ai-step-num { background: var(--ai-exist); color: #fff; }
+
+.ai-step-content {}
+.ai-step-title { font-weight: 600; font-size: 12px; margin-bottom: 3px; }
+.ai-step-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
+
+.ai-prompt-example {
+  background: var(--ink);
+  color: #98c379;
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  padding: 10px 12px;
+  line-height: 1.6;
+  margin-top: 8px;
+  border-radius: 2px;
+}
+
+.ai-prompt-example .cm { color: #5c6370; }
+
+.ai-gain {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gain-pct {
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.new-ui .gain-pct { color: var(--ai-new); }
+.exist-ui .gain-pct { color: var(--ai-exist); }
+
+.gain-label { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+/* ── STEP DEF ANATOMY ── */
+.step-anatomy {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 20px;
+  align-items: start;
+}
+
+.annotation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.ann-item {
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid;
+}
+
+.ann-item.a1 { border-left-color: var(--gherkin); }
+.ann-item.a2 { border-left-color: var(--step); }
+.ann-item.a3 { border-left-color: #e5c07b; }
+.ann-item.a4 { border-left-color: var(--cucumber); }
+.ann-item.a5 { border-left-color: var(--ai-new); }
+
+.ann-dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 2px; flex-shrink: 0; }
+.ann-title { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+.ann-desc { font-size: 10px; color: var(--muted); line-height: 1.55; }
+
+/* ── COMPARISON TABLE ── */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1.5px solid var(--border);
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.compare-table th {
+  padding: 12px 16px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--ink);
+  text-align: left;
+}
+
+.compare-table th:first-child { background: var(--surface2); }
+.compare-table th.new { background: var(--ai-new); color: #fff; }
+.compare-table th.exist { background: var(--ai-exist); color: #fff; }
+
+.compare-table td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.5;
+  vertical-align: top;
+}
+
+.compare-table td:first-child {
+  font-weight: 600;
+  font-size: 11px;
+  background: var(--surface);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.compare-table td.new-val { background: var(--ai-new-light); color: var(--ai-new); font-size: 11px; }
+.compare-table td.exist-val { background: var(--ai-exist-light); color: var(--ai-exist); font-size: 11px; }
+
+.compare-table tr:last-child td { border-bottom: none; }
+
+/* ── PROMPT TEMPLATES ── */
+.prompt-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.prompt-card {
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+}
+
+.prompt-head {
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prompt-head-title { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.prompt-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 100px;
+  color: #fff;
+}
+
+.prompt-badge.new { background: var(--ai-new); }
+.prompt-badge.exist { background: var(--ai-exist); }
+
+.prompt-body {
+  background: #1e1e1e;
+  padding: 14px 16px;
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  line-height: 1.7;
+  color: #abb2bf;
+}
+
+.prompt-body .cm { color: #5c6370; }
+.prompt-body .str { color: #98c379; }
+.prompt-body .kw { color: #c678dd; }
+.prompt-body .ann { color: #61afef; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 2px solid var(--ink);
+  padding-top: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  animation: riseIn 0.6s 0.8s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+/* ANIMATIONS */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 720px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-right { flex-direction: row; flex-wrap: wrap; }
+  .stat-box { flex: 1; min-width: 100px; }
+  .pyramid-wrap { grid-template-columns: 1fr; }
+  .keyword-grid { grid-template-columns: repeat(3,1fr); }
+  .ai-split { grid-template-columns: 1fr; }
+  .step-anatomy { grid-template-columns: 1fr; }
+  .prompt-grid { grid-template-columns: 1fr; }
+  .compare-table { font-size: 10px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">BDD · Test Automation · AI Acceleration</div>
+      <h1>QA AUTO<span class="gh">MATION</span><br>GHERKIN &<br><span class="cu">CUCUMBER</span><br>+ <span class="ai">AI</span></h1>
+      <p class="hero-sub">
+        Behavior-Driven Development translates plain English requirements directly into executable test code. Gherkin writes the spec. Step Definitions wire it to code. Cucumber runs it. AI cuts the time by 70%.
+      </p>
+      <div class="hero-pills">
+        <div class="pill" style="border-color:var(--gherkin);color:var(--gherkin)">Gherkin</div>
+        <div class="pill" style="border-color:var(--step);color:var(--step)">Step Definitions</div>
+        <div class="pill" style="border-color:var(--cucumber);color:var(--cucumber)">Cucumber</div>
+        <div class="pill" style="border-color:var(--ai-new);color:var(--ai-new)">AI · New UI</div>
+        <div class="pill" style="border-color:var(--ai-exist);color:var(--ai-exist)">AI · Existing UI</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="stat-box">
+        <div class="stat-n">3</div>
+        <div class="stat-l">Core layers</div>
+      </div>
+      <div class="stat-box" style="background:var(--gherkin)">
+        <div class="stat-n">Plain</div>
+        <div class="stat-l">English spec</div>
+      </div>
+      <div class="stat-box" style="background:var(--ai-new)">
+        <div class="stat-n">~70%</div>
+        <div class="stat-l">AI time savings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: THE THREE LAYERS -->
+  <section class="sec" style="animation-delay:0.1s">
+    <div class="sec-head">
+      <div class="sec-num">01</div>
+      <div class="sec-title"><span class="sub">Architecture</span>The Three-Layer Stack</div>
+    </div>
+
+    <div class="pyramid-wrap">
+      <div class="pyr-block gherkin">
+        <span class="pyr-icon">📝</span>
+        <div class="pyr-name">Gherkin (.feature)</div>
+        <div class="pyr-desc">Plain English scenarios written by QA, BA, or product. No code. Describes behavior from the user's perspective using a rigid keyword grammar. The "spec."</div>
+        <div class="pyr-tag">Feature Files</div>
+      </div>
+      <div class="pyr-block step">
+        <span class="pyr-icon">⚙️</span>
+        <div class="pyr-name">Step Definitions</div>
+        <div class="pyr-desc">Java/JS/Python methods annotated with regex patterns that match Gherkin sentences. This is where actual UI interaction code lives (Selenium, Playwright, Cypress).</div>
+        <div class="pyr-tag">Java / JS / Python</div>
+      </div>
+      <div class="pyr-block runner">
+        <span class="pyr-icon">🥒</span>
+        <div class="pyr-name">Cucumber Runner</div>
+        <div class="pyr-desc">Reads .feature files, matches each step to a Step Definition via regex, executes them in sequence, and produces a full HTML/JSON test report.</div>
+        <div class="pyr-tag">JUnit / TestNG</div>
+      </div>
+    </div>
+
+    <!-- Flow diagram -->
+    <div class="flow-diagram">
+      <div class="flow-node active-gherkin">
+        <span class="fn-icon">📝</span>
+        <span class="fn-label" style="color:var(--gherkin)">Feature File</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="border-color:var(--gherkin-mid); background:var(--gherkin-light)">
+        <span class="fn-icon">🔍</span>
+        <span class="fn-label" style="color:var(--gherkin)">Parse Steps</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node active-step">
+        <span class="fn-icon">⚙️</span>
+        <span class="fn-label" style="color:var(--step)">Step Defs</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="border-color:var(--step-mid); background:var(--step-light)">
+        <span class="fn-icon">🌐</span>
+        <span class="fn-label" style="color:var(--step)">Selenium/<br>Playwright</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node active-cucumber">
+        <span class="fn-icon">✅</span>
+        <span class="fn-label" style="color:var(--cucumber)">Browser<br>Actions</span>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node" style="border-color:var(--cucumber); background:rgba(35,165,90,0.07)">
+        <span class="fn-icon">📊</span>
+        <span class="fn-label" style="color:var(--cucumber)">Test Report</span>
+      </div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);padding:8px 0;letter-spacing:0.1em;text-transform:uppercase;">Cucumber reads the .feature file → matches each step via regex → calls the corresponding Step Definition → executes browser actions → generates pass/fail report</div>
+  </section>
+
+  <!-- SECTION 2: GHERKIN SYNTAX -->
+  <section class="sec" style="animation-delay:0.15s">
+    <div class="sec-head">
+      <div class="sec-num">02</div>
+      <div class="sec-title"><span class="sub">Language</span>Gherkin Syntax & Keywords</div>
+    </div>
+
+    <div class="keyword-grid">
+      <div class="kw-block">
+        <div class="kw-word">Feature:</div>
+        <div class="kw-desc">Names the feature being tested. One per file. Sets the context for all scenarios below it.</div>
+      </div>
+      <div class="kw-block">
+        <div class="kw-word">Scenario:</div>
+        <div class="kw-desc">A single test case. Each Scenario is independent and should be able to run in isolation.</div>
+      </div>
+      <div class="kw-block">
+        <div class="kw-word">Given</div>
+        <div class="kw-desc">Sets up the pre-condition / initial state before the action is performed.</div>
+      </div>
+      <div class="kw-block">
+        <div class="kw-word">When</div>
+        <div class="kw-desc">The action or event the user performs. The trigger. Usually one per scenario.</div>
+      </div>
+      <div class="kw-block">
+        <div class="kw-word">Then</div>
+        <div class="kw-desc">The expected outcome. What the system should show or do after the When action.</div>
+      </div>
+    </div>
+
+    <!-- Feature file example -->
+    <div class="code-panel">
+      <div class="code-header">
+        <span>GHERKIN · Feature File</span>
+        <span class="filename">login.feature</span>
+      </div>
+      <div class="code-body">
+<span class="gh-tag">@smoke @authentication</span>
+<span class="gh-feat">Feature:</span> User Login
+
+  <span class="cm"># Background runs before EVERY scenario in this file</span>
+  Background:
+    <span class="gh-given">Given</span> the application is running at <span class="str">"https://app.example.com"</span>
+
+  <span class="gh-scen">Scenario:</span> Successful login with valid credentials
+    <span class="gh-given">Given</span> the user is on the login page
+    <span class="gh-when">When</span>  the user enters username <span class="str">"darwin@example.com"</span>
+    <span class="gh-and">And</span>   the user enters password <span class="str">"SecurePass123"</span>
+    <span class="gh-and">And</span>   the user clicks the <span class="str">"Sign In"</span> button
+    <span class="gh-then">Then</span>  the dashboard page is displayed
+    <span class="gh-and">And</span>   the welcome message contains <span class="str">"Darwin"</span>
+
+  <span class="gh-scen">Scenario:</span> Login fails with invalid password
+    <span class="gh-given">Given</span> the user is on the login page
+    <span class="gh-when">When</span>  the user enters username <span class="str">"darwin@example.com"</span>
+    <span class="gh-and">And</span>   the user enters password <span class="str">"WrongPass"</span>
+    <span class="gh-and">And</span>   the user clicks the <span class="str">"Sign In"</span> button
+    <span class="gh-then">Then</span>  an error message <span class="str">"Invalid credentials"</span> is displayed
+
+  <span class="gh-scen">Scenario Outline:</span> Login with multiple user roles
+    <span class="gh-given">Given</span> the user logs in as <span class="str">"&lt;role&gt;"</span> with password <span class="str">"&lt;password&gt;"</span>
+    <span class="gh-then">Then</span>  they see the <span class="str">"&lt;expectedPage&gt;"</span> page
+
+    Examples:
+      | role    | password     | expectedPage |
+      | admin   | Admin123     | admin-panel  |
+      | viewer  | View456      | read-only    |
+      | editor  | Edit789      | workspace    |
+</div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: STEP DEFINITIONS -->
+  <section class="sec" style="animation-delay:0.2s">
+    <div class="sec-head">
+      <div class="sec-num">03</div>
+      <div class="sec-title"><span class="sub">Implementation</span>Step Definitions — The Bridge</div>
+    </div>
+
+    <div class="step-anatomy">
+      <div>
+        <div class="code-panel">
+          <div class="code-header">
+            <span>STEP DEFINITIONS · Java + Selenium</span>
+            <span class="filename">LoginSteps.java</span>
+          </div>
+          <div class="code-body">
+<span class="kw">import</span> io.cucumber.java.en.*;
+<span class="kw">import</span> org.openqa.selenium.*;
+<span class="kw">import</span> org.openqa.selenium.chrome.*;
+
+<span class="kw">public class</span> <span class="fn">LoginSteps</span> {
+
+    <span class="cm">// ① WebDriver injected via @Before hook</span>
+    <span class="kw">private</span> WebDriver driver;
+
+    <span class="cm">// ② Regex pattern MUST match Gherkin sentence exactly</span>
+    <span class="ann">@Given</span>(<span class="str">"the user is on the login page"</span>)
+    <span class="kw">public void</span> <span class="fn">navigateToLoginPage</span>() {
+        driver.get(<span class="str">"https://app.example.com/login"</span>);
+    }
+
+    <span class="cm">// ③ Capture parameter from Gherkin with {string}</span>
+    <span class="ann">@When</span>(<span class="str">"the user enters username {string}"</span>)
+    <span class="kw">public void</span> <span class="fn">enterUsername</span>(String username) {
+        driver.findElement(By.<span class="fn">id</span>(<span class="str">"username"</span>))
+              .<span class="fn">sendKeys</span>(username);
+    }
+
+    <span class="ann">@When</span>(<span class="str">"the user enters password {string}"</span>)
+    <span class="kw">public void</span> <span class="fn">enterPassword</span>(String password) {
+        driver.findElement(By.<span class="fn">id</span>(<span class="str">"password"</span>))
+              .<span class="fn">sendKeys</span>(password);
+    }
+
+    <span class="ann">@When</span>(<span class="str">"the user clicks the {string} button"</span>)
+    <span class="kw">public void</span> <span class="fn">clickButton</span>(String buttonText) {
+        driver.findElement(
+            By.<span class="fn">xpath</span>(<span class="str">"//button[text()='"</span>+buttonText+<span class="str">"']"</span>)
+        ).<span class="fn">click</span>();
+    }
+
+    <span class="cm">// ④ Assertion in Then step</span>
+    <span class="ann">@Then</span>(<span class="str">"the dashboard page is displayed"</span>)
+    <span class="kw">public void</span> <span class="fn">verifyDashboard</span>() {
+        <span class="cm">// ⑤ Assert with org.junit.Assert or assertj</span>
+        assert driver.getCurrentUrl().<span class="fn">contains</span>(<span class="str">"/dashboard"</span>);
+    }
+
+    <span class="ann">@Then</span>(<span class="str">"the welcome message contains {string}"</span>)
+    <span class="kw">public void</span> <span class="fn">verifyWelcome</span>(String name) {
+        String msg = driver
+            .<span class="fn">findElement</span>(By.<span class="fn">cssSelector</span>(<span class="str">".welcome-header"</span>))
+            .<span class="fn">getText</span>();
+        assert msg.<span class="fn">contains</span>(name);
+    }
+}</div>
+        </div>
+      </div>
+
+      <div class="annotation-list">
+        <div class="ann-item a1">
+          <div class="ann-dot" style="background:var(--gherkin)"></div>
+          <div>
+            <div class="ann-title">① Shared Driver</div>
+            <div class="ann-desc">WebDriver is injected via Cucumber hooks (@Before/@After), not instantiated per method. Shared state between steps in a scenario.</div>
+          </div>
+        </div>
+        <div class="ann-item a2">
+          <div class="ann-dot" style="background:var(--step)"></div>
+          <div>
+            <div class="ann-title">② Regex / Cucumber Expression</div>
+            <div class="ann-desc">The string in @Given/@When/@Then MUST exactly match the Gherkin sentence. Cucumber maps them at runtime via regex.</div>
+          </div>
+        </div>
+        <div class="ann-item a3">
+          <div class="ann-dot" style="background:#e5c07b"></div>
+          <div>
+            <div class="ann-title">③ Parameter Capture</div>
+            <div class="ann-desc">{string} captures the quoted value from Gherkin and passes it as a method argument. Also supports {int}, {float}, {word}.</div>
+          </div>
+        </div>
+        <div class="ann-item a4">
+          <div class="ann-dot" style="background:var(--cucumber)"></div>
+          <div>
+            <div class="ann-title">④ Assertions in @Then</div>
+            <div class="ann-desc">Then steps verify the expected outcome. Use JUnit Assert, AssertJ, or Hamcrest for expressive failures.</div>
+          </div>
+        </div>
+        <div class="ann-item a5">
+          <div class="ann-dot" style="background:var(--ai-new)"></div>
+          <div>
+            <div class="ann-title">⑤ Page Object Model</div>
+            <div class="ann-desc">Best practice: wrap findElement calls in Page Object classes. Step Defs call methods, not raw Selenium. AI generates both simultaneously.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: AI ACCELERATION -->
+  <section class="sec" style="animation-delay:0.25s">
+    <div class="sec-head">
+      <div class="sec-num">04</div>
+      <div class="sec-title"><span class="sub">AI Acceleration</span>New UI vs. Existing UI</div>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted);line-height:1.8;max-width:680px;margin-bottom:24px;border-left:3px solid var(--ink);padding-left:14px;">
+      The strategies are fundamentally different. <strong style="color:var(--ink)">New UI (zero automation)</strong> means AI generates everything from scratch — features, step defs, page objects, and the framework itself. <strong style="color:var(--ink)">Existing UI</strong> means AI analyzes and extends what's already there without breaking existing tests.
+    </div>
+
+    <div class="ai-split">
+
+      <!-- NEW UI -->
+      <div class="ai-panel new-ui">
+        <div class="ai-panel-head">
+          <div class="ai-icon">🆕</div>
+          <div>
+            <div class="ai-title">New UI — Zero Automation</div>
+            <div class="ai-subtitle">Greenfield · Build from scratch</div>
+          </div>
+        </div>
+        <div class="ai-panel-body">
+          <div class="ai-steps">
+            <div class="ai-step">
+              <div class="ai-step-num">1</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Scaffold the framework</div>
+                <div class="ai-step-desc">Paste your tech stack (Java/Selenium/Cucumber/Maven). AI generates pom.xml, folder structure, cucumber.properties, and base runner in one shot.</div>
+                <div class="ai-prompt-example"><span class="cm"># Prompt AI:</span><br>"Generate a Maven project structure<br>for Cucumber + Selenium + Java with<br>Page Object Model, ExtentReports,<br>and parallel execution support."</div>
+              </div>
+            </div>
+            <div class="ai-step">
+              <div class="ai-step-num">2</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Generate feature files from specs</div>
+                <div class="ai-step-desc">Feed AI the user story or acceptance criteria. It outputs a complete .feature file with multiple scenarios including edge cases you may have missed.</div>
+                <div class="ai-prompt-example"><span class="cm"># Prompt AI:</span><br>"Convert this Jira story to a Gherkin<br>feature file with happy path, error<br>cases, and a Scenario Outline for<br>multiple user roles: [paste story]"</div>
+              </div>
+            </div>
+            <div class="ai-step">
+              <div class="ai-step-num">3</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Generate Step Defs + Page Objects</div>
+                <div class="ai-step-desc">Paste the .feature file. AI generates matching Step Definition class AND the Page Object class together. Both are wired to each other correctly.</div>
+                <div class="ai-prompt-example"><span class="cm"># Prompt AI:</span><br>"Generate Java Step Definitions AND<br>a Page Object class for these Gherkin<br>steps using Selenium + WebDriverManager:<br>[paste feature file]"</div>
+              </div>
+            </div>
+            <div class="ai-step">
+              <div class="ai-step-num">4</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Generate locators from screenshots</div>
+                <div class="ai-step-desc">Screenshot the UI → ask AI to identify the best CSS selectors, IDs, or XPaths for each element. Huge time saver when dev hasn't added test IDs yet.</div>
+                <div class="ai-prompt-example"><span class="cm"># Prompt AI (with screenshot):</span><br>"Identify robust CSS selectors for<br>the login form elements in this UI<br>screenshot. Prefer data-testid,<br>then id, then CSS, avoid XPath."</div>
+              </div>
+            </div>
+            <div class="ai-step">
+              <div class="ai-step-num">5</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Generate test data + hooks</div>
+                <div class="ai-step-desc">AI generates @Before/@After hooks, test data factory classes, and environment config files. Full setup in minutes not days.</div>
+              </div>
+            </div>
+          </div>
+          <div class="ai-gain">
+            <div class="gain-pct">~70%</div>
+            <div class="gain-label">Faster than manual. Framework + first 20 scenarios in a day instead of a week.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXISTING UI -->
+      <div class="ai-panel exist-ui">
+        <div class="ai-panel-head">
+          <div class="ai-icon">🔄</div>
+          <div>
+            <div class="ai-title">Existing UI — Partial Automation</div>
+            <div class="ai-subtitle">Brownfield · Extend & modernize</div>
+          </div>
+        </div>
+        <div class="ai-panel-body">
+          <div class="ai-steps">
+            <div class="ai-step">
+              <div class="ai-step-num">1</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Audit existing coverage</div>
+                <div class="ai-step-desc">Paste your existing feature files to AI. Ask it to identify gaps — missing edge cases, uncovered user flows, scenarios with no negative tests.</div>
+                <div class="ai-prompt-example"><span class="cm"># Prompt AI:</span><br>"Review these existing Gherkin<br>scenarios. Identify gaps: missing<br>edge cases, error scenarios, and<br>boundary conditions. [paste files]"</div>
+              </div>
+            </div>
+            <div class="ai-step">
+              <div class="ai-step-num">2</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Extend without breaking</div>
+                <div class="ai-step-desc">Feed AI an existing Step Definition class + a new .feature file. It adds new methods while matching your existing code style, naming conventions, and Page Object pattern.</div>
+                <div class="ai-prompt-example"><span class="cm"># Prompt AI:</span><br>"Add step definitions for these new<br>Gherkin steps. Match the pattern of<br>the existing class below. Reuse<br>existing page objects where possible:<br>[paste existing steps + new gherkin]"</div>
+              </div>
+            </div>
+            <div class="ai-step">
+              <div class="ai-step-num">3</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Fix flaky tests with AI diagnosis</div>
+                <div class="ai-step-desc">Paste failing test output + the step definition. AI identifies the root cause (missing waits, stale element, timing issue) and provides the fix.</div>
+                <div class="ai-prompt-example"><span class="cm"># Prompt AI:</span><br>"This test is flaky. Here's the<br>exception stack trace and step def.<br>Diagnose the root cause and provide<br>a fixed version: [paste error + code]"</div>
+              </div>
+            </div>
+            <div class="ai-step">
+              <div class="ai-step-num">4</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Refactor step definitions</div>
+                <div class="ai-step-desc">Legacy automation often has duplicated steps, hardcoded values, and no Page Object layer. AI refactors the whole class to POM pattern in one pass.</div>
+                <div class="ai-prompt-example"><span class="cm"># Prompt AI:</span><br>"Refactor these step definitions to<br>use Page Object Model. Extract all<br>locators and actions to a separate<br>Page class. Keep Gherkin unchanged."</div>
+              </div>
+            </div>
+            <div class="ai-step">
+              <div class="ai-step-num">5</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Generate scenarios for new features</div>
+                <div class="ai-step-desc">When a new feature lands on an existing app, AI generates new scenarios in the same style as existing ones. Consistency is automatic.</div>
+              </div>
+            </div>
+          </div>
+          <div class="ai-gain">
+            <div class="gain-pct">~50%</div>
+            <div class="gain-label">Faster coverage expansion. New features automated same-sprint instead of backlogged.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 5: COMPARISON TABLE -->
+  <section class="sec" style="animation-delay:0.3s">
+    <div class="sec-head">
+      <div class="sec-num">05</div>
+      <div class="sec-title"><span class="sub">Strategy</span>AI Approach by Task</div>
+    </div>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th class="new">🆕 New UI — AI Strategy</th>
+          <th class="exist">🔄 Existing UI — AI Strategy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Feature Files</td>
+          <td class="new-val">Generate from user story / Jira AC. Ask for edge cases and Scenario Outline variants.</td>
+          <td class="exist-val">Audit existing files for gaps. Generate additive scenarios matching existing style.</td>
+        </tr>
+        <tr>
+          <td>Step Definitions</td>
+          <td class="new-val">Generate full class from feature file. Include Page Object wiring in same prompt.</td>
+          <td class="exist-val">Feed existing class + new steps. AI matches naming convention and reuses page objects.</td>
+        </tr>
+        <tr>
+          <td>Page Objects</td>
+          <td class="new-val">Generate from UI screenshot or HTML source. AI identifies and names all interactive elements.</td>
+          <td class="exist-val">Extend existing POM class. Add new locators for new UI elements without touching existing ones.</td>
+        </tr>
+        <tr>
+          <td>Locators</td>
+          <td class="new-val">Screenshot → AI generates robust CSS/XPath. Flag elements needing data-testid from dev.</td>
+          <td class="exist-val">Paste broken locator + new HTML → AI suggests updated locator with fallback strategy.</td>
+        </tr>
+        <tr>
+          <td>Flaky Tests</td>
+          <td class="new-val">Not applicable. Catch early by reviewing AI-generated code for missing explicit waits.</td>
+          <td class="exist-val">Paste stack trace → AI diagnoses stale element, race condition, or missing wait. Provides fix.</td>
+        </tr>
+        <tr>
+          <td>Test Data</td>
+          <td class="new-val">Generate full data factory class. Use Examples: tables in Gherkin for data-driven runs.</td>
+          <td class="exist-val">Extend existing data factories. Generate additional Examples rows for Scenario Outlines.</td>
+        </tr>
+        <tr>
+          <td>CI/CD Integration</td>
+          <td class="new-val">Generate full GitHub Actions / Jenkins pipeline YAML for Cucumber runs from scratch.</td>
+          <td class="exist-val">Audit existing pipeline. AI adds parallel execution, tagging, and report publishing steps.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SECTION 6: PROMPT TEMPLATES -->
+  <section class="sec" style="animation-delay:0.35s">
+    <div class="sec-head">
+      <div class="sec-num">06</div>
+      <div class="sec-title"><span class="sub">Ready to Use</span>AI Prompt Templates</div>
+    </div>
+
+    <div class="prompt-grid">
+
+      <div class="prompt-card">
+        <div class="prompt-head">
+          <div class="prompt-head-title">Generate Feature File from Story</div>
+          <div class="prompt-badge new">New UI</div>
+        </div>
+        <div class="prompt-body">
+<span class="cm"># CONTEXT</span>
+<span class="str">Tech stack:</span> Cucumber + Selenium + Java
+<span class="str">App type:</span> [describe the app]
+
+<span class="cm"># USER STORY</span>
+[paste Jira acceptance criteria here]
+
+<span class="cm"># INSTRUCTIONS</span>
+Generate a Gherkin .feature file with:
+- <span class="ann">1</span> happy path scenario
+- <span class="ann">2</span> negative/error scenarios
+- <span class="ann">1</span> Scenario Outline for data-driven
+- Relevant @tags for smoke/regression
+- Background for shared preconditions</div>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-head">
+          <div class="prompt-head-title">Extend Existing Step Defs</div>
+          <div class="prompt-badge exist">Existing</div>
+        </div>
+        <div class="prompt-body">
+<span class="cm"># EXISTING CODE</span>
+Here is my current Step Definition class:
+[paste LoginSteps.java]
+
+Here is my current Page Object:
+[paste LoginPage.java]
+
+<span class="cm"># NEW GHERKIN STEPS NEEDED</span>
+[paste new .feature file]
+
+<span class="cm"># INSTRUCTIONS</span>
+Add step definitions for the new
+steps ONLY. Match existing:
+- naming conventions
+- code style
+- reuse existing page object methods
+- do NOT modify existing methods</div>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-head">
+          <div class="prompt-head-title">Generate Page Object from Screenshot</div>
+          <div class="prompt-badge new">New UI</div>
+        </div>
+        <div class="prompt-body">
+<span class="cm"># ATTACHED: screenshot of [page name]</span>
+
+Generate a Java Page Object class for
+this UI page. Include:
+- <span class="ann">@FindBy</span> locators for all interactive
+  elements (prefer id > data-testid
+  > CSS > XPath)
+- Action methods for each element
+- <span class="ann">WebDriverWait</span> for dynamic elements
+- JavaDoc comments
+- Return <span class="kw">this</span> on action methods
+  for method chaining</div>
+      </div>
+
+      <div class="prompt-card">
+        <div class="prompt-head">
+          <div class="prompt-head-title">Diagnose & Fix Flaky Test</div>
+          <div class="prompt-badge exist">Existing</div>
+        </div>
+        <div class="prompt-body">
+<span class="cm"># FAILING STEP DEFINITION</span>
+[paste the Java method]
+
+<span class="cm"># EXCEPTION / STACK TRACE</span>
+[paste full error output]
+
+<span class="cm"># GHERKIN STEP</span>
+[paste the Gherkin line]
+
+<span class="cm"># INSTRUCTIONS</span>
+1. Diagnose the root cause
+2. Explain why this is flaky
+3. Provide a fixed version with
+   explicit waits + error handling
+4. Suggest locator improvements
+   if the issue is selector fragility</div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>QA Automation · Gherkin + Cucumber + AI Acceleration · Visual Reference</footer>
+
+</div>
+</body>
+</html>
