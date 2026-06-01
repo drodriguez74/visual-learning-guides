@@ -21,6 +21,8 @@ Or jump directly to any guide:
 | **The Ralph Wiggum Loop** | `https://drodriguez74.github.io/visual-learning-guides/ralph-wiggum-loop.html` |
 | **QA Automation + AI** | `https://drodriguez74.github.io/visual-learning-guides/qa-automation-gherkin-ai.html` |
 | **E2E BDD Automation** | `https://drodriguez74.github.io/visual-learning-guides/e2e-bdd-playwright-ai.html` |
+| **Jupyter Notebooks + Plotly** | `https://drodriguez74.github.io/visual-learning-guides/jupyter-plotly-explainer.html` |
+| **Speak Like a CEO** | `https://drodriguez74.github.io/visual-learning-guides/speak-like-a-ceo.html` |
 
 ## Guides
 
@@ -149,6 +151,36 @@ Or jump directly to any guide:
 | **Page Object Layer** | Playwright auto-waiting locators, role/label/testId strategy, web-first assertions |
 | **Two Starting Points** | Greenfield (generate) and Brownfield (assimilate) — 5 steps each with collapsible inline AI prompts |
 | **12 AI Prompts** | P0–P11 filterable by New UI / Existing / Both — all with copy-to-clipboard |
+
+---
+
+---
+
+### 10 · Jupyter Notebooks + Plotly
+`jupyter-plotly-explainer.html` — Dark Cyber (Share Tech Mono + Syne) · Live interactive Plotly charts
+
+| Section | Contents |
+|---------|----------|
+| **Notebook Anatomy** | Live notebook mockup with toolbar, cell types, code/output cells — annotated anatomy of analysis.ipynb |
+| **Three Cell Types** | Code (executable Python), Markdown (formatted docs), Raw (nbconvert passthrough) — with examples |
+| **DS Workflow** | 6-step data science pipeline: Ingest → Explore → Clean → Visualize → Model → Share with library tags |
+| **Live Plotly Charts** | 5 fully interactive embedded charts: Line (trend), Bar (comparison), Scatter (correlation), Heatmap (correlation matrix), Sunburst (hierarchical breakdown) |
+| **Magic Commands** | %timeit, %%time, %matplotlib inline, %who/%whos, %%writefile, %load_ext autoreload |
+| **Keyboard Shortcuts** | 9 essential shortcuts: Shift+Enter, Ctrl+Enter, A/B (insert cells), DD (delete), M/Y (cell type), Z (undo), 00 (restart) |
+
+---
+
+### 11 · Speak Like a CEO
+`speak-like-a-ceo.html` — Dark Executive (Bebas Neue + Libre Baskerville + IBM Plex Mono)
+
+| Section | Contents |
+|---------|----------|
+| **The Kill List** | 8 banned phrases (How was your weekend? / Does that make sense? etc.) each with a direct, high-value replacement and reasoning |
+| **Opening Lines by Context** | 4 tabbed contexts: Meeting Opener, First Encounter, Reconnecting, After Achievement — 4 phrases per context rated Strong / Executive level |
+| **CEO Communication Framework** | 6 principles: Lead with Insight, Ask Better Questions, Name the Tension, Speak in Threes, Disagree with Precision, Close with Intent |
+| **Power Phrase Bank** | 4 categories × 4 phrases: Open with Authority, Show Active Intelligence, Push Back Without Conflict, Close with Conviction |
+| **Books Worth Reading** | 6 recommendations: Never Split the Difference, Talk Like TED, Simply Said, The Art of Thinking Clearly, How to Win Friends, Exactly What to Say |
+| **Daily Disciplines** | 5 rules: prepare an insight, never fill silence, replace "I think", absorb long-form writing, debrief one conversation weekly |
 
 ---
 
