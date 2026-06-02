@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apigee Gateway — Visual Explainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:     #0e0c09;
+  --bg2:    #15120d;
+  --bg3:    #1c1812;
+  --border: #2e2820;
+  --amber:  #f59e0b;
+  --amber2: #fbbf24;
+  --amber3: rgba(245,158,11,.12);
+  --terra:  #e07b39;
+  --red:    #ef4444;
+  --green:  #22c55e;
+  --blue:   #38bdf8;
+  --text:   #e8dcc8;
+  --muted:  #7a6e5e;
+  --code:   #a3e635;
+}
+
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.4;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height:100vh;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  text-align:center;
+  padding:4rem 2rem;
+  position:relative;
+  overflow:hidden;
+}
+
+.hero-bg {
+  position:absolute; inset:0; z-index:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 60%, rgba(245,158,11,.06) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(245,158,11,.04) 39px, rgba(245,158,11,.04) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(245,158,11,.04) 39px, rgba(245,158,11,.04) 40px);
+}
+
+.pill {
+  display:inline-flex; align-items:center; gap:.5rem;
+  border:1px solid var(--border);
+  background:var(--bg2);
+  padding:.35rem 1rem;
+  border-radius:999px;
+  font-size:.6rem; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--amber); margin-bottom:2.5rem;
+  position:relative; z-index:1;
+  opacity:0; animation:up .5s .1s forwards;
+}
+.pill-dot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); }
+
+h1 {
+  font-family:'Playfair Display', serif;
+  font-size:clamp(3.5rem,10vw,7.5rem);
+  font-weight:900; line-height:.9;
+  color:var(--amber);
+  position:relative; z-index:1;
+  opacity:0; animation:up .6s .3s forwards;
+  text-shadow: 0 0 80px rgba(245,158,11,.3);
+}
+h1 span { color:var(--text); font-weight:700; }
+
+.hero-sub {
+  max-width:560px; margin-top:1.5rem;
+  font-size:.75rem; line-height:2;
+  color:var(--muted); position:relative; z-index:1;
+  opacity:0; animation:up .6s .5s forwards;
+}
+
+.hero-tags {
+  display:flex; flex-wrap:wrap; gap:.5rem;
+  justify-content:center; margin-top:2rem;
+  position:relative; z-index:1;
+  opacity:0; animation:up .5s .7s forwards;
+}
+.tag {
+  font-size:.58rem; letter-spacing:.1em; text-transform:uppercase;
+  border:1px solid var(--border); padding:.3rem .8rem;
+  color:var(--muted); border-radius:3px;
+}
+
+@keyframes up { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+
+/* ── NAV ── */
+.snav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(14,12,9,.92); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+  display:flex; overflow-x:auto;
+  justify-content:center; flex-wrap:wrap;
+  padding:.6rem 2rem;
+}
+.snav a {
+  font-size:.58rem; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--muted); text-decoration:none;
+  padding:.4rem .9rem; white-space:nowrap;
+  border-right:1px solid var(--border);
+  transition:color .2s;
+}
+.snav a:last-child { border-right:none; }
+.snav a:hover { color:var(--amber); }
+
+/* ── LAYOUT ── */
+.wrap { max-width:1140px; margin:0 auto; padding:0 2rem; }
+
+.sec {
+  padding:5rem 0 2rem;
+  border-top:1px solid var(--border);
+}
+
+.sec-head {
+  display:grid; grid-template-columns:60px 1fr;
+  gap:1.5rem; align-items:start;
+  margin-bottom:3rem;
+}
+.sec-n {
+  font-size:3rem; font-weight:300;
+  color:var(--border); line-height:1;
+  padding-top:.3rem;
+}
+.sec-lbl {
+  font-size:.55rem; letter-spacing:.25em; text-transform:uppercase;
+  color:var(--amber); margin-bottom:.4rem;
+}
+.sec-title {
+  font-family:'Playfair Display', serif;
+  font-size:clamp(1.8rem,4vw,2.6rem);
+  color:var(--text); line-height:1.1; margin-bottom:.7rem;
+}
+.sec-desc {
+  font-size:.72rem; line-height:1.9;
+  color:var(--muted); max-width:600px;
+}
+
+/* ── CARD ── */
+.card {
+  border:1px solid var(--border);
+  background:var(--bg2);
+  border-radius:6px; overflow:hidden;
+  margin-bottom:2rem;
+  opacity:0; transform:translateY(16px);
+  transition:opacity .5s, transform .5s;
+}
+.card.vis { opacity:1; transform:none; }
+
+.card-bar {
+  display:flex; align-items:center; gap:.8rem;
+  padding:.65rem 1.4rem;
+  background:var(--bg3);
+  border-bottom:1px solid var(--border);
+}
+.card-bar-title {
+  font-family:'Playfair Display', serif;
+  font-style:italic; font-size:1rem; color:var(--amber);
+}
+.card-bar-tag {
+  margin-left:auto; font-size:.52rem; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--muted);
+  border:1px solid var(--border); padding:.15rem .5rem;
+}
+.card-bar-dots { display:flex; gap:.35rem; }
+.dot { width:8px; height:8px; border-radius:50%; }
+.dot-r{background:#ef4444;} .dot-y{background:#f59e0b;} .dot-g{background:#22c55e;}
+
+.card-2col {
+  display:grid; grid-template-columns:1fr 1fr;
+}
+@media(max-width:680px){ .card-2col{grid-template-columns:1fr;} }
+
+.card-diag {
+  border-right:1px solid var(--border);
+  padding:1.5rem;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--bg);
+  min-height:280px;
+}
+@media(max-width:680px){
+  .card-diag{border-right:none;border-bottom:1px solid var(--border);min-height:220px;}
+}
+
+.card-info { padding:1.8rem; }
+.info-tagline {
+  font-family:'Playfair Display',serif;
+  font-style:italic; font-size:.95rem;
+  color:var(--terra); margin-bottom:.8rem;
+}
+.info-desc { font-size:.68rem; line-height:1.9; color:var(--muted); margin-bottom:1.2rem; }
+
+.cols { display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+.col { flex:1; min-width:110px; }
+.col-lbl { font-size:.52rem; letter-spacing:.2em; text-transform:uppercase; color:var(--amber); margin-bottom:.5rem; }
+.ul { list-style:none; }
+.ul li {
+  font-size:.62rem; color:var(--muted); line-height:1.8;
+  padding-left:.9rem; position:relative;
+}
+.ul li::before { content:'›'; position:absolute; left:0; color:var(--amber); }
+
+.chips { display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.5rem; }
+.chip {
+  font-size:.55rem; background:var(--amber3);
+  border:1px solid rgba(245,158,11,.25);
+  color:var(--amber2); padding:.2rem .6rem; border-radius:3px;
+}
+
+/* ── SVG shared ── */
+svg { width:100%; height:auto; font-family:'JetBrains Mono',monospace; }
+.b  { fill:var(--bg2); stroke:var(--border); stroke-width:1.2; }
+.bA { fill:rgba(245,158,11,.1); stroke:var(--amber); stroke-width:1.2; }
+.bT { fill:rgba(224,123,57,.1); stroke:var(--terra); stroke-width:1; }
+.bG { fill:rgba(34,197,94,.08); stroke:var(--green); stroke-width:1; }
+.bB { fill:rgba(56,189,248,.08); stroke:var(--blue); stroke-width:1; }
+.bR { fill:rgba(239,68,68,.08); stroke:var(--red); stroke-width:1; }
+.bD { fill:#15120d; stroke:var(--border); stroke-width:1; }
+.t  { fill:var(--text); font-size:7px; text-anchor:middle; dominant-baseline:middle; }
+.tA { fill:var(--amber); font-size:7px; text-anchor:middle; dominant-baseline:middle; }
+.tT { fill:var(--terra); font-size:7px; text-anchor:middle; dominant-baseline:middle; }
+.tG { fill:var(--green); font-size:6px; text-anchor:middle; dominant-baseline:middle; }
+.tB { fill:var(--blue); font-size:6px; text-anchor:middle; dominant-baseline:middle; }
+.tM { fill:var(--muted); font-size:6px; text-anchor:middle; dominant-baseline:middle; }
+.ts { font-size:5.5px; }
+.arr  { stroke:var(--amber); stroke-width:1.4; fill:none; marker-end:url(#aA); }
+.arrG { stroke:var(--green); stroke-width:1.2; fill:none; marker-end:url(#aG); }
+.arrB { stroke:var(--blue); stroke-width:1.2; fill:none; marker-end:url(#aB); }
+.arrT { stroke:var(--terra); stroke-width:1.2; fill:none; marker-end:url(#aT); }
+.arrD { stroke:var(--muted); stroke-width:1; stroke-dasharray:4,3; fill:none; marker-end:url(#aM); }
+
+/* ── FLOW PIPELINE DIAGRAM (full width) ── */
+.pipeline-wrap {
+  border:1px solid var(--border);
+  background:var(--bg);
+  border-radius:6px; overflow:hidden;
+  margin-bottom:2rem;
+  opacity:0; transform:translateY(16px);
+  transition:opacity .5s, transform .5s;
+}
+.pipeline-wrap.vis { opacity:1; transform:none; }
+.pipeline-bar {
+  background:var(--bg3); border-bottom:1px solid var(--border);
+  padding:.65rem 1.4rem;
+  display:flex; align-items:center; gap:.8rem;
+}
+.pipeline-bar span { font-family:'Playfair Display',serif; font-style:italic; color:var(--amber); font-size:1rem; }
+.pipeline-inner { padding:1.5rem 2rem; }
+
+/* ── CODE BLOCK ── */
+.code-block {
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:1.2rem 1.5rem;
+  font-size:.62rem;
+  line-height:1.9;
+  overflow-x:auto;
+  margin-top:.8rem;
+}
+.kw { color:var(--amber); }
+.at { color:var(--blue); }
+.vl { color:var(--code); }
+.cm { color:var(--muted); font-style:italic; }
+
+/* ── KVM SCOPE DIAGRAM ── */
+.kvm-scopes {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:6px;
+  overflow:hidden;
+  margin-bottom:1.5rem;
+  opacity:0; transform:translateY(16px);
+  transition:opacity .5s, transform .5s;
+}
+.kvm-scopes.vis { opacity:1; transform:none; }
+@media(max-width:560px){ .kvm-scopes{grid-template-columns:1fr;} }
+
+.scope-card {
+  background:var(--bg2); padding:1.8rem 1.4rem; position:relative;
+}
+.scope-num {
+  font-size:2.5rem; font-weight:300;
+  color:var(--border); line-height:1; margin-bottom:.5rem;
+}
+.scope-name {
+  font-family:'Playfair Display',serif; font-style:italic;
+  font-size:1.05rem; color:var(--amber); margin-bottom:.5rem;
+}
+.scope-tag {
+  font-size:.55rem; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:.8rem;
+}
+.scope-desc { font-size:.63rem; line-height:1.8; color:var(--muted); }
+.scope-badge {
+  position:absolute; top:1rem; right:1rem;
+  font-size:.5rem; letter-spacing:.12em; text-transform:uppercase;
+  padding:.2rem .5rem; border-radius:3px;
+}
+.badge-org { background:rgba(245,158,11,.15); color:var(--amber); border:1px solid rgba(245,158,11,.3); }
+.badge-env { background:rgba(56,189,248,.12); color:var(--blue); border:1px solid rgba(56,189,248,.3); }
+.badge-prx { background:rgba(34,197,94,.1); color:var(--green); border:1px solid rgba(34,197,94,.3); }
+
+/* ── SOAP CONVERSION STEPS ── */
+.conv-steps {
+  display:flex; flex-direction:column; gap:0;
+  margin-bottom:2rem;
+}
+.conv-step {
+  display:grid; grid-template-columns:52px 1fr;
+  gap:1.2rem; padding:1.5rem 0;
+  opacity:0; transform:translateX(-12px);
+  transition:opacity .45s, transform .45s;
+}
+.conv-step.vis { opacity:1; transform:none; }
+.step-line { display:flex; flex-direction:column; align-items:center; }
+.step-dot {
+  width:14px; height:14px; border-radius:50%;
+  background:var(--amber); flex-shrink:0;
+  box-shadow:0 0 12px rgba(245,158,11,.5);
+  margin-top:3px;
+}
+.step-conn {
+  width:1px; flex:1; margin-top:4px;
+  background:linear-gradient(to bottom, var(--amber), var(--border));
+}
+.conv-step:last-child .step-conn { display:none; }
+.step-body {}
+.step-title { font-size:.85rem; font-weight:600; color:var(--text); margin-bottom:.3rem; }
+.step-desc { font-size:.67rem; color:var(--muted); line-height:1.8; }
+.step-badge {
+  display:inline-block; margin-top:.4rem;
+  font-size:.52rem; letter-spacing:.1em; text-transform:uppercase;
+  padding:.18rem .55rem; border-radius:3px;
+}
+.sb-in  { background:rgba(56,189,248,.1); color:var(--blue); border:1px solid rgba(56,189,248,.25); }
+.sb-tr  { background:rgba(245,158,11,.1); color:var(--amber); border:1px solid rgba(245,158,11,.25); }
+.sb-out { background:rgba(34,197,94,.1); color:var(--green); border:1px solid rgba(34,197,94,.25); }
+.sb-pol { background:rgba(224,123,57,.1); color:var(--terra); border:1px solid rgba(224,123,57,.25); }
+
+/* ── COMPARISON ── */
+.cmp-table {
+  width:100%; border-collapse:collapse;
+  font-size:.63rem; margin-bottom:3rem;
+}
+.cmp-table th {
+  background:var(--bg3); color:var(--amber);
+  padding:.65rem 1rem; text-align:left;
+  font-size:.55rem; letter-spacing:.12em; font-weight:400;
+  border-bottom:1px solid var(--border);
+}
+.cmp-table td {
+  padding:.65rem 1rem; border-bottom:1px solid var(--border);
+  color:var(--muted); line-height:1.7; vertical-align:top;
+}
+.cmp-table tr:hover td { background:var(--bg3); }
+.td-h { color:var(--text); font-family:'Playfair Display',serif; font-style:italic; font-size:.78rem; }
+.td-g { color:var(--green); }
+.td-r { color:var(--red); }
+
+/* footer */
+footer {
+  border-top:1px solid var(--border);
+  padding:2.5rem 2rem;
+  text-align:center;
+  font-size:.55rem; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--muted);
+}
+
+/* ── LIGHT THEME ── */
+html { transition: background-color .3s; }
+body { transition: background-color .3s, color .3s; }
+
+[data-theme="light"] {
+  --bg:    #faf7f1;
+  --bg2:   #f2ede3;
+  --bg3:   #e8dfc9;
+  --border:#c0a87a;
+  --amber: #a16207;
+  --amber2:#c2890e;
+  --amber3:rgba(161,98,7,.08);
+  --terra: #b45320;
+  --red:   #dc2626;
+  --green: #16a34a;
+  --blue:  #0369a1;
+  --text:  #1a1208;
+  --muted: #6b5840;
+  --code:  #4d7c0f;
+}
+[data-theme="light"] body::after { opacity:.15; }
+[data-theme="light"] .snav { background:rgba(250,247,241,.95); }
+[data-theme="light"] .hero-bg {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 60%, rgba(161,98,7,.05) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(161,98,7,.04) 39px, rgba(161,98,7,.04) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(161,98,7,.04) 39px, rgba(161,98,7,.04) 40px);
+}
+[data-theme="light"] .bD { fill:var(--bg2); stroke:var(--border); }
+
+/* ── THEME TOGGLE ── */
+#theme-toggle {
+  position:fixed; top:1.25rem; right:1.25rem; z-index:999;
+  display:flex; align-items:center; gap:.6rem;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  color:var(--amber);
+  font-family:'JetBrains Mono',monospace;
+  font-size:.55rem; letter-spacing:.18em; text-transform:uppercase;
+  padding:.4rem 1rem;
+  border-radius:3px;
+  cursor:pointer;
+  transition:border-color .2s, background .2s;
+}
+#theme-toggle:hover { border-color:var(--amber); background:var(--amber3); }
+#theme-toggle .ti { font-size:.9rem; line-height:1; transition:transform .35s; display:block; }
+#theme-toggle:hover .ti { transform:rotate(25deg); }
+</style>
+</head>
+<body>
+
+<button id="theme-toggle" aria-label="Toggle theme">
+  <span class="ti">◑</span>Theme
+</button>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="pill"><span class="pill-dot"></span> Google Cloud · API Management Platform</div>
+  <h1><span>Apigee</span><br>Gateway</h1>
+  <p class="hero-sub">The enterprise API management layer that sits between clients and backend services — securing, transforming, routing, and monitoring every API call.</p>
+  <div class="hero-tags">
+    <span class="tag">API Proxy</span>
+    <span class="tag">KVM</span>
+    <span class="tag">SOAP → REST</span>
+    <span class="tag">Policies</span>
+    <span class="tag">Flow Pipeline</span>
+    <span class="tag">OAuth 2.0</span>
+    <span class="tag">Rate Limiting</span>
+  </div>
+</section>
+
+<!-- NAV -->
+<nav class="snav">
+  <a href="#overview">Overview</a>
+  <a href="#proxy">API Proxy</a>
+  <a href="#pipeline">Flow Pipeline</a>
+  <a href="#kvm">KVM</a>
+  <a href="#soap">SOAP→REST</a>
+  <a href="#policies">Policies</a>
+  <a href="#compare">Compare</a>
+</nav>
+
+<!-- ══════ 01 — OVERVIEW ══════ -->
+<div class="wrap" id="overview">
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-n">01</div>
+    <div>
+      <p class="sec-lbl">Overview</p>
+      <h2 class="sec-title">What is Apigee?</h2>
+      <p class="sec-desc">Apigee is Google Cloud's full-lifecycle API management platform. It acts as a programmable reverse proxy: every API call passes through Apigee where security, transformation, routing, caching, and analytics policies execute before the request ever reaches your backend.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-bar">
+      <div class="card-bar-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="card-bar-title">High-Level Architecture</span>
+      <span class="card-bar-tag">End-to-End View</span>
+    </div>
+    <div class="card-diag" style="min-height:320px">
+      <svg viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="aA" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f59e0b"/></marker>
+          <marker id="aG" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#22c55e"/></marker>
+          <marker id="aB" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#38bdf8"/></marker>
+          <marker id="aT" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#e07b39"/></marker>
+          <marker id="aM" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#7a6e5e"/></marker>
+        </defs>
+
+        <!-- Clients column -->
+        <text x="55" y="14" class="tA" style="font-size:6px;letter-spacing:.12em">CLIENTS</text>
+        <rect x="10" y="22" width="90" height="24" rx="3" class="bB"/>
+        <text x="55" y="34" class="t ts">Mobile App</text>
+        <rect x="10" y="54" width="90" height="24" rx="3" class="bB"/>
+        <text x="55" y="66" class="t ts">Web App</text>
+        <rect x="10" y="86" width="90" height="24" rx="3" class="bB"/>
+        <text x="55" y="98" class="t ts">Partner API</text>
+        <rect x="10" y="118" width="90" height="24" rx="3" class="bB"/>
+        <text x="55" y="130" class="t ts">3rd Party App</text>
+
+        <!-- Arrows to Apigee -->
+        <line x1="100" y1="34" x2="168" y2="70" class="arr"/>
+        <line x1="100" y1="66" x2="168" y2="82" class="arr"/>
+        <line x1="100" y1="98" x2="168" y2="94" class="arr"/>
+        <line x1="100" y1="130" x2="168" y2="106" class="arr"/>
+
+        <!-- Apigee box -->
+        <rect x="168" y="42" width="142" height="116" rx="4" class="bA"/>
+        <text x="239" y="58" class="tA" style="font-size:8px;font-weight:600">APIGEE GATEWAY</text>
+
+        <rect x="180" y="66" width="118" height="16" rx="2" class="bD"/>
+        <text x="239" y="74" class="t ts">🔒 Auth / Rate Limit / Quota</text>
+        <rect x="180" y="86" width="118" height="16" rx="2" class="bD"/>
+        <text x="239" y="94" class="t ts">🔀 Transform / Route / Cache</text>
+        <rect x="180" y="106" width="118" height="16" rx="2" class="bD"/>
+        <text x="239" y="114" class="t ts">📊 Analytics / Logging / Trace</text>
+        <rect x="180" y="126" width="118" height="16" rx="2" class="bD"/>
+        <text x="239" y="134" class="t ts">🛡️ Threat Protection / Mediation</text>
+
+        <!-- Arrows to backends -->
+        <line x1="310" y1="70" x2="368" y2="40" class="arrG"/>
+        <line x1="310" y1="90" x2="368" y2="72" class="arrG"/>
+        <line x1="310" y1="110" x2="368" y2="104" class="arrG"/>
+        <line x1="310" y1="130" x2="368" y2="136" class="arrG"/>
+
+        <!-- Backends -->
+        <text x="425" y="14" class="tG" style="font-size:6px;letter-spacing:.12em">BACKENDS</text>
+        <rect x="368" y="22" width="104" height="24" rx="3" class="bG"/>
+        <text x="420" y="34" class="t ts">REST Microservice</text>
+        <rect x="368" y="54" width="104" height="24" rx="3" class="bG"/>
+        <text x="420" y="66" class="t ts">Legacy SOAP Service</text>
+        <rect x="368" y="86" width="104" height="24" rx="3" class="bG"/>
+        <text x="420" y="98" class="t ts">Cloud Function</text>
+        <rect x="368" y="118" width="104" height="24" rx="3" class="bG"/>
+        <text x="420" y="130" class="t ts">Database / Cache</text>
+
+        <!-- Analytics side -->
+        <rect x="168" y="170" width="142" height="20" rx="3" class="bD"/>
+        <text x="239" y="180" class="tM">Analytics · Monitoring · Alerts</text>
+        <line x1="239" y1="158" x2="239" y2="170" class="arrD"/>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ 02 — API PROXY ══════ -->
+<div class="wrap" id="proxy">
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-n">02</div>
+    <div>
+      <p class="sec-lbl">Core Concept</p>
+      <h2 class="sec-title">The API Proxy</h2>
+      <p class="sec-desc">An API Proxy is Apigee's fundamental unit. It wraps your backend service with a configurable processing pipeline — decoupling the public API interface from backend implementation details.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-bar">
+      <div class="card-bar-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="card-bar-title">Proxy Endpoint vs Target Endpoint</span>
+      <span class="card-bar-tag">Anatomy</span>
+    </div>
+    <div class="card-diag" style="min-height:300px">
+      <svg viewBox="0 0 540 180" xmlns="http://www.w3.org/2000/svg">
+        <!-- Client -->
+        <rect x="8" y="70" width="70" height="40" rx="3" class="bB"/>
+        <text x="43" y="88" class="t">Client</text>
+        <text x="43" y="100" class="tM ts">App / Browser</text>
+
+        <line x1="78" y1="90" x2="108" y2="90" class="arr"/>
+        <text x="93" y="84" class="tM ts">HTTPS</text>
+
+        <!-- Proxy Endpoint box -->
+        <rect x="108" y="20" width="148" height="140" rx="4" class="bA"/>
+        <text x="182" y="36" class="tA" style="font-size:7.5px">PROXY ENDPOINT</text>
+
+        <rect x="118" y="44" width="128" height="20" rx="2" class="bD"/>
+        <text x="182" y="54" class="t ts">Virtual Host · Base Path</text>
+
+        <rect x="118" y="68" width="128" height="20" rx="2" class="bD"/>
+        <text x="182" y="78" class="t ts">PreFlow Policies</text>
+
+        <rect x="118" y="92" width="128" height="20" rx="2" class="bD"/>
+        <text x="182" y="102" class="t ts">Conditional Flows</text>
+
+        <rect x="118" y="116" width="128" height="20" rx="2" class="bD"/>
+        <text x="182" y="126" class="t ts">PostFlow Policies</text>
+
+        <text x="182" y="150" class="tM ts">Client-facing rules enforced here</text>
+
+        <line x1="256" y1="90" x2="286" y2="90" class="arr"/>
+        <text x="271" y="83" class="tM ts">fwd</text>
+
+        <!-- Target Endpoint box -->
+        <rect x="286" y="20" width="148" height="140" rx="4" class="bT"/>
+        <text x="360" y="36" class="tT" style="font-size:7.5px">TARGET ENDPOINT</text>
+
+        <rect x="296" y="44" width="128" height="20" rx="2" class="bD"/>
+        <text x="360" y="54" class="t ts">Target URL / Load Balancer</text>
+
+        <rect x="296" y="68" width="128" height="20" rx="2" class="bD"/>
+        <text x="360" y="78" class="t ts">PreFlow Policies</text>
+
+        <rect x="296" y="92" width="128" height="20" rx="2" class="bD"/>
+        <text x="360" y="102" class="t ts">Conditional Flows</text>
+
+        <rect x="296" y="116" width="128" height="20" rx="2" class="bD"/>
+        <text x="360" y="126" class="t ts">PostFlow Policies</text>
+
+        <text x="360" y="150" class="tM ts">Backend-facing transforms here</text>
+
+        <line x1="434" y1="90" x2="462" y2="90" class="arrG"/>
+
+        <!-- Backend -->
+        <rect x="462" y="70" width="70" height="40" rx="3" class="bG"/>
+        <text x="497" y="88" class="t">Backend</text>
+        <text x="497" y="100" class="tM ts">API / Service</text>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ 03 — FLOW PIPELINE ══════ -->
+<div class="wrap" id="pipeline">
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-n">03</div>
+    <div>
+      <p class="sec-lbl">Execution Model</p>
+      <h2 class="sec-title">The Flow Pipeline</h2>
+      <p class="sec-desc">Every API call travels through a deterministic 4-segment pipeline. Policies execute in strict order — giving you precise control over what happens at every stage of a request and response lifecycle.</p>
+    </div>
+  </div>
+
+  <div class="pipeline-wrap">
+    <div class="pipeline-bar">
+      <div class="card-bar-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span>Full Request → Response Pipeline</span>
+    </div>
+    <div class="pipeline-inner">
+      <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Request row label -->
+        <text x="8" y="30" class="tA" style="font-size:6.5px;letter-spacing:.15em">REQUEST FLOW →</text>
+
+        <!-- CLIENT -->
+        <rect x="8" y="38" width="58" height="80" rx="3" class="bB"/>
+        <text x="37" y="68" class="t" style="font-size:7.5px">CLIENT</text>
+        <text x="37" y="82" class="tB ts">App</text>
+        <text x="37" y="94" class="tB ts">Browser</text>
+
+        <!-- Arrow -->
+        <line x1="66" y1="78" x2="90" y2="78" class="arr"/>
+
+        <!-- ProxyEndpoint Request -->
+        <rect x="90" y="38" width="128" height="80" rx="3" class="bA"/>
+        <text x="154" y="55" class="tA" style="font-size:6.5px">PROXY ENDPOINT</text>
+        <rect x="100" y="62" width="108" height="14" rx="2" class="bD"/>
+        <text x="154" y="69" class="t ts">PreFlow (auth, rate-limit)</text>
+        <rect x="100" y="80" width="108" height="14" rx="2" class="bD"/>
+        <text x="154" y="87" class="t ts">Conditional Flow (routing)</text>
+        <rect x="100" y="98" width="108" height="14" rx="2" class="bD"/>
+        <text x="154" y="105" class="t ts">PostFlow (headers)</text>
+
+        <line x1="218" y1="78" x2="242" y2="78" class="arr"/>
+
+        <!-- TargetEndpoint Request -->
+        <rect x="242" y="38" width="128" height="80" rx="3" class="bT"/>
+        <text x="306" y="55" class="tT" style="font-size:6.5px">TARGET ENDPOINT</text>
+        <rect x="252" y="62" width="108" height="14" rx="2" class="bD"/>
+        <text x="306" y="69" class="t ts">PreFlow (transform req)</text>
+        <rect x="252" y="80" width="108" height="14" rx="2" class="bD"/>
+        <text x="306" y="87" class="t ts">Conditional Flow</text>
+        <rect x="252" y="98" width="108" height="14" rx="2" class="bD"/>
+        <text x="306" y="105" class="t ts">PostFlow</text>
+
+        <line x1="370" y1="78" x2="394" y2="78" class="arr"/>
+
+        <!-- BACKEND -->
+        <rect x="394" y="38" width="70" height="80" rx="3" class="bG"/>
+        <text x="429" y="68" class="t" style="font-size:7.5px">BACKEND</text>
+        <text x="429" y="82" class="tG ts">Service</text>
+        <text x="429" y="94" class="tG ts">SOAP/REST</text>
+
+        <!-- Response row label -->
+        <text x="692" y="150" class="tA" style="font-size:6.5px;letter-spacing:.15em;text-anchor:end">← RESPONSE FLOW</text>
+
+        <!-- Response arrows (reversed) -->
+        <line x1="394" y1="162" x2="370" y2="162" class="arrG"/>
+        <line x1="242" y1="162" x2="218" y2="162" class="arrG"/>
+        <line x1="90" y1="162" x2="66" y2="162" class="arrG"/>
+
+        <!-- TargetEndpoint Response -->
+        <rect x="242" y="128" width="128" height="62" rx="3" class="bT"/>
+        <text x="306" y="142" class="tT" style="font-size:6.5px">TARGET RESPONSE</text>
+        <rect x="252" y="150" width="108" height="14" rx="2" class="bD"/>
+        <text x="306" y="157" class="t ts">PostFlow (map response)</text>
+        <rect x="252" y="168" width="108" height="14" rx="2" class="bD"/>
+        <text x="306" y="175" class="t ts">XML→JSON convert</text>
+
+        <!-- ProxyEndpoint Response -->
+        <rect x="90" y="128" width="128" height="62" rx="3" class="bA"/>
+        <text x="154" y="142" class="tA" style="font-size:6.5px">PROXY RESPONSE</text>
+        <rect x="100" y="150" width="108" height="14" rx="2" class="bD"/>
+        <text x="154" y="157" class="t ts">PostFlow (logging)</text>
+        <rect x="100" y="168" width="108" height="14" rx="2" class="bD"/>
+        <text x="154" y="175" class="t ts">Set CORS headers</text>
+
+        <!-- Backend response arrow -->
+        <line x1="429" y1="118" x2="429" y2="128" style="stroke:#22c55e;stroke-width:1.4;fill:none"/>
+        <line x1="429" y1="118" x2="394" y2="128" class="arrG"/>
+
+        <!-- Vertical connector at backend -->
+        <line x1="429" y1="118" x2="429" y2="128" class="arrG"/>
+
+        <!-- PostClientFlow note -->
+        <rect x="530" y="90" width="110" height="40" rx="3" class="bD"/>
+        <text x="585" y="106" class="tM ts">PostClientFlow</text>
+        <text x="585" y="118" class="tM ts">Logging after send</text>
+        <line x1="66" y1="148" x2="530" y2="110" class="arrD"/>
+
+        <!-- Sequence numbers -->
+        <text x="70" y="72" class="tA" style="font-size:9px;font-weight:700">①</text>
+        <text x="222" y="72" class="tA" style="font-size:9px;font-weight:700">②</text>
+        <text x="376" y="72" class="tA" style="font-size:9px;font-weight:700">③</text>
+        <text x="376" y="156" class="tG" style="font-size:9px;font-weight:700">④</text>
+        <text x="222" y="156" class="tG" style="font-size:9px;font-weight:700">⑤</text>
+        <text x="70" y="156" class="tG" style="font-size:9px;font-weight:700">⑥</text>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ 04 — KVM ══════ -->
+<div class="wrap" id="kvm">
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-n">04</div>
+    <div>
+      <p class="sec-lbl">Configuration Store</p>
+      <h2 class="sec-title">Key Value Maps (KVM)</h2>
+      <p class="sec-desc">KVMs are Apigee's secure, runtime configuration store. Instead of hardcoding backend URLs, API keys, feature flags, or credentials inside proxy policies, you store them in an encrypted KVM and read them at runtime — enabling zero-redeployment config changes.</p>
+    </div>
+  </div>
+
+  <!-- Scope cards -->
+  <div class="kvm-scopes">
+    <div class="scope-card">
+      <span class="scope-badge badge-org">Broadest</span>
+      <div class="scope-num">01</div>
+      <div class="scope-name">Organization</div>
+      <div class="scope-tag">Scope · All Environments</div>
+      <p class="scope-desc">Shared across every environment (dev, staging, prod) in your Apigee org. Ideal for global constants like third-party vendor URLs or shared encryption keys.</p>
+    </div>
+    <div class="scope-card">
+      <span class="scope-badge badge-env">Per-Env</span>
+      <div class="scope-num">02</div>
+      <div class="scope-name">Environment</div>
+      <div class="scope-tag">Scope · Single Environment</div>
+      <p class="scope-desc">Scoped to a specific environment. Use for backend URLs that differ between dev/staging/prod, or env-specific rate limit thresholds and feature flags.</p>
+    </div>
+    <div class="scope-card">
+      <span class="scope-badge badge-prx">Narrowest</span>
+      <div class="scope-num">03</div>
+      <div class="scope-name">API Proxy</div>
+      <div class="scope-tag">Scope · Single Proxy</div>
+      <p class="scope-desc">Accessible only within a single API proxy. Perfect for proxy-specific secrets or configuration that must never leak into other proxies in the same environment.</p>
+    </div>
+  </div>
+
+  <!-- KVM flow diagram -->
+  <div class="card">
+    <div class="card-bar">
+      <div class="card-bar-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="card-bar-title">KVM at Runtime — How it works</span>
+      <span class="card-bar-tag">KeyValueMapOperations Policy</span>
+    </div>
+    <div class="card-2col">
+      <div class="card-diag">
+        <svg viewBox="0 0 280 260" xmlns="http://www.w3.org/2000/svg">
+          <!-- KVM Store -->
+          <rect x="80" y="10" width="120" height="80" rx="4" class="bA"/>
+          <text x="140" y="30" class="tA" style="font-size:7.5px">KVM STORE</text>
+          <text x="140" y="46" class="tA" style="font-size:6px;opacity:.7">(Encrypted at rest)</text>
+
+          <rect x="90" y="54" width="100" height="12" rx="2" class="bD"/>
+          <text x="140" y="60" class="t ts">backend_url = https://api.xyz</text>
+          <rect x="90" y="70" width="100" height="12" rx="2" class="bD"/>
+          <text x="140" y="76" class="t ts">api_key = ••••••••••••</text>
+
+          <!-- GET operation -->
+          <rect x="50" y="120" width="90" height="36" rx="3" class="bD"/>
+          <text x="95" y="135" class="tA" style="font-size:6.5px">GET Operation</text>
+          <text x="95" y="147" class="tM ts">Read key → variable</text>
+
+          <line x1="95" y1="90" x2="95" y2="120" class="arr"/>
+          <text x="78" y="108" class="tA" style="font-size:6px">KeyValueMap</text>
+          <text x="78" y="116" class="tA" style="font-size:6px">Operations</text>
+
+          <!-- PUT operation -->
+          <rect x="158" y="120" width="90" height="36" rx="3" class="bD"/>
+          <text x="203" y="135" class="tT" style="font-size:6.5px">PUT Operation</text>
+          <text x="203" y="147" class="tM ts">Write value to map</text>
+
+          <line x1="185" y1="90" x2="185" y2="120" class="arrT"/>
+
+          <!-- Flow variables -->
+          <rect x="50" y="182" width="90" height="32" rx="3" class="bG"/>
+          <text x="95" y="196" class="tG" style="font-size:6.5px">Flow Variable</text>
+          <text x="95" y="207" class="tM ts">kvm.backend_url</text>
+
+          <line x1="95" y1="156" x2="95" y2="182" class="arrG"/>
+
+          <!-- Policy uses variable -->
+          <rect x="50" y="232" width="200" height="22" rx="3" class="bD"/>
+          <text x="150" y="244" class="t ts">AssignMessage / SetHeader uses {kvm.backend_url}</text>
+
+          <line x1="95" y1="214" x2="150" y2="232" class="arr"/>
+
+          <!-- Cache note -->
+          <rect x="168" y="182" width="82" height="32" rx="3" class="bD"/>
+          <text x="209" y="196" class="tM ts">TTL Cache</text>
+          <text x="209" y="206" class="tM ts">&lt;ExpiryTimeInSecs&gt;</text>
+
+          <line x1="203" y1="156" x2="209" y2="182" class="arrD"/>
+        </svg>
+      </div>
+      <div class="card-info">
+        <p class="info-tagline">"Config lives outside the proxy. No redeploy needed."</p>
+        <p class="info-desc">The <code style="color:var(--code)">KeyValueMapOperations</code> policy is attached to the PreFlow. On the first request it reads the KVM, caches the values for N seconds (TTL), and stores them as flow variables. All subsequent policies in the pipeline can reference those variables without re-querying the store.</p>
+
+        <div class="cols">
+          <div class="col">
+            <div class="col-lbl">What to Store</div>
+            <ul class="ul">
+              <li>Backend service URLs</li>
+              <li>OAuth client credentials</li>
+              <li>3rd-party API keys</li>
+              <li>Feature flags</li>
+              <li>Rate limit thresholds</li>
+              <li>IP allowlists</li>
+            </ul>
+          </div>
+          <div class="col">
+            <div class="col-lbl">Best Practices</div>
+            <ul class="ul">
+              <li>Read in PreFlow only</li>
+              <li>Set ExpiryTimeInSecs</li>
+              <li>Always set fallback values</li>
+              <li>Avoid writes in hot path</li>
+              <li>Use Env scope for URLs</li>
+              <li>Org scope for global keys</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-lbl" style="margin-bottom:.5rem">Sample Policy XML</div>
+        <div class="code-block">
+<span class="cm">&lt;!-- KeyValueMapOperations policy --&gt;</span>
+<span class="kw">&lt;KeyValueMapOperations</span> <span class="at">name</span>=<span class="vl">"KVM-ReadConfig"</span>
+  <span class="at">mapIdentifier</span>=<span class="vl">"env-config"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;ExpiryTimeInSecs&gt;</span><span class="vl">300</span><span class="kw">&lt;/ExpiryTimeInSecs&gt;</span>
+  <span class="kw">&lt;Get</span> <span class="at">assignTo</span>=<span class="vl">"kvm.backend_url"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;Key&gt;&lt;Parameter&gt;</span><span class="vl">backend_url</span><span class="kw">&lt;/Parameter&gt;&lt;/Key&gt;</span>
+  <span class="kw">&lt;/Get&gt;</span>
+  <span class="kw">&lt;Get</span> <span class="at">assignTo</span>=<span class="vl">"kvm.api_key"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;Key&gt;&lt;Parameter&gt;</span><span class="vl">third_party_key</span><span class="kw">&lt;/Parameter&gt;&lt;/Key&gt;</span>
+  <span class="kw">&lt;/Get&gt;</span>
+<span class="kw">&lt;/KeyValueMapOperations&gt;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ 05 — SOAP → REST ══════ -->
+<div class="wrap" id="soap">
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-n">05</div>
+    <div>
+      <p class="sec-lbl">Protocol Transformation</p>
+      <h2 class="sec-title">SOAP → REST Conversion</h2>
+      <p class="sec-desc">Apigee can expose legacy SOAP/WSDL services as modern REST APIs. Clients call clean JSON/REST endpoints. Apigee translates the call into a SOAP envelope, forwards it to the backend, then converts the XML response back to JSON — completely transparent to the consumer.</p>
+    </div>
+  </div>
+
+  <!-- Before / After -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-bar">
+      <div class="card-bar-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="card-bar-title">Before &amp; After</span>
+      <span class="card-bar-tag">Protocol Bridge</span>
+    </div>
+    <div class="card-2col">
+      <div class="card-diag" style="flex-direction:column;gap:1rem;align-items:flex-start;padding:1.8rem">
+        <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red)">❌ WITHOUT APIGEE</div>
+        <div class="code-block" style="width:100%;font-size:.58rem">
+<span class="cm">// Client must send SOAP XML</span>
+POST /WeatherService HTTP/1.1
+Content-Type: <span class="vl">text/xml</span>
+SOAPAction: <span class="vl">"GetTemperature"</span>
+
+<span class="kw">&lt;soap:Envelope&gt;</span>
+  <span class="kw">&lt;soap:Body&gt;</span>
+    <span class="kw">&lt;GetTemperature&gt;</span>
+      <span class="kw">&lt;City&gt;</span><span class="vl">Miami</span><span class="kw">&lt;/City&gt;</span>
+    <span class="kw">&lt;/GetTemperature&gt;</span>
+  <span class="kw">&lt;/soap:Body&gt;</span>
+<span class="kw">&lt;/soap:Envelope&gt;</span>
+        </div>
+        <div style="font-size:.58rem;color:var(--muted)">Client tightly coupled to SOAP schema. Any WSDL change breaks clients.</div>
+      </div>
+      <div class="card-diag" style="flex-direction:column;gap:1rem;align-items:flex-start;padding:1.8rem;border-right:none">
+        <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--green)">✓ WITH APIGEE PROXY</div>
+        <div class="code-block" style="width:100%;font-size:.58rem">
+<span class="cm">// Client calls clean REST API</span>
+GET /v1/weather/<span class="vl">Miami</span> HTTP/1.1
+Accept: <span class="vl">application/json</span>
+x-api-key: <span class="vl">abc123</span>
+
+<span class="cm">// Apigee returns clean JSON</span>
+{
+  <span class="at">"city"</span>: <span class="vl">"Miami"</span>,
+  <span class="at">"temperature"</span>: <span class="vl">86</span>,
+  <span class="at">"unit"</span>: <span class="vl">"F"</span>
+}
+        </div>
+        <div style="font-size:.58rem;color:var(--muted)">Client is decoupled. SOAP backend can change. REST contract stays stable.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversion steps -->
+  <div class="sec-lbl" style="margin-bottom:1.2rem">Conversion Pipeline — Step by Step</div>
+
+  <div class="conv-steps">
+    <div class="conv-step">
+      <div class="step-line"><div class="step-dot"></div><div class="step-conn"></div></div>
+      <div class="step-body">
+        <div class="step-title">Client sends REST request</div>
+        <div class="step-desc">A modern app issues a standard HTTP GET/POST with JSON body or query parameters to the Apigee proxy URL. It knows nothing about SOAP.</div>
+        <span class="step-badge sb-in">Inbound · JSON / REST</span>
+      </div>
+    </div>
+    <div class="conv-step">
+      <div class="step-line"><div class="step-dot"></div><div class="step-conn"></div></div>
+      <div class="step-body">
+        <div class="step-title">WSDL imported → Proxy auto-generated</div>
+        <div class="step-desc">Apigee reads the WSDL file and automatically generates REST API paths for each SOAP operation. It infers HTTP methods (GET for reads, POST for mutations) and maps query params to SOAP input elements.</div>
+        <span class="step-badge sb-tr">Transform · WSDL Parse</span>
+      </div>
+    </div>
+    <div class="conv-step">
+      <div class="step-line"><div class="step-dot"></div><div class="step-conn"></div></div>
+      <div class="step-body">
+        <div class="step-title">ExtractVariables policy — parse REST input</div>
+        <div class="step-desc">An <code style="color:var(--code)">ExtractVariables</code> policy reads the REST request parameters (path params, query strings, JSON body fields) and stores them as named flow variables in the message context.</div>
+        <span class="step-badge sb-pol">Policy · Extract</span>
+      </div>
+    </div>
+    <div class="conv-step">
+      <div class="step-line"><div class="step-dot"></div><div class="step-conn"></div></div>
+      <div class="step-body">
+        <div class="step-title">AssignMessage policy — build SOAP envelope</div>
+        <div class="step-desc">An <code style="color:var(--code)">AssignMessage</code> policy constructs the full SOAP XML envelope using the extracted variables, sets the <code style="color:var(--code)">Content-Type: text/xml</code> header, and populates the <code style="color:var(--code)">SOAPAction</code> header for the correct operation.</div>
+        <span class="step-badge sb-tr">Transform · Build SOAP</span>
+      </div>
+    </div>
+    <div class="conv-step">
+      <div class="step-line"><div class="step-dot"></div><div class="step-conn"></div></div>
+      <div class="step-body">
+        <div class="step-title">Backend receives SOAP — responds with XML</div>
+        <div class="step-desc">The legacy SOAP service receives a fully-formed SOAP request as if a native SOAP client called it. It processes the request and returns an XML SOAP response.</div>
+        <span class="step-badge sb-pol">Backend · SOAP/XML</span>
+      </div>
+    </div>
+    <div class="conv-step">
+      <div class="step-line"><div class="step-dot"></div><div class="step-conn"></div></div>
+      <div class="step-body">
+        <div class="step-title">XMLtoJSON policy — convert response</div>
+        <div class="step-desc">On the response path, an <code style="color:var(--code)">XMLtoJSON</code> policy automatically parses the SOAP XML response body and transforms it into a clean JSON structure. Namespace prefixes and envelope wrappers are stripped.</div>
+        <span class="step-badge sb-tr">Transform · XML → JSON</span>
+      </div>
+    </div>
+    <div class="conv-step">
+      <div class="step-line"><div class="step-dot"></div><div class="step-conn"></div></div>
+      <div class="step-body">
+        <div class="step-title">Client receives clean JSON REST response</div>
+        <div class="step-desc">The REST client receives a standard JSON response with proper HTTP status codes. An OpenAPI spec is also auto-generated from the WSDL — enabling instant API documentation and SDK generation.</div>
+        <span class="step-badge sb-out">Outbound · JSON / REST</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Policies involved -->
+  <div class="card">
+    <div class="card-bar">
+      <div class="card-bar-dots"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+      <span class="card-bar-title">Policies Used in SOAP→REST Conversion</span>
+    </div>
+    <div class="card-diag" style="min-height:240px">
+      <svg viewBox="0 0 560 160" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Request side -->
+        <text x="200" y="12" class="tA" style="font-size:6px;letter-spacing:.15em">REQUEST PATH (REST → SOAP)</text>
+
+        <rect x="10" y="22" width="80" height="28" rx="3" class="bB"/>
+        <text x="50" y="34" class="t ts">REST Request</text>
+        <text x="50" y="44" class="tB ts">JSON / Query Params</text>
+
+        <line x1="90" y1="36" x2="116" y2="36" class="arr"/>
+
+        <rect x="116" y="22" width="96" height="28" rx="3" class="bD"/>
+        <text x="164" y="34" class="tA ts">ExtractVariables</text>
+        <text x="164" y="44" class="tM ts">REST → flow vars</text>
+
+        <line x1="212" y1="36" x2="238" y2="36" class="arr"/>
+
+        <rect x="238" y="22" width="96" height="28" rx="3" class="bD"/>
+        <text x="286" y="34" class="tT ts">AssignMessage</text>
+        <text x="286" y="44" class="tM ts">Build SOAP envelope</text>
+
+        <line x1="334" y1="36" x2="360" y2="36" class="arr"/>
+
+        <rect x="360" y="22" width="72" height="28" rx="3" class="bG"/>
+        <text x="396" y="34" class="t ts">SOAP Backend</text>
+        <text x="396" y="44" class="tG ts">Legacy Service</text>
+
+        <!-- Response side -->
+        <text x="200" y="88" class="tG" style="font-size:6px;letter-spacing:.15em">RESPONSE PATH (SOAP → REST)</text>
+
+        <rect x="360" y="98" width="72" height="28" rx="3" class="bG"/>
+        <text x="396" y="110" class="t ts">SOAP Response</text>
+        <text x="396" y="120" class="tG ts">XML Envelope</text>
+
+        <line x1="360" y1="112" x2="334" y2="112" class="arrG"/>
+
+        <rect x="238" y="98" width="96" height="28" rx="3" class="bD"/>
+        <text x="286" y="110" class="tT ts">XMLtoJSON</text>
+        <text x="286" y="120" class="tM ts">Strip envelope → JSON</text>
+
+        <line x1="238" y1="112" x2="212" y2="112" class="arrG"/>
+
+        <rect x="116" y="98" width="96" height="28" rx="3" class="bD"/>
+        <text x="164" y="110" class="tA ts">AssignMessage</text>
+        <text x="164" y="120" class="tM ts">Set Content-Type: json</text>
+
+        <line x1="116" y1="112" x2="90" y2="112" class="arrG"/>
+
+        <rect x="10" y="98" width="80" height="28" rx="3" class="bB"/>
+        <text x="50" y="110" class="t ts">REST Response</text>
+        <text x="50" y="120" class="tB ts">Clean JSON</text>
+
+        <!-- Optional policies note -->
+        <rect x="468" y="48" width="84" height="60" rx="3" class="bD"/>
+        <text x="510" y="62" class="tA" style="font-size:5.5px">OPTIONAL</text>
+        <text x="510" y="74" class="tM ts">OAuthV2</text>
+        <text x="510" y="84" class="tM ts">VerifyAPIKey</text>
+        <text x="510" y="94" class="tM ts">SpikeArrest</text>
+        <text x="510" y="104" class="tM ts">Quota</text>
+        <line x1="432" y1="36" x2="468" y2="68" class="arrD"/>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ 06 — KEY POLICIES ══════ -->
+<div class="wrap" id="policies">
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-n">06</div>
+    <div>
+      <p class="sec-lbl">Policy Library</p>
+      <h2 class="sec-title">Essential Policies</h2>
+      <p class="sec-desc">Apigee ships 30+ out-of-the-box policies. Attach them to any flow step — no code required. Complex behavior like OAuth, rate limiting, and transformation is configuration, not code.</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:3rem" class="card">
+    <div style="background:var(--bg2);padding:1.4rem">
+      <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:.7rem">🔒 Security</div>
+      <ul class="ul">
+        <li>OAuthV2 — token validation</li>
+        <li>VerifyAPIKey — key auth</li>
+        <li>BasicAuthentication</li>
+        <li>SAML / JWT validation</li>
+        <li>AccessControl (IP)</li>
+        <li>ThreatProtection (JSON/XML)</li>
+      </ul>
+    </div>
+    <div style="background:var(--bg2);padding:1.4rem">
+      <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--terra);margin-bottom:.7rem">🔀 Transform</div>
+      <ul class="ul">
+        <li>AssignMessage — build/modify</li>
+        <li>ExtractVariables — parse</li>
+        <li>XMLtoJSON / JSONtoXML</li>
+        <li>XSLTransform</li>
+        <li>MessageValidation</li>
+        <li>RegularExpressionProtection</li>
+      </ul>
+    </div>
+    <div style="background:var(--bg2);padding:1.4rem">
+      <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);margin-bottom:.7rem">⚡ Traffic Mgmt</div>
+      <ul class="ul">
+        <li>SpikeArrest — per-second limit</li>
+        <li>Quota — long-period limit</li>
+        <li>ResponseCache</li>
+        <li>ConcurrentRateLimit</li>
+        <li>LookupCache / PopulateCache</li>
+        <li>InvalidateCache</li>
+      </ul>
+    </div>
+    <div style="background:var(--bg2);padding:1.4rem">
+      <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--green);margin-bottom:.7rem">🛠️ Mediation</div>
+      <ul class="ul">
+        <li>KeyValueMapOperations</li>
+        <li>RaiseFault — custom errors</li>
+        <li>ServiceCallout</li>
+        <li>FlowCallout (shared flows)</li>
+        <li>GenerateJWT / VerifyJWT</li>
+        <li>MessageLogging</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════ 07 — COMPARE ══════ -->
+<div class="wrap" id="compare">
+<div class="sec">
+  <div class="sec-head">
+    <div class="sec-n">07</div>
+    <div>
+      <p class="sec-lbl">Reference</p>
+      <h2 class="sec-title">Apigee vs Alternatives</h2>
+      <p class="sec-desc">Apigee is enterprise-grade but carries operational weight. Understand the tradeoffs against lighter alternatives.</p>
+    </div>
+  </div>
+
+  <table class="cmp-table card">
+    <thead>
+      <tr>
+        <th>Gateway</th>
+        <th>Best For</th>
+        <th>KVM Equivalent</th>
+        <th>SOAP Support</th>
+        <th>Complexity</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="td-h">Apigee</td>
+        <td>Enterprise, multi-team, full lifecycle</td>
+        <td class="td-g">Native KVM (encrypted)</td>
+        <td class="td-g">First-class WSDL import</td>
+        <td>High</td>
+      </tr>
+      <tr>
+        <td class="td-h">AWS API Gateway</td>
+        <td>AWS-native serverless APIs</td>
+        <td>SSM Parameter Store</td>
+        <td class="td-r">Manual only</td>
+        <td>Medium</td>
+      </tr>
+      <tr>
+        <td class="td-h">Kong</td>
+        <td>Plugin-driven, open source</td>
+        <td>Env vars / Vault plugin</td>
+        <td class="td-r">Plugin required</td>
+        <td>Medium</td>
+      </tr>
+      <tr>
+        <td class="td-h">Azure API Mgmt</td>
+        <td>Microsoft ecosystem</td>
+        <td>Named Values</td>
+        <td class="td-g">WSDL import supported</td>
+        <td>Medium–High</td>
+      </tr>
+      <tr>
+        <td class="td-h">MuleSoft</td>
+        <td>Deep integration / ESB replacement</td>
+        <td>Secure Properties</td>
+        <td class="td-g">Native DataWeave</td>
+        <td>High</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<footer>Apigee Gateway · Visual Explainer · Built with Claude</footer>
+
+<script>
+  // Theme toggle
+  (function(){
+    const root=document.documentElement,btn=document.getElementById('theme-toggle'),
+          ic=btn.querySelector('.ti');
+    function set(t){
+      root.setAttribute('data-theme',t);
+      ic.textContent=t==='light'?'◐':'◑';
+      localStorage.setItem('theme',t);
+    }
+    const s=localStorage.getItem('theme');
+    set(s||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'));
+    btn.addEventListener('click',()=>set(root.getAttribute('data-theme')==='light'?'dark':'light'));
+  })();
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('vis');
+      if (e.target.classList.contains('conv-steps')) {
+        e.target.querySelectorAll('.conv-step').forEach((s,i) => {
+          setTimeout(() => s.classList.add('vis'), i * 100);
+        });
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.card,.pipeline-wrap,.kvm-scopes,.conv-steps').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

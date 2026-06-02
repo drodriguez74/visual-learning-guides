@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architectural Design Patterns</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Fira+Code:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --ink: #0a1628;
+  --paper: #f5f0e8;
+  --paper2: #ede7d9;
+  --blue: #1a3a6b;
+  --blue-mid: #2457a0;
+  --blue-light: #4a7fc1;
+  --blue-pale: rgba(26,58,107,.08);
+  --red: #c0392b;
+  --gold: #b8860b;
+  --line: rgba(26,58,107,.2);
+  --line-strong: rgba(26,58,107,.5);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Fira Code', monospace;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Blueprint graph-paper background */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px),
+    linear-gradient(rgba(26,58,107,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26,58,107,.05) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 16px 16px, 16px 16px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative; z-index: 1;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.blueprint-stamp {
+  border: 3px solid var(--blue);
+  border-radius: 2px;
+  padding: .4rem 1.2rem;
+  font-size: .6rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 2rem;
+  display: inline-block;
+  opacity: 0; animation: appear .5s .2s forwards;
+  position: relative;
+}
+.blueprint-stamp::before, .blueprint-stamp::after {
+  content: '●';
+  position: absolute; top: 50%; transform: translateY(-50%);
+  font-size: .35rem; color: var(--blue);
+}
+.blueprint-stamp::before { left: -8px; }
+.blueprint-stamp::after  { right: -8px; }
+
+h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(3.5rem, 9vw, 7rem);
+  line-height: .92;
+  color: var(--blue);
+  margin-bottom: 1.5rem;
+  opacity: 0; animation: appear .7s .4s forwards;
+}
+h1 em { font-style: italic; color: var(--blue-mid); }
+
+.hero-sub {
+  max-width: 520px;
+  font-size: .78rem;
+  line-height: 1.8;
+  color: var(--blue-light);
+  opacity: 0; animation: appear .7s .6s forwards;
+  margin-bottom: 2.5rem;
+}
+
+.divider-rule {
+  width: 120px; height: 1px;
+  background: var(--blue-light);
+  margin: 0 auto 2rem;
+  opacity: 0; animation: appear .5s .8s forwards;
+  position: relative;
+}
+.divider-rule::before, .divider-rule::after {
+  content: ''; position: absolute; top: -3px;
+  width: 7px; height: 7px;
+  border-radius: 50%; background: var(--blue-light);
+}
+.divider-rule::before { left: 0; }
+.divider-rule::after  { right: 0; }
+
+.scroll-hint {
+  font-size: .6rem; letter-spacing: .2em;
+  color: var(--blue-light); text-transform: uppercase;
+  opacity: 0; animation: appear .5s 1s forwards;
+}
+
+@keyframes appear { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+/* ── PATTERN NAV ── */
+.pattern-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(245,240,232,.95);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid var(--line-strong);
+  padding: .8rem 2rem;
+  display: flex; gap: 0; overflow-x: auto;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.nav-item {
+  font-size: .58rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--blue-light); padding: .4rem .9rem;
+  text-decoration: none; white-space: nowrap;
+  border-right: 1px solid var(--line);
+  transition: color .2s, background .2s;
+}
+.nav-item:last-child { border-right: none; }
+.nav-item:hover { color: var(--blue); background: var(--blue-pale); }
+
+/* ── WRAPPER ── */
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+/* ── SECTION HEADER ── */
+.sec-head {
+  padding: 5rem 0 3rem;
+  border-top: 1px solid var(--line-strong);
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 2rem; align-items: start;
+}
+.sec-num {
+  font-size: 4rem; font-weight: 300;
+  color: var(--line-strong); line-height: 1;
+  user-select: none;
+}
+.sec-info {}
+.sec-label {
+  font-size: .58rem; letter-spacing: .25em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: .5rem;
+}
+.sec-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  color: var(--blue); line-height: 1.1; margin-bottom: .8rem;
+}
+.sec-desc {
+  font-size: .75rem; line-height: 1.9; color: #4a5568; max-width: 580px;
+}
+
+/* ── PATTERN CARD ── */
+.pattern-section { margin-bottom: 5rem; }
+
+.pattern-card {
+  border: 1px solid var(--line-strong);
+  background: rgba(255,255,255,.6);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity .5s, transform .5s;
+}
+.pattern-card.visible { opacity: 1; transform: none; }
+
+.card-header {
+  background: var(--blue);
+  color: #fff;
+  padding: .7rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.card-header .pattern-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.1rem; font-style: italic;
+}
+.card-header .pattern-tag {
+  font-size: .55rem; letter-spacing: .15em;
+  background: rgba(255,255,255,.15);
+  padding: .15rem .5rem; border-radius: 2px;
+  text-transform: uppercase; margin-left: auto;
+}
+
+.card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 280px;
+}
+
+.card-diagram {
+  border-right: 1px solid var(--line);
+  padding: 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(245,240,232,.5);
+  min-height: 260px;
+}
+
+.card-meta { padding: 1.5rem; }
+
+.meta-tagline {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1rem; font-style: italic;
+  color: var(--blue-mid); margin-bottom: .8rem;
+}
+.meta-desc {
+  font-size: .7rem; line-height: 1.85;
+  color: #4a5568; margin-bottom: 1rem;
+}
+
+.meta-row { display: flex; gap: 1rem; margin-bottom: .8rem; flex-wrap: wrap; }
+.meta-col { flex: 1; min-width: 100px; }
+.meta-col-label {
+  font-size: .55rem; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: .4rem;
+}
+.meta-list { list-style: none; }
+.meta-list li {
+  font-size: .65rem; color: #4a5568; line-height: 1.7;
+  padding-left: .8rem; position: relative;
+}
+.meta-list li::before {
+  content: '—'; position: absolute; left: 0;
+  color: var(--blue-light);
+}
+
+.use-cases {
+  display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem;
+}
+.use-case {
+  font-size: .58rem; background: var(--blue-pale);
+  border: 1px solid var(--line);
+  color: var(--blue); padding: .2rem .6rem;
+  border-radius: 2px; letter-spacing: .05em;
+}
+
+/* ── SVG DIAGRAMS ── */
+svg { width: 100%; height: auto; font-family: 'Fira Code', monospace; }
+.box { fill: white; stroke: var(--blue); stroke-width: 1.5; }
+.box-blue { fill: var(--blue); stroke: var(--blue); }
+.box-light { fill: var(--blue-pale); stroke: var(--blue-light); stroke-width: 1; }
+.box-red { fill: rgba(192,57,43,.08); stroke: var(--red); stroke-width: 1; }
+.lbl { fill: var(--blue); font-size: 7px; text-anchor: middle; dominant-baseline: middle; }
+.lbl-w { fill: white; font-size: 7px; text-anchor: middle; dominant-baseline: middle; }
+.lbl-s { fill: var(--blue); font-size: 6px; text-anchor: middle; dominant-baseline: middle; }
+.lbl-tiny { fill: var(--blue-light); font-size: 5.5px; text-anchor: middle; dominant-baseline: middle; }
+.arr { stroke: var(--blue); stroke-width: 1.5; fill: none; marker-end: url(#arrowBlue); }
+.arr-dash { stroke: var(--blue-light); stroke-width: 1; stroke-dasharray: 4,3; fill: none; marker-end: url(#arrowLight); }
+.arr-red { stroke: var(--red); stroke-width: 1; fill: none; marker-end: url(#arrowRed); }
+.note { fill: var(--gold); font-size: 5.5px; text-anchor: middle; }
+
+/* ── COMPARISON TABLE ── */
+.compare-wrap { margin-bottom: 4rem; }
+.compare-table {
+  width: 100%; border-collapse: collapse;
+  font-size: .68rem;
+}
+.compare-table th {
+  background: var(--blue); color: #fff;
+  padding: .6rem 1rem; text-align: left;
+  font-size: .6rem; letter-spacing: .1em; font-weight: 400;
+}
+.compare-table td {
+  padding: .6rem 1rem; border-bottom: 1px solid var(--line);
+  vertical-align: top; line-height: 1.7;
+}
+.compare-table tr:nth-child(even) td { background: rgba(26,58,107,.03); }
+.compare-table tr:hover td { background: var(--blue-pale); }
+.td-pattern { font-family: 'DM Serif Display', serif; font-style: italic; color: var(--blue); font-size: .8rem; }
+.td-good { color: #276749; }
+.td-bad  { color: var(--red); }
+
+/* ── LEGEND ── */
+.legend {
+  display: flex; flex-wrap: wrap; gap: .8rem;
+  margin-bottom: 2rem;
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.5);
+}
+.leg-item { display: flex; align-items: center; gap: .4rem; font-size: .6rem; color: var(--blue); }
+.leg-box { width: 14px; height: 10px; border: 1px solid; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 2px solid var(--blue);
+  padding: 2rem;
+  text-align: center;
+  font-size: .58rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--blue-light);
+  position: relative; z-index: 1;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:680px){
+  .card-body { grid-template-columns: 1fr; }
+  .card-diagram { border-right: none; border-bottom: 1px solid var(--line); min-height: 200px; }
+  .sec-head { grid-template-columns: 1fr; }
+  .sec-num { font-size: 2.5rem; }
+}
+
+/* ── DARK THEME ── */
+html { transition: background-color .3s; }
+body { transition: background-color .3s, color .3s; }
+
+[data-theme="dark"] {
+  --ink:        #b8ccf0;
+  --paper:      #0a1020;
+  --paper2:     #101828;
+  --blue:       #5a96e0;
+  --blue-mid:   #4070c8;
+  --blue-light: #3060a0;
+  --blue-pale:  rgba(90,150,224,.1);
+  --red:        #e06060;
+  --gold:       #d4a040;
+  --line:       rgba(90,150,224,.15);
+  --line-strong:rgba(90,150,224,.38);
+}
+[data-theme="dark"] .pattern-nav {
+  background: rgba(10,16,32,.95);
+}
+[data-theme="dark"] body::before {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px),
+    linear-gradient(rgba(90,150,224,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90,150,224,.04) 1px, transparent 1px);
+}
+[data-theme="dark"] .pattern-card {
+  background: rgba(16,24,40,.7);
+  border-color: var(--line-strong);
+}
+[data-theme="dark"] .card-diagram { background: rgba(10,16,32,.6); }
+[data-theme="dark"] .legend { background: rgba(16,24,40,.6); }
+[data-theme="dark"] .sec-desc,
+[data-theme="dark"] .meta-desc { color: #8899bb; }
+[data-theme="dark"] .meta-list li { color: #8899bb; }
+[data-theme="dark"] .compare-table td { color: #8899bb; }
+[data-theme="dark"] .compare-table tr:hover td { background: var(--blue-pale); }
+[data-theme="dark"] svg .box { fill: #101828; stroke: var(--blue); }
+[data-theme="dark"] svg .box-light { fill: rgba(90,150,224,.08); }
+[data-theme="dark"] svg .lbl-s { fill: var(--ink); }
+[data-theme="dark"] .td-good { color: #4ade80; }
+[data-theme="dark"] .td-bad  { color: #f87171; }
+[data-theme="dark"] .nav-item { color: var(--blue-light); }
+[data-theme="dark"] .nav-item:hover { color: var(--blue); background: var(--blue-pale); }
+
+/* ── THEME TOGGLE ── */
+#theme-toggle {
+  position: fixed; top: 1.25rem; right: 1.25rem; z-index: 1000;
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--paper2);
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  font-family: 'Fira Code', monospace;
+  font-size: .55rem; letter-spacing: .2em; text-transform: uppercase;
+  padding: .35rem .85rem;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background .2s, box-shadow .2s, border-color .2s;
+}
+#theme-toggle:hover { background: var(--blue-pale); box-shadow: 0 0 12px rgba(90,150,224,.15); }
+#theme-toggle .ti { font-size: .9rem; line-height: 1; transition: transform .35s; display: block; }
+#theme-toggle:hover .ti { transform: rotate(25deg); }
+</style>
+</head>
+<body>
+
+<button id="theme-toggle" aria-label="Toggle theme">
+  <span class="ti">◐</span>Theme
+</button>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="blueprint-stamp">Technical Reference · Software Architecture</span>
+  <h1>Design<br><em>Patterns</em></h1>
+  <p class="hero-sub">Proven solutions to recurring problems in software architecture — each a reusable blueprint that shapes how systems are structured, scaled, and maintained.</p>
+  <div class="divider-rule"></div>
+  <p class="scroll-hint">↓ Scroll to explore patterns</p>
+</div>
+
+<!-- STICKY NAV -->
+<nav class="pattern-nav">
+  <a href="#layered"       class="nav-item">Layered</a>
+  <a href="#microservices" class="nav-item">Microservices</a>
+  <a href="#event-driven"  class="nav-item">Event-Driven</a>
+  <a href="#cqrs"          class="nav-item">CQRS</a>
+  <a href="#hexagonal"     class="nav-item">Hexagonal</a>
+  <a href="#saga"          class="nav-item">Saga</a>
+  <a href="#compare"       class="nav-item">Comparison</a>
+</nav>
+
+<!-- ═══ SECTION 1 — LAYERED ═══ -->
+<div class="wrap" id="layered">
+  <div class="sec-head">
+    <div class="sec-num">01</div>
+    <div class="sec-info">
+      <p class="sec-label">Pattern</p>
+      <h2 class="sec-title">Layered Architecture</h2>
+      <p class="sec-desc">Also called N-Tier. Organizes code into horizontal layers where each layer has a distinct responsibility and only communicates with the layer directly beneath it.</p>
+    </div>
+  </div>
+
+  <div class="pattern-section">
+    <div class="pattern-card">
+      <div class="card-header">
+        <span class="pattern-name">Layered / N-Tier</span>
+        <span class="pattern-tag">Monolithic · Structured</span>
+      </div>
+      <div class="card-body">
+        <div class="card-diagram">
+          <svg viewBox="0 0 260 220" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrowBlue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a3a6b"/></marker>
+              <marker id="arrowLight" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4a7fc1"/></marker>
+              <marker id="arrowRed" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#c0392b"/></marker>
+            </defs>
+
+            <!-- Presentation Layer -->
+            <rect x="20" y="20" width="220" height="36" rx="3" class="box-blue"/>
+            <text x="130" y="38" class="lbl-w">Presentation Layer</text>
+            <text x="130" y="48" class="lbl-tiny" fill="rgba(255,255,255,.6)">UI · REST Controllers · GraphQL</text>
+
+            <!-- Arrow -->
+            <line x1="130" y1="56" x2="130" y2="70" class="arr"/>
+
+            <!-- Business Logic -->
+            <rect x="20" y="72" width="220" height="36" rx="3" class="box"/>
+            <text x="130" y="90" class="lbl">Business Logic Layer</text>
+            <text x="130" y="100" class="lbl-tiny">Services · Domain Rules · Use Cases</text>
+
+            <line x1="130" y1="108" x2="130" y2="122" class="arr"/>
+
+            <!-- Persistence -->
+            <rect x="20" y="124" width="220" height="36" rx="3" class="box"/>
+            <text x="130" y="142" class="lbl">Persistence Layer</text>
+            <text x="130" y="152" class="lbl-tiny">Repositories · ORM · Query Builders</text>
+
+            <line x1="130" y1="160" x2="130" y2="174" class="arr"/>
+
+            <!-- Database -->
+            <rect x="20" y="176" width="220" height="36" rx="3" class="box-blue"/>
+            <text x="130" y="194" class="lbl-w">Database Layer</text>
+            <text x="130" y="204" class="lbl-tiny" fill="rgba(255,255,255,.6)">SQL · NoSQL · Cache</text>
+
+            <!-- Side annotations -->
+            <text x="8" y="68" class="note" transform="rotate(-90,8,68)">REQUEST</text>
+            <text x="252" y="150" class="note" transform="rotate(90,252,150)">RESPONSE</text>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <p class="meta-tagline">"Separation of concerns, top to bottom."</p>
+          <p class="meta-desc">Each layer has a single responsibility. The Presentation layer handles I/O, Business Logic enforces rules, Persistence manages data access, and the Database stores it. Changes in one layer don't cascade — in theory.</p>
+          <div class="meta-row">
+            <div class="meta-col">
+              <div class="meta-col-label">✓ Strengths</div>
+              <ul class="meta-list">
+                <li>Easy to understand & onboard</li>
+                <li>Clear ownership per layer</li>
+                <li>Testable in isolation</li>
+                <li>Dominant in enterprise Java/Spring</li>
+              </ul>
+            </div>
+            <div class="meta-col">
+              <div class="meta-col-label">✗ Weaknesses</div>
+              <ul class="meta-list">
+                <li>Tight coupling over time</li>
+                <li>Hard to scale independently</li>
+                <li>"Monolith trap" as app grows</li>
+                <li>Slow end-to-end changes</li>
+              </ul>
+            </div>
+          </div>
+          <div class="meta-col-label">Used In</div>
+          <div class="use-cases">
+            <span class="use-case">Spring Boot Apps</span>
+            <span class="use-case">Banking Systems</span>
+            <span class="use-case">CMS Platforms</span>
+            <span class="use-case">Internal Tools</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 2 — MICROSERVICES ═══ -->
+<div class="wrap" id="microservices">
+  <div class="sec-head">
+    <div class="sec-num">02</div>
+    <div class="sec-info">
+      <p class="sec-label">Pattern</p>
+      <h2 class="sec-title">Microservices</h2>
+      <p class="sec-desc">Decomposes an application into small, independently deployable services each owning a bounded context, communicating over APIs or messaging.</p>
+    </div>
+  </div>
+
+  <div class="pattern-section">
+    <div class="pattern-card">
+      <div class="card-header">
+        <span class="pattern-name">Microservices Architecture</span>
+        <span class="pattern-tag">Distributed · Independent</span>
+      </div>
+      <div class="card-body">
+        <div class="card-diagram">
+          <svg viewBox="0 0 280 230" xmlns="http://www.w3.org/2000/svg">
+            <!-- Client -->
+            <rect x="100" y="8" width="80" height="26" rx="3" class="box-blue"/>
+            <text x="140" y="21" class="lbl-w">Client</text>
+
+            <line x1="140" y1="34" x2="140" y2="46" class="arr"/>
+
+            <!-- API Gateway -->
+            <rect x="60" y="48" width="160" height="26" rx="3" class="box"/>
+            <text x="140" y="61" class="lbl">API Gateway</text>
+
+            <!-- Fan-out arrows -->
+            <line x1="90" y1="74" x2="50" y2="96" class="arr"/>
+            <line x1="140" y1="74" x2="140" y2="96" class="arr"/>
+            <line x1="190" y1="74" x2="230" y2="96" class="arr"/>
+
+            <!-- Service boxes -->
+            <rect x="10" y="98" width="80" height="30" rx="3" class="box"/>
+            <text x="50" y="113" class="lbl-s">User Service</text>
+
+            <rect x="100" y="98" width="80" height="30" rx="3" class="box"/>
+            <text x="140" y="113" class="lbl-s">Order Service</text>
+
+            <rect x="190" y="98" width="80" height="30" rx="3" class="box"/>
+            <text x="230" y="113" class="lbl-s">Payment Svc</text>
+
+            <!-- Event bus -->
+            <rect x="20" y="150" width="240" height="20" rx="2" class="box-light"/>
+            <text x="140" y="160" class="lbl-s">Message Bus · Event Queue</text>
+
+            <line x1="50" y1="128" x2="80" y2="150" class="arr-dash"/>
+            <line x1="140" y1="128" x2="140" y2="150" class="arr-dash"/>
+            <line x1="230" y1="128" x2="200" y2="150" class="arr-dash"/>
+
+            <!-- Databases (each own DB) -->
+            <rect x="10" y="182" width="60" height="22" rx="2" class="box-red"/>
+            <text x="40" y="193" class="lbl-s">DB</text>
+
+            <rect x="110" y="182" width="60" height="22" rx="2" class="box-red"/>
+            <text x="140" y="193" class="lbl-s">DB</text>
+
+            <rect x="210" y="182" width="60" height="22" rx="2" class="box-red"/>
+            <text x="240" y="193" class="lbl-s">DB</text>
+
+            <line x1="40" y1="170" x2="40" y2="182" class="arr"/>
+            <line x1="140" y1="170" x2="140" y2="182" class="arr"/>
+            <line x1="240" y1="170" x2="240" y2="182" class="arr"/>
+
+            <text x="140" y="218" class="lbl-tiny">Each service owns its own data store</text>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <p class="meta-tagline">"Small teams, small services, big scale."</p>
+          <p class="meta-desc">Services are independently deployable, technology-agnostic, and communicate via REST, gRPC, or events. Each service owns its bounded context including its database — preventing shared-data coupling.</p>
+          <div class="meta-row">
+            <div class="meta-col">
+              <div class="meta-col-label">✓ Strengths</div>
+              <ul class="meta-list">
+                <li>Independent scaling & deploy</li>
+                <li>Technology heterogeneity</li>
+                <li>Fault isolation</li>
+                <li>Team autonomy</li>
+              </ul>
+            </div>
+            <div class="meta-col">
+              <div class="meta-col-label">✗ Weaknesses</div>
+              <ul class="meta-list">
+                <li>Distributed system complexity</li>
+                <li>Network latency & failures</li>
+                <li>Harder to trace & debug</li>
+                <li>Operational overhead</li>
+              </ul>
+            </div>
+          </div>
+          <div class="meta-col-label">Used In</div>
+          <div class="use-cases">
+            <span class="use-case">Netflix</span>
+            <span class="use-case">Amazon</span>
+            <span class="use-case">Uber</span>
+            <span class="use-case">Fiserv Platforms</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 3 — EVENT-DRIVEN ═══ -->
+<div class="wrap" id="event-driven">
+  <div class="sec-head">
+    <div class="sec-num">03</div>
+    <div class="sec-info">
+      <p class="sec-label">Pattern</p>
+      <h2 class="sec-title">Event-Driven Architecture</h2>
+      <p class="sec-desc">Components communicate exclusively through events — producers emit, consumers react. Systems remain fully decoupled: producers don't know who is listening.</p>
+    </div>
+  </div>
+
+  <div class="pattern-section">
+    <div class="pattern-card">
+      <div class="card-header">
+        <span class="pattern-name">Event-Driven</span>
+        <span class="pattern-tag">Async · Decoupled · Reactive</span>
+      </div>
+      <div class="card-body">
+        <div class="card-diagram">
+          <svg viewBox="0 0 280 230" xmlns="http://www.w3.org/2000/svg">
+            <!-- Producers -->
+            <text x="50" y="16" class="lbl-s" fill="#b8860b">PRODUCERS</text>
+            <rect x="10" y="22" width="80" height="26" rx="3" class="box"/>
+            <text x="50" y="35" class="lbl-s">Order Placed</text>
+            <rect x="10" y="56" width="80" height="26" rx="3" class="box"/>
+            <text x="50" y="69" class="lbl-s">Payment Done</text>
+            <rect x="10" y="90" width="80" height="26" rx="3" class="box"/>
+            <text x="50" y="103" class="lbl-s">Fraud Detected</text>
+
+            <!-- Arrows to bus -->
+            <line x1="90" y1="35" x2="120" y2="70" class="arr"/>
+            <line x1="90" y1="69" x2="120" y2="78" class="arr"/>
+            <line x1="90" y1="103" x2="120" y2="86" class="arr"/>
+
+            <!-- Event Bus / Topic -->
+            <rect x="120" y="58" width="80" height="40" rx="3" class="box-blue"/>
+            <text x="160" y="74" class="lbl-w">Event</text>
+            <text x="160" y="86" class="lbl-w">Broker</text>
+
+            <!-- Arrows to consumers -->
+            <line x1="200" y1="70" x2="220" y2="30" class="arr"/>
+            <line x1="200" y1="78" x2="220" y2="70" class="arr"/>
+            <line x1="200" y1="86" x2="220" y2="110" class="arr"/>
+
+            <!-- Consumers -->
+            <text x="248" y="16" class="lbl-s" fill="#b8860b">CONSUMERS</text>
+            <rect x="218" y="22" width="52" height="22" rx="3" class="box"/>
+            <text x="244" y="33" class="lbl-s">Email Svc</text>
+            <rect x="218" y="54" width="52" height="22" rx="3" class="box"/>
+            <text x="244" y="65" class="lbl-s">Shipping</text>
+            <rect x="218" y="98" width="52" height="22" rx="3" class="box"/>
+            <text x="244" y="109" class="lbl-s">Analytics</text>
+
+            <!-- Event log -->
+            <rect x="70" y="140" width="180" height="28" rx="2" class="box-light"/>
+            <text x="160" y="150" class="lbl-s">Event Log / Audit Trail</text>
+            <text x="160" y="162" class="lbl-tiny">Immutable · Replayable</text>
+
+            <line x1="160" y1="98" x2="160" y2="140" class="arr-dash"/>
+
+            <!-- Key concept -->
+            <rect x="10" y="140" width="52" height="30" rx="2" style="fill:rgba(184,134,11,.08);stroke:var(--gold);stroke-width:1"/>
+            <text x="36" y="152" class="note">Async</text>
+            <text x="36" y="163" class="note">Decoupled</text>
+
+            <text x="140" y="185" class="lbl-tiny">Producer never knows which consumers exist</text>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <p class="meta-tagline">"Emit and forget. React and adapt."</p>
+          <p class="meta-desc">A producer publishes an event to a broker (Kafka, RabbitMQ, SQS). Zero or many consumers subscribe. The producer is completely unaware of downstream behavior — achieving maximum decoupling.</p>
+          <div class="meta-row">
+            <div class="meta-col">
+              <div class="meta-col-label">✓ Strengths</div>
+              <ul class="meta-list">
+                <li>Zero producer-consumer coupling</li>
+                <li>Highly scalable & resilient</li>
+                <li>Audit log via event history</li>
+                <li>New consumers = zero producer change</li>
+              </ul>
+            </div>
+            <div class="meta-col">
+              <div class="meta-col-label">✗ Weaknesses</div>
+              <ul class="meta-list">
+                <li>Eventually consistent</li>
+                <li>Hard to trace event flows</li>
+                <li>Schema evolution is complex</li>
+                <li>Ordering guarantees tricky</li>
+              </ul>
+            </div>
+          </div>
+          <div class="meta-col-label">Used In</div>
+          <div class="use-cases">
+            <span class="use-case">Fraud Detection</span>
+            <span class="use-case">Real-time Analytics</span>
+            <span class="use-case">Dispute Processing</span>
+            <span class="use-case">IoT Pipelines</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 4 — CQRS ═══ -->
+<div class="wrap" id="cqrs">
+  <div class="sec-head">
+    <div class="sec-num">04</div>
+    <div class="sec-info">
+      <p class="sec-label">Pattern</p>
+      <h2 class="sec-title">CQRS + Event Sourcing</h2>
+      <p class="sec-desc">Command Query Responsibility Segregation — separate the write model (commands that change state) from the read model (queries that return data). Often paired with Event Sourcing.</p>
+    </div>
+  </div>
+
+  <div class="pattern-section">
+    <div class="pattern-card">
+      <div class="card-header">
+        <span class="pattern-name">CQRS + Event Sourcing</span>
+        <span class="pattern-tag">Write/Read Split · Audit-First</span>
+      </div>
+      <div class="card-body">
+        <div class="card-diagram">
+          <svg viewBox="0 0 280 230" xmlns="http://www.w3.org/2000/svg">
+            <!-- Client -->
+            <rect x="100" y="8" width="80" height="24" rx="3" class="box-blue"/>
+            <text x="140" y="20" class="lbl-w">Application</text>
+
+            <!-- Split -->
+            <line x1="115" y1="32" x2="75" y2="50" class="arr"/>
+            <line x1="165" y1="32" x2="205" y2="50" class="arr"/>
+
+            <text x="60" y="48" class="note">Commands</text>
+            <text x="200" y="48" class="note">Queries</text>
+
+            <!-- Write side -->
+            <rect x="10" y="52" width="110" height="28" rx="3" class="box"/>
+            <text x="65" y="66" class="lbl-s">Command Handler</text>
+
+            <line x1="65" y1="80" x2="65" y2="96" class="arr"/>
+
+            <rect x="10" y="98" width="110" height="28" rx="3" class="box-blue"/>
+            <text x="65" y="112" class="lbl-w">Event Store</text>
+
+            <line x1="65" y1="126" x2="65" y2="142" class="arr-dash"/>
+
+            <rect x="10" y="144" width="110" height="28" rx="3" class="box"/>
+            <text x="65" y="158" class="lbl-s">Write DB</text>
+            <text x="65" y="166" class="lbl-tiny">Source of Truth</text>
+
+            <!-- Sync arrow -->
+            <line x1="120" y1="112" x2="160" y2="112" class="arr-dash"/>
+            <text x="140" y="106" class="note">project</text>
+
+            <!-- Read side -->
+            <rect x="162" y="52" width="108" height="28" rx="3" class="box"/>
+            <text x="216" y="66" class="lbl-s">Query Handler</text>
+
+            <line x1="216" y1="80" x2="216" y2="96" class="arr"/>
+
+            <rect x="162" y="98" width="108" height="52" rx="3" class="box-light"/>
+            <text x="216" y="118" class="lbl-s">Read Models</text>
+            <text x="216" y="130" class="lbl-tiny">Optimized Views</text>
+            <text x="216" y="142" class="lbl-tiny">Denormalized · Fast</text>
+
+            <!-- Replay arrow -->
+            <path d="M65 172 Q65 200 130 200 Q195 200 216 172" stroke="#4a7fc1" stroke-width="1" stroke-dasharray="4,3" fill="none" marker-end="url(#arrowLight)"/>
+            <text x="140" y="210" class="lbl-tiny">Rebuild read model from event log anytime</text>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <p class="meta-tagline">"Writes store facts. Reads show views."</p>
+          <p class="meta-desc">Commands mutate state and produce events stored in an immutable log. Projections consume those events to build optimized read models. You can replay history to rebuild any view — or create new ones retroactively.</p>
+          <div class="meta-row">
+            <div class="meta-col">
+              <div class="meta-col-label">✓ Strengths</div>
+              <ul class="meta-list">
+                <li>Full audit history built-in</li>
+                <li>Read/write scaled independently</li>
+                <li>Time travel via event replay</li>
+                <li>Complex domain modeling</li>
+              </ul>
+            </div>
+            <div class="meta-col">
+              <div class="meta-col-label">✗ Weaknesses</div>
+              <ul class="meta-list">
+                <li>High conceptual complexity</li>
+                <li>Eventual read consistency</li>
+                <li>Schema migration is hard</li>
+                <li>Overkill for simple CRUD</li>
+              </ul>
+            </div>
+          </div>
+          <div class="meta-col-label">Used In</div>
+          <div class="use-cases">
+            <span class="use-case">Financial Ledgers</span>
+            <span class="use-case">Dispute Systems</span>
+            <span class="use-case">Inventory</span>
+            <span class="use-case">Healthcare Records</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 5 — HEXAGONAL ═══ -->
+<div class="wrap" id="hexagonal">
+  <div class="sec-head">
+    <div class="sec-num">05</div>
+    <div class="sec-info">
+      <p class="sec-label">Pattern</p>
+      <h2 class="sec-title">Hexagonal (Ports & Adapters)</h2>
+      <p class="sec-desc">Isolates the core domain from infrastructure. The domain only knows about ports (interfaces); adapters implement them — making the core swappable and infinitely testable.</p>
+    </div>
+  </div>
+
+  <div class="pattern-section">
+    <div class="pattern-card">
+      <div class="card-header">
+        <span class="pattern-name">Hexagonal / Ports & Adapters</span>
+        <span class="pattern-tag">Clean Architecture · Domain-Centric</span>
+      </div>
+      <div class="card-body">
+        <div class="card-diagram">
+          <svg viewBox="0 0 280 230" xmlns="http://www.w3.org/2000/svg">
+            <!-- Hexagon core (approximated as polygon) -->
+            <polygon points="140,55 175,75 175,115 140,135 105,115 105,75" class="box-blue"/>
+            <text x="140" y="90" class="lbl-w">Domain</text>
+            <text x="140" y="103" class="lbl-w">Core</text>
+            <text x="140" y="116" class="lbl-tiny" fill="rgba(255,255,255,.6)">Pure Logic</text>
+
+            <!-- Left adapters (driving) -->
+            <text x="44" y="16" class="note">DRIVING SIDE</text>
+            <rect x="8" y="20" width="70" height="22" rx="2" class="box"/>
+            <text x="43" y="31" class="lbl-s">REST API</text>
+            <rect x="8" y="50" width="70" height="22" rx="2" class="box"/>
+            <text x="43" y="61" class="lbl-s">CLI</text>
+            <rect x="8" y="80" width="70" height="22" rx="2" class="box"/>
+            <text x="43" y="91" class="lbl-s">Test Suite</text>
+            <rect x="8" y="110" width="70" height="22" rx="2" class="box"/>
+            <text x="43" y="121" class="lbl-s">gRPC</text>
+
+            <!-- Left arrows -->
+            <line x1="78" y1="31" x2="103" y2="80" class="arr"/>
+            <line x1="78" y1="61" x2="103" y2="88" class="arr"/>
+            <line x1="78" y1="91" x2="103" y2="96" class="arr"/>
+            <line x1="78" y1="121" x2="103" y2="104" class="arr"/>
+
+            <!-- Port labels -->
+            <text x="92" y="73" class="lbl-tiny" fill="#b8860b">Port</text>
+            <text x="92" y="100" class="lbl-tiny" fill="#b8860b">Port</text>
+
+            <!-- Right adapters (driven) -->
+            <text x="202" y="16" class="note">DRIVEN SIDE</text>
+            <rect x="202" y="20" width="70" height="22" rx="2" class="box-red"/>
+            <text x="237" y="31" class="lbl-s">PostgreSQL</text>
+            <rect x="202" y="50" width="70" height="22" rx="2" class="box-red"/>
+            <text x="237" y="61" class="lbl-s">Kafka</text>
+            <rect x="202" y="80" width="70" height="22" rx="2" class="box-red"/>
+            <text x="237" y="91" class="lbl-s">Email SMTP</text>
+            <rect x="202" y="110" width="70" height="22" rx="2" class="box-red"/>
+            <text x="237" y="121" class="lbl-s">3rd Party API</text>
+
+            <!-- Right arrows -->
+            <line x1="177" y1="80" x2="202" y2="31" class="arr"/>
+            <line x1="177" y1="88" x2="202" y2="61" class="arr"/>
+            <line x1="177" y1="96" x2="202" y2="91" class="arr"/>
+            <line x1="177" y1="104" x2="202" y2="121" class="arr"/>
+
+            <!-- Port labels right -->
+            <text x="188" y="73" class="lbl-tiny" fill="#b8860b">Port</text>
+            <text x="188" y="100" class="lbl-tiny" fill="#b8860b">Port</text>
+
+            <text x="140" y="160" class="lbl-s">Adapters plug in. Core never changes.</text>
+            <text x="140" y="175" class="lbl-tiny">Swap Postgres for MongoDB — core logic untouched</text>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <p class="meta-tagline">"The domain is the sun. Infrastructure orbits it."</p>
+          <p class="meta-desc">The domain defines ports (interfaces). Adapters implement them. A REST controller and a test harness are both just adapters. Infrastructure — DBs, queues, third-party APIs — is swappable without touching domain logic.</p>
+          <div class="meta-row">
+            <div class="meta-col">
+              <div class="meta-col-label">✓ Strengths</div>
+              <ul class="meta-list">
+                <li>Domain fully testable in isolation</li>
+                <li>Infrastructure is interchangeable</li>
+                <li>Forces clean boundaries</li>
+                <li>Scales across teams cleanly</li>
+              </ul>
+            </div>
+            <div class="meta-col">
+              <div class="meta-col-label">✗ Weaknesses</div>
+              <ul class="meta-list">
+                <li>More interfaces & boilerplate</li>
+                <li>Steeper learning curve</li>
+                <li>Over-engineered for small apps</li>
+                <li>Verbose adapter layer</li>
+              </ul>
+            </div>
+          </div>
+          <div class="meta-col-label">Used In</div>
+          <div class="use-cases">
+            <span class="use-case">DDD Applications</span>
+            <span class="use-case">Clean Architecture</span>
+            <span class="use-case">Spring Boot</span>
+            <span class="use-case">Testable Services</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SECTION 6 — SAGA ═══ -->
+<div class="wrap" id="saga">
+  <div class="sec-head">
+    <div class="sec-num">06</div>
+    <div class="sec-info">
+      <p class="sec-label">Pattern</p>
+      <h2 class="sec-title">Saga Pattern</h2>
+      <p class="sec-desc">Manages long-running distributed transactions across microservices through a sequence of local transactions — each with a compensating transaction that can undo it on failure.</p>
+    </div>
+  </div>
+
+  <div class="pattern-section">
+    <div class="pattern-card">
+      <div class="card-header">
+        <span class="pattern-name">Saga (Choreography & Orchestration)</span>
+        <span class="pattern-tag">Distributed Tx · Compensation</span>
+      </div>
+      <div class="card-body">
+        <div class="card-diagram">
+          <svg viewBox="0 0 280 230" xmlns="http://www.w3.org/2000/svg">
+            <!-- Happy path label -->
+            <text x="140" y="14" class="note">HAPPY PATH</text>
+
+            <!-- Steps horizontal -->
+            <rect x="8"   y="20" width="56" height="26" rx="3" class="box"/>
+            <text x="36"  y="33" class="lbl-s">Order</text>
+
+            <line x1="64" y1="33" x2="80" y2="33" class="arr"/>
+
+            <rect x="80" y="20" width="56" height="26" rx="3" class="box"/>
+            <text x="108" y="33" class="lbl-s">Reserve</text>
+            <text x="108" y="41" class="lbl-tiny">Inventory</text>
+
+            <line x1="136" y1="33" x2="152" y2="33" class="arr"/>
+
+            <rect x="152" y="20" width="56" height="26" rx="3" class="box"/>
+            <text x="180" y="33" class="lbl-s">Charge</text>
+            <text x="180" y="41" class="lbl-tiny">Payment</text>
+
+            <line x1="208" y1="33" x2="224" y2="33" class="arr"/>
+
+            <rect x="224" y="20" width="50" height="26" rx="3" class="box-blue"/>
+            <text x="249" y="33" class="lbl-w">Ship</text>
+
+            <!-- Failure scenario -->
+            <text x="140" y="76" class="note">FAILURE + COMPENSATION</text>
+
+            <rect x="8"   y="82" width="56" height="26" rx="3" class="box"/>
+            <text x="36"  y="95" class="lbl-s">Order</text>
+
+            <line x1="64" y1="95" x2="80" y2="95" class="arr"/>
+
+            <rect x="80" y="82" width="56" height="26" rx="3" class="box"/>
+            <text x="108" y="95" class="lbl-s">Reserve</text>
+
+            <line x1="136" y1="95" x2="152" y2="95" class="arr"/>
+
+            <rect x="152" y="82" width="56" height="26" rx="3" style="fill:rgba(192,57,43,.1);stroke:var(--red);stroke-width:1.5"/>
+            <text x="180" y="95" class="lbl-s" fill="#c0392b">Payment</text>
+            <text x="180" y="103" class="lbl-tiny" fill="#c0392b">✗ FAILS</text>
+
+            <!-- Compensating arrows (backward) -->
+            <text x="108" y="122" class="note">↩ Release Inventory</text>
+            <path d="M180 108 Q180 128 108 128 Q36 128 36 108" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="4,2" fill="none" marker-end="url(#arrowRed)"/>
+
+            <text x="36" y="148" class="note">↩ Cancel Order</text>
+
+            <!-- Orchestrator vs choreography note -->
+            <rect x="10" y="158" width="120" height="50" rx="3" class="box-light"/>
+            <text x="70" y="172" class="lbl-s" fill="#b8860b">Choreography</text>
+            <text x="70" y="184" class="lbl-tiny">Services emit/react</text>
+            <text x="70" y="196" class="lbl-tiny">to events directly</text>
+
+            <rect x="148" y="158" width="122" height="50" rx="3" class="box-blue"/>
+            <text x="209" y="172" class="lbl-w">Orchestration</text>
+            <text x="209" y="184" class="lbl-tiny" fill="rgba(255,255,255,.7)">Central Saga manager</text>
+            <text x="209" y="196" class="lbl-tiny" fill="rgba(255,255,255,.7)">directs each step</text>
+          </svg>
+        </div>
+        <div class="card-meta">
+          <p class="meta-tagline">"If any step fails, undo every step before it."</p>
+          <p class="meta-desc">Distributed transactions can't use two-phase commit at scale. Sagas replace this with a chain of local transactions. Each step publishes an event; if a downstream step fails, compensating transactions roll back prior steps.</p>
+          <div class="meta-row">
+            <div class="meta-col">
+              <div class="meta-col-label">✓ Strengths</div>
+              <ul class="meta-list">
+                <li>Distributed tx without 2PC</li>
+                <li>Service independence maintained</li>
+                <li>Resilient to partial failures</li>
+                <li>Explicit compensation logic</li>
+              </ul>
+            </div>
+            <div class="meta-col">
+              <div class="meta-col-label">✗ Weaknesses</div>
+              <ul class="meta-list">
+                <li>Compensation logic is complex</li>
+                <li>Eventual consistency only</li>
+                <li>Hard to test all failure paths</li>
+                <li>Debugging is non-trivial</li>
+              </ul>
+            </div>
+          </div>
+          <div class="meta-col-label">Used In</div>
+          <div class="use-cases">
+            <span class="use-case">E-Commerce Checkout</span>
+            <span class="use-case">Payment Processing</span>
+            <span class="use-case">Dispute Workflows</span>
+            <span class="use-case">Travel Booking</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COMPARISON TABLE ═══ -->
+<div class="wrap" id="compare">
+  <div class="sec-head">
+    <div class="sec-num">07</div>
+    <div class="sec-info">
+      <p class="sec-label">Reference</p>
+      <h2 class="sec-title">Pattern Comparison</h2>
+      <p class="sec-desc">Choose based on team size, scale requirements, consistency needs, and domain complexity.</p>
+    </div>
+  </div>
+
+  <div class="compare-wrap pattern-card">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>Best For</th>
+          <th>Consistency</th>
+          <th>Complexity</th>
+          <th>Scale</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-pattern">Layered</td>
+          <td>Small–medium monoliths, CRUD apps</td>
+          <td class="td-good">Strong (single DB)</td>
+          <td class="td-good">Low</td>
+          <td class="td-bad">Vertical only</td>
+        </tr>
+        <tr>
+          <td class="td-pattern">Microservices</td>
+          <td>Large teams, independent scaling</td>
+          <td class="td-bad">Eventually consistent</td>
+          <td class="td-bad">High</td>
+          <td class="td-good">Horizontal per service</td>
+        </tr>
+        <tr>
+          <td class="td-pattern">Event-Driven</td>
+          <td>Real-time, async, reactive pipelines</td>
+          <td class="td-bad">Eventual</td>
+          <td>Medium–High</td>
+          <td class="td-good">Excellent</td>
+        </tr>
+        <tr>
+          <td class="td-pattern">CQRS + ES</td>
+          <td>Audit-heavy, complex domain, high read load</td>
+          <td class="td-bad">Eventual (reads)</td>
+          <td class="td-bad">Very High</td>
+          <td class="td-good">Read/write independent</td>
+        </tr>
+        <tr>
+          <td class="td-pattern">Hexagonal</td>
+          <td>Domain-first design, testability</td>
+          <td class="td-good">Depends on infra</td>
+          <td>Medium</td>
+          <td>Depends on infra</td>
+        </tr>
+        <tr>
+          <td class="td-pattern">Saga</td>
+          <td>Distributed transactions across services</td>
+          <td class="td-bad">Eventual</td>
+          <td class="td-bad">High</td>
+          <td class="td-good">Excellent</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="height:4rem"></div>
+</div>
+
+<footer>
+  Architectural Design Patterns · Technical Reference · Built with Claude
+</footer>
+
+<script>
+  // Theme toggle (light default, dark override)
+  (function(){
+    const root=document.documentElement,btn=document.getElementById('theme-toggle'),
+          ic=btn.querySelector('.ti');
+    function set(t){
+      if(t==='dark') root.setAttribute('data-theme','dark');
+      else root.removeAttribute('data-theme');
+      ic.textContent=t==='dark'?'◑':'◐';
+      localStorage.setItem('theme',t);
+    }
+    const s=localStorage.getItem('theme');
+    set(s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+    btn.addEventListener('click',()=>set(root.getAttribute('data-theme')==='dark'?'light':'dark'));
+  })();
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.pattern-card').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harness CD — Visual Explainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@300;400;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:    #07090f;
+  --bg2:   #0c0f1a;
+  --bg3:   #111527;
+  --card:  #0d1120;
+  --line:  #1c2035;
+  --line2: #2a3050;
+  --cyan:  #00e5ff;
+  --violet:#a855f7;
+  --lime:  #84cc16;
+  --orange:#f97316;
+  --pink:  #ec4899;
+  --text:  #dde4f0;
+  --muted: #5a6480;
+  --c2:    rgba(0,229,255,.12);
+  --v2:    rgba(168,85,247,.12);
+  --l2:    rgba(132,204,22,.1);
+  --o2:    rgba(249,115,22,.1);
+  --p2:    rgba(236,72,153,.1);
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Nunito',sans-serif;
+  overflow-x:hidden;
+}
+
+/* Animated background mesh */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(168,85,247,.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 80%, rgba(0,229,255,.04) 0%, transparent 60%),
+    repeating-linear-gradient(0deg,transparent,transparent 63px,rgba(0,229,255,.02) 63px,rgba(0,229,255,.02) 64px),
+    repeating-linear-gradient(90deg,transparent,transparent 63px,rgba(0,229,255,.02) 63px,rgba(0,229,255,.02) 64px);
+}
+
+/* ══ HERO ══ */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:5rem 2rem;position:relative;z-index:1;
+  overflow:hidden;
+}
+
+.hero-ring{
+  position:absolute;
+  border-radius:50%;
+  border:1px solid rgba(0,229,255,.08);
+  animation:expand 8s ease-out infinite;
+}
+.r1{width:300px;height:300px;animation-delay:0s}
+.r2{width:550px;height:550px;animation-delay:2s}
+.r3{width:800px;height:800px;animation-delay:4s}
+@keyframes expand{
+  0%{opacity:.6;transform:scale(.9)}
+  100%{opacity:0;transform:scale(1.15)}
+}
+
+.eyebrow{
+  font-family:'Roboto Mono',monospace;
+  font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--cyan);border:1px solid rgba(0,229,255,.25);
+  padding:.35rem 1.2rem;border-radius:999px;
+  margin-bottom:2rem;
+  opacity:0;animation:pop .5s .2s forwards;
+  position:relative;z-index:1;
+}
+
+h1{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(5rem,14vw,11rem);
+  line-height:.88;letter-spacing:.04em;
+  color:var(--text);
+  position:relative;z-index:1;
+  opacity:0;animation:pop .7s .4s forwards;
+}
+h1 .hl{
+  background:linear-gradient(135deg,var(--cyan),var(--violet));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.hero-sub{
+  max-width:580px;margin-top:1.5rem;
+  font-size:.85rem;line-height:1.9;color:var(--muted);
+  position:relative;z-index:1;
+  opacity:0;animation:pop .6s .6s forwards;
+}
+
+.hero-stats{
+  display:flex;flex-wrap:wrap;gap:1px;
+  margin-top:3rem;background:var(--line2);
+  border:1px solid var(--line2);border-radius:8px;overflow:hidden;
+  position:relative;z-index:1;
+  opacity:0;animation:pop .5s .9s forwards;
+}
+.stat{
+  background:var(--bg2);padding:1rem 2rem;
+  display:flex;flex-direction:column;align-items:center;gap:.2rem;
+  flex:1;min-width:120px;
+}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--cyan);}
+.stat-lbl{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);}
+
+@keyframes pop{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* ══ NAV ══ */
+.snav{
+  position:sticky;top:0;z-index:200;
+  background:rgba(7,9,15,.9);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line2);
+  display:flex;overflow-x:auto;justify-content:center;flex-wrap:wrap;
+  padding:.5rem 2rem;
+}
+.snav a{
+  font-family:'Roboto Mono',monospace;
+  font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;
+  padding:.45rem 1rem;white-space:nowrap;
+  border-right:1px solid var(--line);
+  transition:color .2s;
+}
+.snav a:last-child{border-right:none}
+.snav a:hover{color:var(--cyan)}
+
+/* ══ LAYOUT ══ */
+.wrap{max-width:1160px;margin:0 auto;padding:0 2rem;position:relative;z-index:1}
+
+.sec{padding:5rem 0 1rem;border-top:1px solid var(--line)}
+
+.sh{display:grid;grid-template-columns:5rem 1fr;gap:1.5rem;margin-bottom:3rem}
+.sn{
+  font-family:'Bebas Neue',sans-serif;font-size:3.5rem;
+  color:var(--line2);line-height:1;padding-top:.2rem;
+}
+.sl{font-family:'Roboto Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:.4rem}
+.st{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,5vw,3rem);letter-spacing:.04em;color:var(--text);line-height:1;margin-bottom:.7rem}
+.sd{font-size:.78rem;line-height:1.9;color:var(--muted);max-width:620px}
+
+/* ══ CARD ══ */
+.card{
+  border:1px solid var(--line2);background:var(--card);
+  border-radius:8px;overflow:hidden;margin-bottom:2rem;
+  opacity:0;transform:translateY(16px);
+  transition:opacity .5s,transform .5s;
+}
+.card.vis{opacity:1;transform:none}
+.card:hover{border-color:rgba(0,229,255,.2)}
+
+.cb{
+  display:flex;align-items:center;gap:.8rem;
+  padding:.7rem 1.5rem;background:var(--bg3);border-bottom:1px solid var(--line);
+}
+.cb-title{
+  font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;font-size:1.1rem;
+  color:var(--cyan);
+}
+.cb-tag{
+  margin-left:auto;font-family:'Roboto Mono',monospace;
+  font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);border:1px solid var(--line2);padding:.15rem .55rem;border-radius:3px;
+}
+.dots{display:flex;gap:.35rem}
+.d{width:8px;height:8px;border-radius:50%}
+.dr{background:#ef4444}.dy{background:#f59e0b}.dg{background:#22c55e}
+
+.c2col{display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:700px){.c2col{grid-template-columns:1fr}}
+
+.cdiag{
+  border-right:1px solid var(--line);
+  padding:1.8rem;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);min-height:280px;
+}
+@media(max-width:700px){.cdiag{border-right:none;border-bottom:1px solid var(--line);min-height:220px}}
+
+.cinfo{padding:1.8rem}
+.ctag{
+  font-family:'Roboto Mono',monospace;font-style:italic;
+  font-size:.88rem;color:var(--violet);margin-bottom:.9rem;
+}
+.cdesc{font-size:.72rem;line-height:1.9;color:var(--muted);margin-bottom:1.2rem}
+
+.tcols{display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.tcol{flex:1;min-width:110px}
+.tclbl{
+  font-family:'Roboto Mono',monospace;
+  font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:.45rem;
+}
+.tul{list-style:none}
+.tul li{
+  font-size:.65rem;color:var(--muted);line-height:1.8;
+  padding-left:.85rem;position:relative;
+}
+.tul li::before{content:'›';position:absolute;left:0;color:var(--cyan)}
+
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.chip{
+  font-size:.55rem;background:var(--c2);
+  border:1px solid rgba(0,229,255,.2);
+  color:var(--cyan);padding:.2rem .65rem;border-radius:3px;
+  font-family:'Roboto Mono',monospace;
+}
+.chip.v{background:var(--v2);border-color:rgba(168,85,247,.2);color:var(--violet)}
+.chip.l{background:var(--l2);border-color:rgba(132,204,22,.2);color:var(--lime)}
+.chip.o{background:var(--o2);border-color:rgba(249,115,22,.2);color:var(--orange)}
+
+/* ══ SVG helpers ══ */
+svg{width:100%;height:auto;font-family:'Roboto Mono',monospace}
+.b  {fill:#0d1120;stroke:#1c2035;stroke-width:1.2}
+.bC {fill:rgba(0,229,255,.08);stroke:#00e5ff;stroke-width:1.2}
+.bV {fill:rgba(168,85,247,.08);stroke:#a855f7;stroke-width:1.2}
+.bL {fill:rgba(132,204,22,.07);stroke:#84cc16;stroke-width:1}
+.bO {fill:rgba(249,115,22,.08);stroke:#f97316;stroke-width:1}
+.bP {fill:rgba(236,72,153,.07);stroke:#ec4899;stroke-width:1}
+.bD {fill:#07090f;stroke:#1c2035;stroke-width:1}
+.t  {fill:#dde4f0;font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tC {fill:#00e5ff;font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tV {fill:#a855f7;font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tL {fill:#84cc16;font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tO {fill:#f97316;font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tP {fill:#ec4899;font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tM {fill:#5a6480;font-size:6px;text-anchor:middle;dominant-baseline:middle}
+.ts {font-size:5.5px}
+.arr  {stroke:#00e5ff;stroke-width:1.4;fill:none;marker-end:url(#aC)}
+.arrV {stroke:#a855f7;stroke-width:1.2;fill:none;marker-end:url(#aV)}
+.arrL {stroke:#84cc16;stroke-width:1.2;fill:none;marker-end:url(#aL)}
+.arrO {stroke:#f97316;stroke-width:1.2;fill:none;marker-end:url(#aO)}
+.arrD {stroke:#2a3050;stroke-width:1;stroke-dasharray:4,3;fill:none;marker-end:url(#aD)}
+
+/* ══ DEPLOYMENT STRATEGY CARDS ══ */
+.strat-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1rem;margin-bottom:2rem;
+}
+.strat-card{
+  border:1px solid var(--line2);background:var(--card);border-radius:8px;
+  overflow:hidden;
+  opacity:0;transform:translateY(16px);
+  transition:opacity .5s,transform .5s;
+}
+.strat-card.vis{opacity:1;transform:none}
+.strat-card:hover{transform:translateY(-3px) !important;border-color:rgba(0,229,255,.3)}
+.sc-head{
+  padding:.8rem 1.2rem;display:flex;align-items:center;gap:.7rem;
+  border-bottom:1px solid var(--line);
+}
+.sc-icon{
+  width:32px;height:32px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+}
+.sc-name{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.06em}
+.sc-tag{margin-left:auto;font-size:.5rem;font-family:'Roboto Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sc-diag{padding:1rem;background:var(--bg);min-height:120px;display:flex;align-items:center;justify-content:center}
+.sc-desc{padding:1rem;font-size:.67rem;color:var(--muted);line-height:1.7}
+
+/* ══ PIPELINE STEPS ══ */
+.pipe-steps{display:flex;flex-direction:column;gap:0;margin-bottom:2rem}
+.ps{
+  display:grid;grid-template-columns:48px 1fr;gap:1.2rem;padding:1.3rem 0;
+  opacity:0;transform:translateX(-10px);
+  transition:opacity .4s,transform .4s;
+}
+.ps.vis{opacity:1;transform:none}
+.psl{display:flex;flex-direction:column;align-items:center}
+.psd{
+  width:14px;height:14px;border-radius:50%;
+  flex-shrink:0;margin-top:3px;
+}
+.psc{width:1px;flex:1;margin-top:4px}
+.ps:last-child .psc{display:none}
+.pstitle{font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:.25rem}
+.psdesc{font-size:.67rem;color:var(--muted);line-height:1.8}
+.psbadge{
+  display:inline-block;margin-top:.4rem;
+  font-family:'Roboto Mono',monospace;
+  font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;
+  padding:.18rem .6rem;border-radius:3px;
+}
+
+/* ══ COMPARE TABLE ══ */
+.ctable{width:100%;border-collapse:collapse;font-size:.65rem;margin-bottom:3rem}
+.ctable th{
+  background:var(--bg3);color:var(--cyan);
+  padding:.6rem 1rem;text-align:left;
+  font-family:'Roboto Mono',monospace;font-size:.56rem;letter-spacing:.12em;font-weight:400;
+  border-bottom:1px solid var(--line2);
+}
+.ctable td{
+  padding:.65rem 1rem;border-bottom:1px solid var(--line);
+  color:var(--muted);line-height:1.7;vertical-align:top;
+}
+.ctable tr:hover td{background:var(--bg2)}
+.tdh{font-family:'Bebas Neue',sans-serif;font-style:normal;font-size:.85rem;color:var(--text);letter-spacing:.06em}
+.tdg{color:var(--lime)}.tdr{color:#ef4444}
+
+/* ══ MODULE GRID ══ */
+.mod-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:1px;background:var(--line2);
+  border:1px solid var(--line2);border-radius:8px;overflow:hidden;
+  margin-bottom:2rem;
+  opacity:0;transform:translateY(16px);
+  transition:opacity .5s,transform .5s;
+}
+.mod-grid.vis{opacity:1;transform:none}
+.mod-item{background:var(--card);padding:1.4rem;transition:background .2s}
+.mod-item:hover{background:var(--bg2)}
+.mi-icon{font-size:1.5rem;margin-bottom:.6rem}
+.mi-name{font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;font-size:.95rem;color:var(--text);margin-bottom:.35rem}
+.mi-desc{font-size:.63rem;color:var(--muted);line-height:1.7}
+
+footer{
+  border-top:1px solid var(--line2);padding:2.5rem 2rem;
+  text-align:center;font-family:'Roboto Mono',monospace;
+  font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);
+  position:relative;z-index:1;
+}
+
+/* ── LIGHT THEME ── */
+html{transition:background-color .3s}
+body{transition:background-color .3s,color .3s}
+
+[data-theme="light"]{
+  --bg:   #f2f5fb;
+  --bg2:  #e8ecf5;
+  --bg3:  #dde3f0;
+  --card: #ffffff;
+  --line: #c0cae0;
+  --line2:#a8b5d0;
+  --cyan: #0077aa;
+  --violet:#6d1fa8;
+  --lime: #4d7c0f;
+  --orange:#c2540a;
+  --pink: #be185d;
+  --text: #0d1020;
+  --muted:#5a6480;
+  --c2:   rgba(0,119,170,.1);
+  --v2:   rgba(109,31,168,.1);
+  --l2:   rgba(77,124,15,.08);
+  --o2:   rgba(194,84,10,.08);
+  --p2:   rgba(190,24,93,.08);
+}
+[data-theme="light"] body::before{
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(109,31,168,.03) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 80%, rgba(0,119,170,.03) 0%, transparent 60%),
+    repeating-linear-gradient(0deg,transparent,transparent 63px,rgba(0,119,170,.015) 63px,rgba(0,119,170,.015) 64px),
+    repeating-linear-gradient(90deg,transparent,transparent 63px,rgba(0,119,170,.015) 63px,rgba(0,119,170,.015) 64px);
+}
+[data-theme="light"] .snav{background:rgba(242,245,251,.95)}
+[data-theme="light"] .b  {fill:var(--card);stroke:var(--line)}
+[data-theme="light"] .bD {fill:var(--bg);stroke:var(--line)}
+[data-theme="light"] .t  {fill:var(--text)}
+[data-theme="light"] .tC {fill:var(--cyan)}
+[data-theme="light"] .tV {fill:var(--violet)}
+[data-theme="light"] .tL {fill:var(--lime)}
+[data-theme="light"] .tO {fill:var(--orange)}
+[data-theme="light"] .tP {fill:var(--pink)}
+
+/* ── THEME TOGGLE ── */
+#theme-toggle{
+  position:fixed;top:1.25rem;right:1.25rem;z-index:1000;
+  display:flex;align-items:center;gap:.5rem;
+  background:var(--card);
+  border:1px solid var(--line2);
+  color:var(--muted);
+  font-family:'Roboto Mono',monospace;
+  font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.4rem .9rem;
+  border-radius:6px;
+  cursor:pointer;
+  transition:border-color .2s,color .2s,background .3s;
+}
+#theme-toggle:hover{border-color:var(--cyan);color:var(--cyan)}
+#theme-toggle .ti{font-size:1rem;line-height:1;transition:transform .35s;display:block}
+#theme-toggle:hover .ti{transform:rotate(25deg)}
+</style>
+</head>
+<body>
+
+<button id="theme-toggle" aria-label="Toggle theme">
+  <span class="ti">◑</span>Theme
+</button>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-ring r1"></div>
+  <div class="hero-ring r2"></div>
+  <div class="hero-ring r3"></div>
+  <p class="eyebrow">Continuous Delivery Platform · Software Delivery Intelligence</p>
+  <h1><span class="hl">Harness</span><br>CD</h1>
+  <p class="hero-sub">The AI-powered Continuous Delivery platform that deploys software faster and safer — with script-free strategies, automated rollbacks, and OPA governance baked in.</p>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-val">14×</span><span class="stat-lbl">Deploy Frequency ↑</span></div>
+    <div class="stat"><span class="stat-val">75%</span><span class="stat-lbl">Failure Rate ↓</span></div>
+    <div class="stat"><span class="stat-val">96%</span><span class="stat-lbl">Rollback Time ↓</span></div>
+    <div class="stat"><span class="stat-val">85%</span><span class="stat-lbl">Onboarding Time ↓</span></div>
+  </div>
+</section>
+
+<!-- NAV -->
+<nav class="snav">
+  <a href="#overview">Overview</a>
+  <a href="#delegate">Delegate</a>
+  <a href="#pipeline">Pipeline</a>
+  <a href="#strategies">Strategies</a>
+  <a href="#cv">Verification</a>
+  <a href="#governance">Governance</a>
+  <a href="#gitops">GitOps</a>
+  <a href="#modules">Modules</a>
+</nav>
+
+<!-- ══ 01 — OVERVIEW ══ -->
+<div class="wrap" id="overview">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">01</div>
+    <div>
+      <p class="sl">Big Picture</p>
+      <h2 class="st">What is Harness CD?</h2>
+      <p class="sd">Harness is a purpose-built Continuous Delivery platform. It sits between your CI system and production — orchestrating deployments across Kubernetes, VMs, serverless, and cloud services with built-in safety nets that CI tools were never designed to provide.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="d dr"></div><div class="d dy"></div><div class="d dg"></div></div><span class="cb-title">Platform Architecture</span><span class="cb-tag">End-to-End View</span></div>
+    <div class="cdiag" style="min-height:340px">
+      <svg viewBox="0 0 620 210" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="aC" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#00e5ff"/></marker>
+          <marker id="aV" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#a855f7"/></marker>
+          <marker id="aL" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#84cc16"/></marker>
+          <marker id="aO" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f97316"/></marker>
+          <marker id="aD" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#2a3050"/></marker>
+        </defs>
+
+        <!-- Source Control -->
+        <rect x="6" y="62" width="82" height="88" rx="4" class="bD"/>
+        <text x="47" y="80" class="tC" style="font-size:6px;letter-spacing:.1em">SOURCES</text>
+        <rect x="14" y="88" width="66" height="16" rx="2" class="bD"/><text x="47" y="96" class="t ts">GitHub / GitLab</text>
+        <rect x="14" y="108" width="66" height="16" rx="2" class="bD"/><text x="47" y="116" class="t ts">DockerHub / ECR</text>
+        <rect x="14" y="128" width="66" height="16" rx="2" class="bD"/><text x="47" y="136" class="t ts">Helm / S3</text>
+
+        <line x1="88" y1="106" x2="116" y2="106" class="arr"/>
+
+        <!-- Harness Control Plane -->
+        <rect x="116" y="18" width="232" height="176" rx="5" class="bC"/>
+        <text x="232" y="36" class="tC" style="font-size:8.5px;letter-spacing:.15em">HARNESS CONTROL PLANE</text>
+
+        <rect x="126" y="46" width="104" height="20" rx="3" class="bD"/><text x="178" y="56" class="t ts">Pipeline Orchestration</text>
+        <rect x="126" y="70" width="104" height="20" rx="3" class="bD"/><text x="178" y="80" class="t ts">Template Engine</text>
+        <rect x="126" y="94" width="104" height="20" rx="3" class="bD"/><text x="178" y="104" class="t ts">AI / ML Engine</text>
+        <rect x="126" y="118" width="104" height="20" rx="3" class="bD"/><text x="178" y="128" class="t ts">OPA Governance</text>
+        <rect x="126" y="142" width="104" height="20" rx="3" class="bD"/><text x="178" y="152" class="t ts">RBAC + Audit Trail</text>
+        <rect x="126" y="166" width="104" height="20" rx="3" class="bD"/><text x="178" y="176" class="t ts">Approval Gates</text>
+
+        <rect x="234" y="46" width="104" height="60" rx="3" class="bV"/>
+        <text x="286" y="60" class="tV" style="font-size:6.5px">Continuous</text>
+        <text x="286" y="72" class="tV" style="font-size:6.5px">Verification</text>
+        <text x="286" y="84" class="tM">APM · Logs · ML</text>
+        <text x="286" y="96" class="tM">Auto-rollback</text>
+
+        <rect x="234" y="110" width="104" height="60" rx="3" class="bL"/>
+        <text x="286" y="124" class="tL" style="font-size:6.5px">GitOps Engine</text>
+        <text x="286" y="136" class="tM">ArgoCD / Flux</text>
+        <text x="286" y="148" class="tM">PR Automation</text>
+        <text x="286" y="160" class="tM">Cluster Sync</text>
+
+        <!-- Delegate arrows -->
+        <line x1="348" y1="80" x2="376" y2="64" class="arr"/>
+        <line x1="348" y1="100" x2="376" y2="100" class="arr"/>
+        <line x1="348" y1="120" x2="376" y2="136" class="arr"/>
+        <line x1="348" y1="140" x2="376" y2="158" class="arr"/>
+
+        <!-- Delegate + Envs -->
+        <rect x="376" y="46" width="102" height="30" rx="3" class="bO"/>
+        <text x="427" y="62" class="tO" style="font-size:6.5px">Delegate (Dev)</text>
+
+        <rect x="376" y="82" width="102" height="30" rx="3" class="bO"/>
+        <text x="427" y="97" class="tO" style="font-size:6.5px">Delegate (Staging)</text>
+
+        <rect x="376" y="118" width="102" height="30" rx="3" class="bO"/>
+        <text x="427" y="133" class="tO" style="font-size:6.5px">Delegate (Prod)</text>
+
+        <rect x="376" y="154" width="102" height="30" rx="3" class="bO"/>
+        <text x="427" y="169" class="tO" style="font-size:6.5px">Delegate (DR)</text>
+
+        <!-- Target infra -->
+        <line x1="478" y1="61" x2="506" y2="52" class="arrL"/>
+        <line x1="478" y1="97" x2="506" y2="90" class="arrL"/>
+        <line x1="478" y1="133" x2="506" y2="128" class="arrL"/>
+        <line x1="478" y1="169" x2="506" y2="166" class="arrL"/>
+
+        <rect x="506" y="38" width="108" height="22" rx="3" class="bL"/><text x="560" y="49" class="t ts">Kubernetes Cluster</text>
+        <rect x="506" y="76" width="108" height="22" rx="3" class="bL"/><text x="560" y="87" class="t ts">AWS ECS / Lambda</text>
+        <rect x="506" y="114" width="108" height="22" rx="3" class="bL"/><text x="560" y="125" class="t ts">VMs / Bare Metal</text>
+        <rect x="506" y="152" width="108" height="22" rx="3" class="bL"/><text x="560" y="163" class="t ts">Google Cloud Run</text>
+
+        <!-- Monitoring feedback -->
+        <rect x="506" y="186" width="108" height="18" rx="2" class="bD"/><text x="560" y="195" class="tM">APM · Datadog · NewRelic</text>
+        <line x1="560" y1="186" x2="286" y2="110" class="arrD"/>
+
+        <!-- Outbound only arrow for delegate -->
+        <text x="362" y="43" class="tO" style="font-size:5.5px">OUTBOUND</text>
+        <text x="362" y="51" class="tO" style="font-size:5.5px">ONLY ↗</text>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 02 — DELEGATE ══ -->
+<div class="wrap" id="delegate">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">02</div>
+    <div>
+      <p class="sl">Security Architecture</p>
+      <h2 class="st">The Delegate</h2>
+      <p class="sd">The Delegate is Harness's secret weapon for security. It's a lightweight agent you run inside your own infrastructure. It phones home to the Harness control plane — meaning no inbound firewall holes, no VPN tunnels, no credentials stored outside your trust boundary.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="d dr"></div><div class="d dy"></div><div class="d dg"></div></div><span class="cb-title">Delegate Architecture — Outbound-Only Security Model</span><span class="cb-tag">No Inbound Ports</span></div>
+    <div class="c2col">
+      <div class="cdiag">
+        <svg viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg">
+          <!-- Harness Cloud -->
+          <rect x="70" y="8" width="160" height="50" rx="4" class="bC"/>
+          <text x="150" y="26" class="tC" style="font-size:7.5px">HARNESS CLOUD</text>
+          <text x="150" y="38" class="tM">Control Plane · Pipeline State</text>
+          <text x="150" y="50" class="tM">Policy Engine · AI Analysis</text>
+
+          <!-- Firewall -->
+          <rect x="20" y="84" width="260" height="16" rx="2" style="fill:rgba(239,68,68,.08);stroke:#ef4444;stroke-width:1;stroke-dasharray:5,3"/>
+          <text x="150" y="92" style="fill:#ef4444;font-size:5.5px;text-anchor:middle;dominant-baseline:middle">🔥  FIREWALL  ·  NO INBOUND PORTS REQUIRED  ·  🔥</text>
+
+          <!-- Your Infra box -->
+          <rect x="20" y="110" width="260" height="122" rx="4" style="fill:rgba(132,204,22,.04);stroke:rgba(132,204,22,.3);stroke-width:1;stroke-dasharray:6,3"/>
+          <text x="150" y="125" class="tL" style="font-size:6.5px">YOUR INFRASTRUCTURE / VPC</text>
+
+          <!-- Delegate -->
+          <rect x="80" y="134" width="140" height="40" rx="4" class="bO"/>
+          <text x="150" y="150" class="tO" style="font-size:7.5px">HARNESS DELEGATE</text>
+          <text x="150" y="163" class="tM">Polls control plane · Executes tasks</text>
+
+          <!-- Delegate → infra -->
+          <rect x="40" y="188" width="60" height="20" rx="2" class="bD"/><text x="70" y="198" class="t ts">k8s Cluster</text>
+          <rect x="120" y="188" width="60" height="20" rx="2" class="bD"/><text x="150" y="198" class="t ts">Docker / VMs</text>
+          <rect x="200" y="188" width="60" height="20" rx="2" class="bD"/><text x="230" y="198" class="t ts">Secrets Mgr</text>
+
+          <line x1="90" y1="174" x2="70" y2="188" class="arrL"/>
+          <line x1="150" y1="174" x2="150" y2="188" class="arrL"/>
+          <line x1="200" y1="174" x2="230" y2="188" class="arrL"/>
+
+          <!-- Outbound poll arrow -->
+          <path d="M150 58 Q150 74 150 84" stroke="#00e5ff" stroke-width="1.4" fill="none" marker-end="url(#aC)"/>
+          <path d="M165 84 Q165 72 165 58" stroke="#f97316" stroke-width="1.2" fill="none" stroke-dasharray="4,3" marker-end="url(#aO)"/>
+
+          <text x="108" y="73" class="tC" style="font-size:5.5px">← Poll for tasks</text>
+          <text x="172" y="73" class="tO" style="font-size:5.5px">Results →</text>
+        </svg>
+      </div>
+      <div class="cinfo">
+        <p class="ctag">"Outbound only. Your perimeter stays sealed."</p>
+        <p class="cdesc">Traditional SaaS CD tools require you to open inbound ports or grant them VPN access — a huge security risk. The Delegate flips this: it lives inside your VPC and <em>polls</em> Harness for work. Harness never needs to reach into your network.</p>
+        <div class="tcols">
+          <div class="tcol">
+            <div class="tclbl">What Delegate Does</div>
+            <ul class="tul">
+              <li>Polls Harness for pending tasks</li>
+              <li>Executes kubectl / helm / terraform</li>
+              <li>Pulls artifacts from registries</li>
+              <li>Resolves secrets from Vault / AWS SM</li>
+              <li>Sends results back to Harness</li>
+              <li>Reports health metrics to CV</li>
+            </ul>
+          </div>
+          <div class="tcol">
+            <div class="tclbl">Deployment Options</div>
+            <ul class="tul">
+              <li>Kubernetes pod (most common)</li>
+              <li>Docker container</li>
+              <li>Shell script on a VM</li>
+              <li>Helm chart install</li>
+              <li>ECS task definition</li>
+              <li>Multiple delegates per env</li>
+            </ul>
+          </div>
+        </div>
+        <div class="tclbl" style="margin-bottom:.4rem">Works With</div>
+        <div class="chips">
+          <span class="chip">Kubernetes</span><span class="chip">AWS ECS</span>
+          <span class="chip v">Vault / HSM</span><span class="chip v">AWS Secrets Mgr</span>
+          <span class="chip l">Datadog</span><span class="chip l">Prometheus</span>
+          <span class="chip o">Terraform</span><span class="chip o">Helm</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 03 — PIPELINE ══ -->
+<div class="wrap" id="pipeline">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">03</div>
+    <div>
+      <p class="sl">Execution Model</p>
+      <h2 class="st">Pipeline Anatomy</h2>
+      <p class="sd">A Harness pipeline is a YAML-defined, visually rendered sequence of Stages. Each Stage targets a Service + Environment + Infrastructure combination. Steps within stages are policies, scripts, approvals, or native integrations — no custom glue code needed.</p>
+    </div>
+  </div>
+
+  <!-- Full-width pipeline flow -->
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="d dr"></div><div class="d dy"></div><div class="d dg"></div></div><span class="cb-title">Typical CD Pipeline — Code to Production</span><span class="cb-tag">Stage Flow</span></div>
+    <div class="cdiag" style="min-height:280px">
+      <svg viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Stages as blocks with vertical steps inside -->
+
+        <!-- TRIGGER -->
+        <rect x="8" y="30" width="76" height="120" rx="4" class="bC"/>
+        <text x="46" y="48" class="tC" style="font-size:6.5px">TRIGGER</text>
+        <rect x="16" y="56" width="60" height="16" rx="2" class="bD"/><text x="46" y="64" class="t ts">Git Push</text>
+        <rect x="16" y="76" width="60" height="16" rx="2" class="bD"/><text x="46" y="84" class="t ts">New Artifact</text>
+        <rect x="16" y="96" width="60" height="16" rx="2" class="bD"/><text x="46" y="104" class="t ts">Cron / Manual</text>
+        <rect x="16" y="116" width="60" height="16" rx="2" class="bD"/><text x="46" y="124" class="t ts">Webhook</text>
+
+        <line x1="84" y1="90" x2="106" y2="90" class="arr"/>
+
+        <!-- DEPLOY DEV -->
+        <rect x="106" y="30" width="88" height="120" rx="4" class="bD" style="stroke:rgba(0,229,255,.3)"/>
+        <text x="150" y="46" class="tC" style="font-size:5.5px;letter-spacing:.1em">STAGE: DEV</text>
+        <rect x="114" y="54" width="72" height="14" rx="2" class="bD"/><text x="150" y="61" class="t ts">Fetch Artifact</text>
+        <rect x="114" y="72" width="72" height="14" rx="2" class="bD"/><text x="150" y="79" class="t ts">Run Tests</text>
+        <rect x="114" y="90" width="72" height="14" rx="2" class="bD"/><text x="150" y="97" class="t ts">K8s Rolling Deploy</text>
+        <rect x="114" y="108" width="72" height="14" rx="2" class="bD"/><text x="150" y="115" class="t ts">Health Check</text>
+        <rect x="114" y="126" width="72" height="14" rx="2" class="bD"/><text x="150" y="133" class="t ts">CV Verify</text>
+
+        <line x1="194" y1="90" x2="216" y2="90" class="arr"/>
+
+        <!-- APPROVAL -->
+        <rect x="216" y="52" width="64" height="76" rx="4" class="bV"/>
+        <text x="248" y="68" class="tV" style="font-size:6px">APPROVAL</text>
+        <text x="248" y="82" class="tM">Jira Gate</text>
+        <text x="248" y="94" class="tM">ServiceNow</text>
+        <text x="248" y="106" class="tM">Slack / Email</text>
+        <text x="248" y="118" class="tM">RBAC User</text>
+
+        <line x1="280" y1="90" x2="302" y2="90" class="arr"/>
+
+        <!-- DEPLOY STAGING -->
+        <rect x="302" y="30" width="88" height="120" rx="4" class="bD" style="stroke:rgba(168,85,247,.3)"/>
+        <text x="346" y="46" class="tV" style="font-size:5.5px;letter-spacing:.1em">STAGE: STG</text>
+        <rect x="310" y="54" width="72" height="14" rx="2" class="bD"/><text x="346" y="61" class="t ts">Fetch Artifact</text>
+        <rect x="310" y="72" width="72" height="14" rx="2" class="bD"/><text x="346" y="79" class="t ts">Blue-Green Deploy</text>
+        <rect x="310" y="90" width="72" height="14" rx="2" class="bD"/><text x="346" y="97" class="t ts">Integration Tests</text>
+        <rect x="310" y="108" width="72" height="14" rx="2" class="bD"/><text x="346" y="115" class="t ts">CV Verify (10 min)</text>
+        <rect x="310" y="126" width="72" height="14" rx="2" class="bD"/><text x="346" y="133" class="t ts">Switch Traffic</text>
+
+        <line x1="390" y1="90" x2="412" y2="90" class="arr"/>
+
+        <!-- APPROVAL 2 -->
+        <rect x="412" y="52" width="64" height="76" rx="4" class="bV"/>
+        <text x="444" y="68" class="tV" style="font-size:6px">APPROVAL</text>
+        <text x="444" y="82" class="tM">Change Mgmt</text>
+        <text x="444" y="94" class="tM">OPA Policy</text>
+        <text x="444" y="106" class="tM">Freeze Window</text>
+        <text x="444" y="118" class="tM">DORA Gate</text>
+
+        <line x1="476" y1="90" x2="498" y2="90" class="arr"/>
+
+        <!-- DEPLOY PROD -->
+        <rect x="498" y="30" width="88" height="120" rx="4" class="bD" style="stroke:rgba(132,204,22,.4)"/>
+        <text x="542" y="46" class="tL" style="font-size:5.5px;letter-spacing:.1em">STAGE: PROD</text>
+        <rect x="506" y="54" width="72" height="14" rx="2" class="bD"/><text x="542" y="61" class="t ts">Canary 10%</text>
+        <rect x="506" y="72" width="72" height="14" rx="2" class="bD"/><text x="542" y="79" class="t ts">CV Verify ✓</text>
+        <rect x="506" y="90" width="72" height="14" rx="2" class="bD"/><text x="542" y="97" class="t ts">Canary 50%</text>
+        <rect x="506" y="108" width="72" height="14" rx="2" class="bD"/><text x="542" y="115" class="t ts">CV Verify ✓</text>
+        <rect x="506" y="126" width="72" height="14" rx="2" class="bD"/><text x="542" y="133" class="t ts">Full Rollout</text>
+
+        <line x1="586" y1="90" x2="608" y2="90" class="arrL"/>
+
+        <!-- DONE -->
+        <rect x="608" y="72" width="64" height="36" rx="4" class="bL"/>
+        <text x="640" y="88" class="tL" style="font-size:7.5px">LIVE 🚀</text>
+        <text x="640" y="100" class="tM">+ Notify</text>
+
+        <!-- Rollback arrow -->
+        <path d="M542 150 Q542 170 346 170 Q178 170 150 150" stroke="#f97316" stroke-width="1.2" stroke-dasharray="4,3" fill="none" marker-end="url(#aO)"/>
+        <text x="346" y="165" class="tO" style="font-size:5.5px">⚡ AI Auto-Rollback if CV detects anomaly</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Pipeline steps detail -->
+  <div class="sl" style="margin-bottom:1rem">Pipeline Core Concepts</div>
+  <div class="pipe-steps">
+    <div class="ps">
+      <div class="psl"><div class="psd" style="background:var(--cyan);box-shadow:0 0 10px var(--cyan)"></div><div class="psc" style="background:linear-gradient(to bottom,var(--cyan),var(--line2))"></div></div>
+      <div>
+        <div class="pstitle">Service</div>
+        <div class="psdesc">The deployable unit — a microservice, job, or application. Defines artifact sources (Docker image, Helm chart, JAR file), configuration, and service-level variables. Services are versioned and reusable across environments.</div>
+        <span class="psbadge" style="background:var(--c2);color:var(--cyan);border:1px solid rgba(0,229,255,.2)">Artifact · Manifest · Config</span>
+      </div>
+    </div>
+    <div class="ps">
+      <div class="psl"><div class="psd" style="background:var(--violet);box-shadow:0 0 10px var(--violet)"></div><div class="psc" style="background:linear-gradient(to bottom,var(--violet),var(--line2))"></div></div>
+      <div>
+        <div class="pstitle">Environment</div>
+        <div class="psdesc">A logical deployment target — dev, staging, prod, or any custom label. Holds environment-specific overrides for config, secrets, and variables. Supports environment groups for multi-region fan-outs.</div>
+        <span class="psbadge" style="background:var(--v2);color:var(--violet);border:1px solid rgba(168,85,247,.2)">Dev · Staging · Prod · DR</span>
+      </div>
+    </div>
+    <div class="ps">
+      <div class="psl"><div class="psd" style="background:var(--orange);box-shadow:0 0 10px var(--orange)"></div><div class="psc" style="background:linear-gradient(to bottom,var(--orange),var(--line2))"></div></div>
+      <div>
+        <div class="pstitle">Infrastructure Definition</div>
+        <div class="psdesc">Specifies where the deployment runs — a Kubernetes cluster namespace, an ECS cluster, a set of VMs. Connects the environment to the underlying compute via the Delegate.</div>
+        <span class="psbadge" style="background:var(--o2);color:var(--orange);border:1px solid rgba(249,115,22,.2)">K8s · ECS · VM · Serverless</span>
+      </div>
+    </div>
+    <div class="ps">
+      <div class="psl"><div class="psd" style="background:var(--lime);box-shadow:0 0 10px var(--lime)"></div><div class="psc" style="background:linear-gradient(to bottom,var(--lime),var(--line2))"></div></div>
+      <div>
+        <div class="pstitle">Execution Steps</div>
+        <div class="psdesc">The actual work: rolling deploy, canary weight shift, helm upgrade, terraform apply, HTTP call, shell script, approval wait, or a Verify step that pauses the pipeline until metrics confirm health.</div>
+        <span class="psbadge" style="background:var(--l2);color:var(--lime);border:1px solid rgba(132,204,22,.2)">Deploy · Verify · Approve · Notify</span>
+      </div>
+    </div>
+    <div class="ps">
+      <div class="psl"><div class="psd" style="background:var(--pink);box-shadow:0 0 10px var(--pink)"></div></div>
+      <div>
+        <div class="pstitle">Templates</div>
+        <div class="psdesc">Reusable building blocks at step, stage, or full pipeline level. Platform teams encode best practices once; dev teams instantiate them. Updates to a template auto-propagate to all pipelines that reference it — solving pipeline sprawl at scale.</div>
+        <span class="psbadge" style="background:var(--p2);color:var(--pink);border:1px solid rgba(236,72,153,.2)">Step · Stage · Pipeline · Service Templates</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 04 — DEPLOYMENT STRATEGIES ══ -->
+<div class="wrap" id="strategies">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">04</div>
+    <div>
+      <p class="sl">Progressive Delivery</p>
+      <h2 class="st">Deployment Strategies</h2>
+      <p class="sd">Harness ships four battle-tested deployment strategies out of the box — no scripting required. Choose based on your risk tolerance, traffic patterns, and infrastructure type.</p>
+    </div>
+  </div>
+
+  <div class="strat-grid">
+
+    <!-- ROLLING -->
+    <div class="strat-card">
+      <div class="sc-head">
+        <div class="sc-icon" style="background:var(--c2)">🔄</div>
+        <span class="sc-name" style="color:var(--cyan)">Rolling</span>
+        <span class="sc-tag">Low Risk</span>
+      </div>
+      <div class="sc-diag">
+        <svg viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg">
+          <text x="20" y="12" class="tM" style="font-size:5.5px">BEFORE</text>
+          <rect x="6" y="18" width="28" height="22" rx="2" class="bD"/><text x="20" y="29" class="t ts">v1</text>
+          <rect x="38" y="18" width="28" height="22" rx="2" class="bD"/><text x="52" y="29" class="t ts">v1</text>
+          <rect x="70" y="18" width="28" height="22" rx="2" class="bD"/><text x="84" y="29" class="t ts">v1</text>
+          <rect x="102" y="18" width="28" height="22" rx="2" class="bD"/><text x="116" y="29" class="t ts">v1</text>
+
+          <text x="20" y="55" class="tM" style="font-size:5.5px">ROLLING</text>
+          <rect x="6" y="62" width="28" height="22" rx="2" class="bC"/><text x="20" y="73" class="tC ts">v2</text>
+          <rect x="38" y="62" width="28" height="22" rx="2" class="bC"/><text x="52" y="73" class="tC ts">v2</text>
+          <rect x="70" y="62" width="28" height="22" rx="2" class="bD"/><text x="84" y="73" class="t ts">v1→v2</text>
+          <rect x="102" y="62" width="28" height="22" rx="2" class="bD"/><text x="116" y="73" class="t ts">v1</text>
+
+          <text x="165" y="45" class="tC" style="font-size:5.5px">Pods updated</text>
+          <text x="165" y="56" class="tC" style="font-size:5.5px">one batch</text>
+          <text x="165" y="67" class="tC" style="font-size:5.5px">at a time</text>
+        </svg>
+      </div>
+      <div class="sc-desc">Updates pods in batches. Always running, minimal downtime. Best for stateless services where brief mixed-version state is acceptable. Simple to configure and reason about.</div>
+    </div>
+
+    <!-- CANARY -->
+    <div class="strat-card">
+      <div class="sc-head">
+        <div class="sc-icon" style="background:var(--o2)">🐤</div>
+        <span class="sc-name" style="color:var(--orange)">Canary</span>
+        <span class="sc-tag">Safest</span>
+      </div>
+      <div class="sc-diag">
+        <svg viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg">
+          <!-- Traffic split visual -->
+          <rect x="6" y="10" width="40" height="70" rx="3" class="bD"/>
+          <text x="26" y="28" class="t ts">ALL</text>
+          <text x="26" y="40" class="t ts">USERS</text>
+          <text x="26" y="52" class="tM ts">100%</text>
+
+          <line x1="46" y1="28" x2="74" y2="20" class="arr"/>
+          <line x1="46" y1="52" x2="74" y2="60" class="arrO"/>
+
+          <rect x="74" y="10" width="60" height="26" rx="2" class="bD"/>
+          <text x="104" y="23" class="t ts">v1 · 90%</text>
+
+          <rect x="74" y="46" width="60" height="26" rx="2" class="bO"/>
+          <text x="104" y="59" class="tO ts">v2 · 10% 🐤</text>
+
+          <text x="148" y="16" class="tM ts">Monitor</text>
+          <text x="148" y="26" class="tC ts">errors ↓ ?</text>
+          <text x="148" y="40" class="tM ts">Promote</text>
+          <text x="148" y="50" class="tO ts">to 25%</text>
+          <text x="148" y="64" class="tM ts">→ 50%</text>
+          <text x="148" y="74" class="tL ts">→ 100%</text>
+        </svg>
+      </div>
+      <div class="sc-desc">Routes a small % of traffic to the new version. CV monitors metrics at each weight step. Bad canary? Auto-rollback before most users are affected. Harness controls traffic weights without scripting.</div>
+    </div>
+
+    <!-- BLUE-GREEN -->
+    <div class="strat-card">
+      <div class="sc-head">
+        <div class="sc-icon" style="background:var(--v2)">🔵🟢</div>
+        <span class="sc-name" style="color:var(--violet)">Blue-Green</span>
+        <span class="sc-tag">Zero Downtime</span>
+      </div>
+      <div class="sc-diag">
+        <svg viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg">
+          <!-- Blue env -->
+          <rect x="6" y="12" width="80" height="32" rx="3" class="bC"/>
+          <text x="46" y="26" class="tC" style="font-size:6.5px">BLUE (v1)</text>
+          <text x="46" y="36" class="tM ts">LIVE · 100% traffic</text>
+
+          <!-- Green env -->
+          <rect x="6" y="54" width="80" height="32" rx="3" class="bL"/>
+          <text x="46" y="68" class="tL" style="font-size:6.5px">GREEN (v2)</text>
+          <text x="46" y="78" class="tM ts">Idle → Deployed → Test</text>
+
+          <!-- Switch -->
+          <rect x="104" y="30" width="46" height="32" rx="3" class="bV"/>
+          <text x="127" y="44" class="tV" style="font-size:6px">LOAD</text>
+          <text x="127" y="54" class="tV" style="font-size:6px">BALANCER</text>
+
+          <line x1="86" y1="28" x2="104" y2="38" class="arr"/>
+          <path d="M86 70 Q95 70 104 54" stroke="#84cc16" stroke-width="1.4" fill="none" marker-end="url(#aL)"/>
+
+          <text x="166" y="30" class="tV ts">Switch</text>
+          <text x="166" y="42" class="tV ts">LB target</text>
+          <text x="166" y="56" class="tM ts">Instant</text>
+          <text x="166" y="68" class="tM ts">rollback:</text>
+          <text x="166" y="78" class="tC ts">switch back</text>
+        </svg>
+      </div>
+      <div class="sc-desc">Two identical environments run in parallel. v2 is fully tested in Green before traffic switches. Rollback is instant — flip the load balancer back. No mixed versions, no downtime.</div>
+    </div>
+
+    <!-- CUSTOM -->
+    <div class="strat-card">
+      <div class="sc-head">
+        <div class="sc-icon" style="background:var(--p2)">⚙️</div>
+        <span class="sc-name" style="color:var(--pink)">Custom</span>
+        <span class="sc-tag">Any Pattern</span>
+      </div>
+      <div class="sc-diag">
+        <svg viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="12" width="60" height="20" rx="2" class="bP"/><text x="38" y="22" class="tP ts">Shell / Script</text>
+          <rect x="8" y="38" width="60" height="20" rx="2" class="bP"/><text x="38" y="48" class="tP ts">Terraform Apply</text>
+          <rect x="8" y="64" width="60" height="20" rx="2" class="bP"/><text x="38" y="74" class="tP ts">Helm Upgrade</text>
+          <rect x="78" y="12" width="60" height="20" rx="2" class="bP"/><text x="108" y="22" class="tP ts">Ansible Playbook</text>
+          <rect x="78" y="38" width="60" height="20" rx="2" class="bP"/><text x="108" y="48" class="tP ts">DB Migration</text>
+          <rect x="78" y="64" width="60" height="20" rx="2" class="bP"/><text x="108" y="74" class="tP ts">ServiceNow CR</text>
+          <text x="164" y="36" class="tP ts">Combine</text>
+          <text x="164" y="48" class="tP ts">any steps</text>
+          <text x="164" y="60" class="tP ts">in any</text>
+          <text x="164" y="72" class="tP ts">order</text>
+        </svg>
+      </div>
+      <div class="sc-desc">Mix-and-match steps to build any deployment pattern. Chain shell scripts, Terraform, Ansible, Helm, HTTP calls, and ServiceNow integrations into a single cohesive stage.</div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ══ 05 — CONTINUOUS VERIFICATION ══ -->
+<div class="wrap" id="cv">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">05</div>
+    <div>
+      <p class="sl">AI Safety Net</p>
+      <h2 class="st">Continuous Verification</h2>
+      <p class="sd">CV is Harness's ML-powered deployment watchdog. It queries your APM tools during and after deployment, uses machine learning to baseline normal behavior, and automatically rolls back the pipeline if anomalies exceed a configurable risk threshold.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="d dr"></div><div class="d dy"></div><div class="d dg"></div></div><span class="cb-title">Continuous Verification Flow</span><span class="cb-tag">ML-Powered · Auto-Rollback</span></div>
+    <div class="c2col">
+      <div class="cdiag" style="min-height:300px">
+        <svg viewBox="0 0 290 260" xmlns="http://www.w3.org/2000/svg">
+          <!-- Deploy step -->
+          <rect x="80" y="8" width="130" height="30" rx="3" class="bC"/>
+          <text x="145" y="23" class="tC" style="font-size:7.5px">Deploy Step Completes</text>
+
+          <line x1="145" y1="38" x2="145" y2="54" class="arr"/>
+
+          <!-- Verify step -->
+          <rect x="50" y="54" width="190" height="36" rx="3" class="bV"/>
+          <text x="145" y="68" class="tV" style="font-size:7.5px">VERIFY STEP STARTS</text>
+          <text x="145" y="82" class="tM">Query APM · Baseline comparison · ML scoring</text>
+
+          <!-- APM sources -->
+          <text x="145" y="108" class="tM" style="font-size:5.5px">APM SOURCES QUERIED</text>
+          <rect x="8" y="116" width="52" height="18" rx="2" class="bD"/><text x="34" y="125" class="tV ts">Datadog</text>
+          <rect x="64" y="116" width="52" height="18" rx="2" class="bD"/><text x="90" y="125" class="t ts">Prometheus</text>
+          <rect x="120" y="116" width="52" height="18" rx="2" class="bD"/><text x="146" y="125" class="t ts">New Relic</text>
+          <rect x="176" y="116" width="52" height="18" rx="2" class="bD"/><text x="202" y="125" class="t ts">Splunk</text>
+          <rect x="232" y="116" width="52" height="18" rx="2" class="bD"/><text x="258" y="125" class="t ts">Dynatrace</text>
+
+          <line x1="90" y1="90" x2="34" y2="116" class="arrD"/>
+          <line x1="120" y1="90" x2="90" y2="116" class="arrD"/>
+          <line x1="145" y1="90" x2="146" y2="116" class="arrD"/>
+          <line x1="170" y1="90" x2="202" y2="116" class="arrD"/>
+          <line x1="195" y1="90" x2="258" y2="116" class="arrD"/>
+
+          <!-- Decision -->
+          <line x1="145" y1="134" x2="145" y2="154" class="arr"/>
+
+          <rect x="60" y="154" width="170" height="26" rx="3" class="bD"/>
+          <text x="145" y="167" class="t ts">ML Anomaly Score &gt; Threshold?</text>
+
+          <!-- Yes/No paths -->
+          <line x1="75" y1="180" x2="50" y2="200" class="arrO"/>
+          <text x="42" y="196" class="tO ts">YES</text>
+
+          <line x1="215" y1="180" x2="240" y2="200" class="arrL"/>
+          <text x="242" y="196" class="tL ts">NO</text>
+
+          <!-- Rollback -->
+          <rect x="8" y="202" width="80" height="32" rx="3" class="bO"/>
+          <text x="48" y="215" class="tO" style="font-size:6.5px">AUTO-ROLLBACK</text>
+          <text x="48" y="227" class="tM ts">Previous version restored</text>
+
+          <!-- Promote -->
+          <rect x="202" y="202" width="80" height="32" rx="3" class="bL"/>
+          <text x="242" y="215" class="tL" style="font-size:6.5px">PROMOTE ✓</text>
+          <text x="242" y="227" class="tM ts">Continue pipeline</text>
+        </svg>
+      </div>
+      <div class="cinfo">
+        <p class="ctag">"Deploy safely. Let ML decide if it's healthy."</p>
+        <p class="cdesc">After each deployment step, Harness pauses the pipeline and runs a Verify step. It samples metrics and logs, compares them to a learned baseline from previous healthy deployments, and computes a risk score. If the score crosses the configured threshold, rollback fires automatically — before your users notice.</p>
+        <div class="tcols">
+          <div class="tcol">
+            <div class="tclbl">What CV Monitors</div>
+            <ul class="tul">
+              <li>Error rate / exception count</li>
+              <li>Response time / latency p99</li>
+              <li>Throughput / RPS</li>
+              <li>Custom metrics (any APM)</li>
+              <li>Log patterns / anomalies</li>
+              <li>Deployment health score</li>
+            </ul>
+          </div>
+          <div class="tcol">
+            <div class="tclbl">Integrations</div>
+            <ul class="tul">
+              <li>Datadog</li>
+              <li>Prometheus + Grafana</li>
+              <li>New Relic</li>
+              <li>AppDynamics</li>
+              <li>Splunk / ELK</li>
+              <li>Dynatrace</li>
+            </ul>
+          </div>
+        </div>
+        <div class="chips">
+          <span class="chip v">ML Baseline Learning</span>
+          <span class="chip v">Risk Threshold Config</span>
+          <span class="chip">Auto-Rollback</span>
+          <span class="chip">Manual Override</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 06 — GOVERNANCE ══ -->
+<div class="wrap" id="governance">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">06</div>
+    <div>
+      <p class="sl">Policy as Code</p>
+      <h2 class="st">Governance &amp; OPA</h2>
+      <p class="sd">Harness integrates Open Policy Agent (OPA) to enforce deployment governance programmatically. Policies can block invalid configurations at save time, or enforce runtime rules like "prod deployments require an approval" before execution begins.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="d dr"></div><div class="d dy"></div><div class="d dg"></div></div><span class="cb-title">OPA Policy Enforcement — Two Evaluation Points</span><span class="cb-tag">Policy as Code</span></div>
+    <div class="cdiag" style="min-height:280px">
+      <svg viewBox="0 0 580 180" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- ON SAVE path -->
+        <text x="140" y="12" class="tV" style="font-size:6.5px;letter-spacing:.12em">ON SAVE — Before it's ever used</text>
+
+        <rect x="8" y="22" width="88" height="30" rx="3" class="bD"/>
+        <text x="52" y="35" class="t ts">Engineer saves</text>
+        <text x="52" y="45" class="tM ts">pipeline / service def</text>
+
+        <line x1="96" y1="37" x2="116" y2="37" class="arrV"/>
+
+        <rect x="116" y="22" width="90" height="30" rx="3" class="bV"/>
+        <text x="161" y="35" class="tV" style="font-size:6.5px">OPA Policy Engine</text>
+        <text x="161" y="45" class="tM ts">Evaluate Rego rules</text>
+
+        <line x1="206" y1="37" x2="226" y2="28" class="arrL"/>
+        <line x1="206" y1="37" x2="226" y2="46" style="stroke:#ef4444;stroke-width:1.2;fill:none;marker-end:url(#aO)"/>
+
+        <rect x="226" y="18" width="80" height="22" rx="2" class="bL"/>
+        <text x="266" y="29" class="tL ts">✓ ALLOWED · Saved</text>
+
+        <rect x="226" y="44" width="80" height="22" rx="2" style="fill:rgba(239,68,68,.1);stroke:#ef4444;stroke-width:1"/>
+        <text x="266" y="55" style="fill:#ef4444;font-size:5.5px;text-anchor:middle;dominant-baseline:middle">✗ DENIED · Error shown</text>
+
+        <!-- Example rules -->
+        <rect x="320" y="8" width="250" height="80" rx="3" class="bD"/>
+        <text x="445" y="22" class="tV" style="font-size:5.5px;letter-spacing:.12em">EXAMPLE OPA REGO RULES (on save)</text>
+        <text x="332" y="36" style="fill:#84cc16;font-size:5.5px;font-family:'Roboto Mono',monospace">deny[msg] {</text>
+        <text x="332" y="47" style="fill:#5a6480;font-size:5.5px;font-family:'Roboto Mono',monospace">  input.pipeline.stages[_].spec.execution</text>
+        <text x="332" y="58" style="fill:#5a6480;font-size:5.5px;font-family:'Roboto Mono',monospace">    .steps[_].step.type == "ShellScript"</text>
+        <text x="332" y="69" style="fill:#a855f7;font-size:5.5px;font-family:'Roboto Mono',monospace">  msg := "Shell scripts not allowed in prod"</text>
+        <text x="332" y="80" style="fill:#84cc16;font-size:5.5px;font-family:'Roboto Mono',monospace">}</text>
+
+        <!-- ON RUN path -->
+        <text x="140" y="108" class="tO" style="font-size:6.5px;letter-spacing:.12em">ON RUN — During execution</text>
+
+        <rect x="8" y="118" width="88" height="30" rx="3" class="bD"/>
+        <text x="52" y="131" class="t ts">Pipeline triggered</text>
+        <text x="52" y="141" class="tM ts">to run</text>
+
+        <line x1="96" y1="133" x2="116" y2="133" class="arrO"/>
+
+        <rect x="116" y="118" width="90" height="30" rx="3" class="bO"/>
+        <text x="161" y="131" class="tO" style="font-size:6.5px">OPA Runtime Check</text>
+        <text x="161" y="141" class="tM ts">Evaluate run context</text>
+
+        <line x1="206" y1="133" x2="226" y2="124" class="arrL"/>
+        <line x1="206" y1="133" x2="226" y2="142" style="stroke:#ef4444;stroke-width:1.2;fill:none;marker-end:url(#aO)"/>
+
+        <rect x="226" y="114" width="80" height="22" rx="2" class="bL"/>
+        <text x="266" y="125" class="tL ts">✓ PROCEED · Execute</text>
+
+        <rect x="226" y="140" width="80" height="22" rx="2" style="fill:rgba(239,68,68,.1);stroke:#ef4444;stroke-width:1"/>
+        <text x="266" y="151" style="fill:#ef4444;font-size:5.5px;text-anchor:middle;dominant-baseline:middle">✗ BLOCKED · Pipeline stops</text>
+
+        <!-- Runtime rule examples -->
+        <rect x="320" y="104" width="250" height="68" rx="3" class="bD"/>
+        <text x="445" y="118" class="tO" style="font-size:5.5px;letter-spacing:.12em">EXAMPLE OPA REGO RULES (on run)</text>
+        <text x="332" y="130" style="fill:#84cc16;font-size:5.5px;font-family:'Roboto Mono',monospace">deny[msg] {</text>
+        <text x="332" y="141" style="fill:#5a6480;font-size:5.5px;font-family:'Roboto Mono',monospace">  input.env == "production"</text>
+        <text x="332" y="152" style="fill:#5a6480;font-size:5.5px;font-family:'Roboto Mono',monospace">  not has_approval_step(input.pipeline)</text>
+        <text x="332" y="163" style="fill:#a855f7;font-size:5.5px;font-family:'Roboto Mono',monospace">  msg := "Prod needs approval step"</text>
+        <text x="332" y="174" style="fill:#84cc16;font-size:5.5px;font-family:'Roboto Mono',monospace">}</text>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 07 — GITOPS ══ -->
+<div class="wrap" id="gitops">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">07</div>
+    <div>
+      <p class="sl">GitOps Mode</p>
+      <h2 class="st">GitOps &amp; ArgoCD Integration</h2>
+      <p class="sd">Harness supports a full GitOps workflow — Git is the source of truth for desired infrastructure state. Harness wraps ArgoCD and Flux with a unified control plane, adding PR automation, multi-cluster visibility, and rollback from a single dashboard.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="d dr"></div><div class="d dy"></div><div class="d dg"></div></div><span class="cb-title">GitOps Flow — Git as Source of Truth</span><span class="cb-tag">ArgoCD / Flux Native</span></div>
+    <div class="cdiag" style="min-height:240px">
+      <svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
+        <!-- Dev -->
+        <rect x="6" y="50" width="68" height="50" rx="3" class="bD"/>
+        <text x="40" y="72" class="t ts">Developer</text>
+        <text x="40" y="84" class="tM ts">PR / Commit</text>
+
+        <line x1="74" y1="75" x2="100" y2="75" class="arr"/>
+
+        <!-- Git -->
+        <rect x="100" y="50" width="72" height="50" rx="3" class="bL"/>
+        <text x="136" y="68" class="tL" style="font-size:7px">Git Repo</text>
+        <text x="136" y="80" class="tM ts">Manifests</text>
+        <text x="136" y="92" class="tM ts">Helm values</text>
+
+        <line x1="172" y1="75" x2="198" y2="75" class="arr"/>
+
+        <!-- Harness Pipeline (optional CI path) -->
+        <rect x="198" y="32" width="96" height="36" rx="3" class="bC"/>
+        <text x="246" y="48" class="tC" style="font-size:6px">Harness Pipeline</text>
+        <text x="246" y="60" class="tM ts">Build · Test · Image Push</text>
+
+        <line x1="246" y1="68" x2="246" y2="84" class="arr"/>
+
+        <!-- PR Automation -->
+        <rect x="198" y="86" width="96" height="30" rx="3" class="bV"/>
+        <text x="246" y="99" class="tV" style="font-size:6px">PR Automation</text>
+        <text x="246" y="110" class="tM ts">Update image tag in Git</text>
+
+        <line x1="294" y1="100" x2="320" y2="100" class="arrV"/>
+
+        <!-- GitOps Agent -->
+        <rect x="320" y="50" width="100" height="68" rx="3" class="bL"/>
+        <text x="370" y="68" class="tL" style="font-size:7px">Harness GitOps</text>
+        <text x="370" y="80" class="tM ts">ArgoCD Agent</text>
+        <text x="370" y="92" class="tM ts">Watches Git</text>
+        <text x="370" y="104" class="tM ts">Detects drift</text>
+
+        <line x1="420" y1="75" x2="448" y2="62" class="arrL"/>
+        <line x1="420" y1="90" x2="448" y2="100" class="arrL"/>
+
+        <!-- Clusters -->
+        <rect x="448" y="46" width="80" height="26" rx="3" class="bL"/>
+        <text x="488" y="59" class="t ts">Cluster A (prod)</text>
+
+        <rect x="448" y="82" width="80" height="26" rx="3" class="bD"/>
+        <text x="488" y="95" class="t ts">Cluster B (DR)</text>
+
+        <!-- Drift alert -->
+        <rect x="448" y="118" width="80" height="22" rx="2" style="fill:rgba(249,115,22,.1);stroke:#f97316;stroke-width:1"/>
+        <text x="488" y="129" class="tO ts">Drift Detected</text>
+        <path d="M488 118 Q488 110 370 110" stroke="#f97316" stroke-width="1" stroke-dasharray="3,3" fill="none" marker-end="url(#aO)"/>
+
+        <!-- Sync label -->
+        <text x="540" y="55" class="tL" style="font-size:5.5px">Desired state</text>
+        <text x="540" y="65" class="tL" style="font-size:5.5px">applied auto</text>
+        <text x="540" y="78" class="tM" style="font-size:5.5px">Git = truth</text>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 08 — MODULES ══ -->
+<div class="wrap" id="modules">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">08</div>
+    <div>
+      <p class="sl">Full Platform</p>
+      <h2 class="st">Harness Platform Modules</h2>
+      <p class="sd">CD is the anchor, but Harness is a full software delivery platform. Every module shares the same pipelines, RBAC, connectors, and UI — no context switching between tools.</p>
+    </div>
+  </div>
+
+  <div class="mod-grid">
+    <div class="mod-item"><div class="mi-icon">🚀</div><div class="mi-name">CD</div><div class="mi-desc">Continuous Delivery & GitOps. The core product — deploy anything, anywhere, safely.</div></div>
+    <div class="mod-item"><div class="mi-icon">🔨</div><div class="mi-name">CI</div><div class="mi-desc">Cloud-native build pipelines. Test Intelligence cuts build times 80% by only running relevant tests.</div></div>
+    <div class="mod-item"><div class="mi-icon">🏳️</div><div class="mi-name">Feature Flags</div><div class="mi-desc">Runtime feature toggles. Ship dark, release progressively, run A/B tests without a redeploy.</div></div>
+    <div class="mod-item"><div class="mi-icon">☁️</div><div class="mi-name">Cloud Cost Mgmt</div><div class="mi-desc">K8s & cloud spend visibility. Spot recommendations, rightsizing, and budget alerts.</div></div>
+    <div class="mod-item"><div class="mi-icon">🛡️</div><div class="mi-name">STO</div><div class="mi-desc">Security Testing Orchestration. SAST, DAST, SCA scans embedded in pipelines with unified findings.</div></div>
+    <div class="mod-item"><div class="mi-icon">🤖</div><div class="mi-name">AI DevOps Agent</div><div class="mi-desc">Generate pipelines from natural language. "Create a canary deploy to AKS with Datadog CV" — done.</div></div>
+    <div class="mod-item"><div class="mi-icon">📊</div><div class="mi-name">DORA Metrics</div><div class="mi-desc">Lead time, deploy frequency, MTTR, change failure rate — tracked automatically from real pipeline data.</div></div>
+    <div class="mod-item"><div class="mi-icon">🗄️</div><div class="mi-name">IaCM</div><div class="mi-desc">Infrastructure as Code Management. Govern and orchestrate Terraform/OpenTofu across environments.</div></div>
+  </div>
+
+  <!-- Compare table -->
+  <div class="sl" style="margin-bottom:1rem">Harness vs Alternatives</div>
+  <table class="ctable card" style="border-radius:8px;overflow:hidden">
+    <thead>
+      <tr><th>Tool</th><th>Type</th><th>AI Rollback</th><th>Script-free Strategies</th><th>OPA Governance</th><th>Best For</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="tdh">Harness CD</td><td>Purpose-built CD</td><td class="tdg">✓ Native CV</td><td class="tdg">✓ All 4 strategies</td><td class="tdg">✓ Native</td><td>Enterprise, regulated, complex deploys</td></tr>
+      <tr><td class="tdh">GitHub Actions</td><td>CI/CD combo</td><td class="tdr">✗ Manual only</td><td class="tdr">✗ Custom scripts</td><td class="tdr">✗ Third-party</td><td>Small teams, GitHub-native</td></tr>
+      <tr><td class="tdh">Argo CD</td><td>GitOps only</td><td class="tdr">✗ Manual</td><td class="tdr">✗ Limited</td><td>Plugin</td><td>Kubernetes GitOps purists</td></tr>
+      <tr><td class="tdh">Spinnaker</td><td>CD platform</td><td class="tdr">✗ Kayenta (complex)</td><td class="tdg">✓ Built-in</td><td class="tdr">✗ Limited</td><td>Netflix-style large orgs</td></tr>
+      <tr><td class="tdh">Jenkins</td><td>CI / scripts</td><td class="tdr">✗ None</td><td class="tdr">✗ All scripted</td><td class="tdr">✗ Plugin only</td><td>Legacy automation, total flexibility</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<footer>Harness CD · Visual Explainer · Built with Claude</footer>
+
+<script>
+  // Theme toggle
+  (function(){
+    const root=document.documentElement,btn=document.getElementById('theme-toggle'),
+          ic=btn.querySelector('.ti');
+    function set(t){
+      root.setAttribute('data-theme',t);
+      ic.textContent=t==='light'?'◐':'◑';
+      localStorage.setItem('theme',t);
+    }
+    const s=localStorage.getItem('theme');
+    set(s||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'));
+    btn.addEventListener('click',()=>set(root.getAttribute('data-theme')==='light'?'dark':'light'));
+  })();
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('vis');
+      if (e.target.classList.contains('pipe-steps')) {
+        e.target.querySelectorAll('.ps').forEach((s, i) =>
+          setTimeout(() => s.classList.add('vis'), i * 100));
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.card,.strat-card,.mod-grid,.pipe-steps,.ctable').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

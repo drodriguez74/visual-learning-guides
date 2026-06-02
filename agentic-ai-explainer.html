@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI — Visual Explainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #08090d;
+    --surface: #0f1117;
+    --border: #1e2130;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #a855f7;
+    --text: #e8eaf0;
+    --muted: #5a6070;
+    --green: #22c55e;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.5;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 3rem 2rem;
+  }
+
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridDrift 30s linear infinite;
+  }
+  @keyframes gridDrift { to { background-position: 60px 60px; } }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,255,.08) 0%, transparent 70%);
+    pointer-events: none;
+    animation: pulse 4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(1.1);opacity:1} }
+
+  .hero-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .7rem;
+    letter-spacing: .2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp .6s .2s forwards;
+  }
+
+  h1 {
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 800;
+    line-height: .95;
+    text-align: center;
+    position: relative;
+    opacity: 0;
+    animation: fadeUp .7s .4s forwards;
+  }
+  h1 span { color: var(--accent); }
+
+  .hero-sub {
+    max-width: 560px;
+    text-align: center;
+    color: var(--muted);
+    margin-top: 1.5rem;
+    font-size: 1.05rem;
+    opacity: 0;
+    animation: fadeUp .7s .6s forwards;
+  }
+
+  .scroll-cue {
+    margin-top: 3rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .65rem;
+    letter-spacing: .15em;
+    color: var(--muted);
+    display: flex; align-items: center; gap: .6rem;
+    opacity: 0; animation: fadeUp .7s .9s forwards;
+  }
+  .scroll-cue::before, .scroll-cue::after {
+    content: ''; display: block; width: 30px; height: 1px; background: var(--muted);
+  }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(20px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 6rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .65rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .8rem;
+  }
+
+  h2 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  .lead {
+    color: var(--muted);
+    max-width: 600px;
+    margin-bottom: 3rem;
+    font-size: 1rem;
+  }
+
+  /* ── CONTRAST BOX ── */
+  .contrast-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 4rem;
+  }
+
+  .contrast-card {
+    background: var(--surface);
+    padding: 2.5rem;
+  }
+  .contrast-card h3 {
+    font-size: .8rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 1.5rem;
+  }
+  .contrast-card.reactive h3 { color: var(--muted); }
+  .contrast-card.agentic h3 { color: var(--accent); }
+
+  .step-list { list-style: none; display: flex; flex-direction: column; gap: .8rem; }
+  .step-list li {
+    display: flex; gap: .8rem; align-items: flex-start;
+    font-size: .9rem; line-height: 1.4;
+  }
+  .step-list li .icon {
+    width: 20px; height: 20px; border-radius: 4px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; margin-top: 1px;
+  }
+  .reactive .icon { background: rgba(255,255,255,.06); color: var(--muted); }
+  .agentic  .icon { background: rgba(0,229,255,.12); color: var(--accent); }
+
+  /* ── LOOP DIAGRAM ── */
+  .loop-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+  }
+
+  .loop-ring {
+    position: absolute;
+    width: 340px; height: 340px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+  }
+  .loop-ring.r1 { animation: spin 18s linear infinite; }
+  .loop-ring.r2 { width: 260px; height: 260px; animation: spin 12s linear infinite reverse; border-style: dashed; border-color: rgba(0,229,255,.15); }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loop-center {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,255,.2), rgba(0,229,255,.05));
+    border: 1px solid rgba(0,229,255,.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    position: relative; z-index: 2;
+    box-shadow: 0 0 40px rgba(0,229,255,.15);
+  }
+
+  .loop-nodes {
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .loop-node {
+    position: absolute;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .7rem 1rem;
+    font-size: .78rem;
+    text-align: center;
+    width: 110px;
+    transition: all .3s;
+    cursor: default;
+  }
+  .loop-node:hover {
+    border-color: var(--accent);
+    background: rgba(0,229,255,.05);
+    transform: scale(1.05);
+  }
+  .loop-node .node-icon { font-size: 1.1rem; display: block; margin-bottom: .3rem; }
+  .loop-node .node-label { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; }
+
+  /* positions around a ~300px radius circle */
+  .n-perceive  { top: -15px;  left: 50%; transform: translateX(-50%); }
+  .n-reason    { top: 80px;   right: -60px; }
+  .n-plan      { bottom: 80px; right: -60px; }
+  .n-act       { bottom: -15px; left: 50%; transform: translateX(-50%); }
+  .n-observe   { bottom: 80px; left: -60px; }
+  .n-memory    { top: 80px;   left: -60px; }
+
+  .loop-outer {
+    width: 480px; height: 480px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* ── TOOLS GRID ── */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 4rem;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    padding: 1.8rem;
+    transition: background .2s;
+  }
+  .tool-card:hover { background: #131620; }
+  .tool-card .t-icon { font-size: 1.6rem; margin-bottom: .8rem; }
+  .tool-card .t-name { font-size: .85rem; font-weight: 700; margin-bottom: .3rem; }
+  .tool-card .t-desc { font-size: .75rem; color: var(--muted); line-height: 1.5; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+
+  .flow-step {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 1.2rem;
+    padding: 1.5rem 0;
+    position: relative;
+    opacity: 0;
+    transform: translateX(-15px);
+    transition: all .5s;
+  }
+  .flow-step.visible { opacity: 1; transform: translateX(0); }
+
+  .flow-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .flow-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 4px;
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .flow-connector {
+    width: 1px; flex: 1;
+    background: linear-gradient(to bottom, var(--accent), var(--border));
+    margin-top: 4px;
+  }
+  .flow-step:last-child .flow-connector { display: none; }
+
+  .flow-content {
+    padding-bottom: 1rem;
+  }
+  .flow-title {
+    font-size: .9rem;
+    font-weight: 700;
+    margin-bottom: .3rem;
+  }
+  .flow-desc {
+    font-size: .82rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .flow-tag {
+    display: inline-block;
+    margin-top: .5rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .6rem;
+    padding: .2rem .5rem;
+    border-radius: 4px;
+    letter-spacing: .08em;
+  }
+  .tag-plan  { background: rgba(168,85,247,.15); color: var(--accent3); }
+  .tag-act   { background: rgba(0,229,255,.1);   color: var(--accent); }
+  .tag-obs   { background: rgba(255,107,53,.1);  color: var(--accent2); }
+  .tag-mem   { background: rgba(34,197,94,.1);   color: var(--green); }
+
+  /* ── EXAMPLES ── */
+  .examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .example-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    background: var(--surface);
+    transition: border-color .2s, transform .2s;
+  }
+  .example-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+  }
+
+  .ex-header {
+    display: flex; align-items: center; gap: .7rem; margin-bottom: 1rem;
+  }
+  .ex-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+  }
+  .ex-title { font-size: .9rem; font-weight: 700; }
+
+  .ex-prompt {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .7rem;
+    color: var(--accent);
+    background: rgba(0,229,255,.05);
+    border-left: 2px solid var(--accent);
+    padding: .5rem .7rem;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .ex-steps { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+  .ex-steps li {
+    font-size: .75rem; color: var(--muted);
+    display: flex; gap: .5rem; align-items: baseline;
+  }
+  .ex-steps li::before {
+    content: '→'; color: var(--accent); flex-shrink: 0;
+    font-family: monospace;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .7rem;
+    color: var(--muted);
+    letter-spacing: .1em;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .contrast-grid { grid-template-columns: 1fr; }
+    .loop-outer { width: 320px; height: 320px; }
+    .loop-ring  { width: 220px; height: 220px; }
+    .loop-ring.r2 { width: 160px; height: 160px; }
+    .loop-center { width: 70px; height: 70px; font-size: 1.4rem; }
+    .loop-node { width: 90px; font-size: .7rem; padding: .5rem .7rem; }
+    .n-reason  { right: -40px; }
+    .n-plan    { right: -40px; }
+    .n-observe { left: -40px; }
+    .n-memory  { left: -40px; }
+  }
+
+  /* scroll animation hook */
+  .anim-target {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .anim-target.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── LIGHT THEME ── */
+  [data-theme="light"] {
+    --bg: #f0f4fa;
+    --surface: #ffffff;
+    --border: #bfcce0;
+    --accent: #0077aa;
+    --accent2: #c04418;
+    --accent3: #5b21b6;
+    --text: #0d1117;
+    --muted: #556070;
+    --green: #15803d;
+  }
+  [data-theme="light"] .hero-grid {
+    background-image:
+      linear-gradient(rgba(0,119,170,.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,119,170,.07) 1px, transparent 1px);
+  }
+  [data-theme="light"] .hero-glow {
+    background: radial-gradient(circle, rgba(0,119,170,.08) 0%, transparent 70%);
+  }
+  [data-theme="light"] .loop-ring.r2 { border-color: rgba(0,119,170,.2); }
+  [data-theme="light"] .loop-center {
+    background: radial-gradient(circle, rgba(0,119,170,.12), rgba(0,119,170,.02));
+    border-color: rgba(0,119,170,.45);
+    box-shadow: 0 0 30px rgba(0,119,170,.1);
+  }
+  [data-theme="light"] .loop-node:hover { background: rgba(0,119,170,.05); }
+  [data-theme="light"] .reactive .icon { background: rgba(0,0,0,.06); }
+  [data-theme="light"] .agentic .icon  { background: rgba(0,119,170,.12); }
+  [data-theme="light"] .tool-card:hover { background: #e6f2fa; }
+  [data-theme="light"] .ex-prompt { background: rgba(0,119,170,.05); }
+  [data-theme="light"] .tag-plan { background: rgba(91,33,182,.1);  color: var(--accent3); }
+  [data-theme="light"] .tag-act  { background: rgba(0,119,170,.1);  color: var(--accent); }
+  [data-theme="light"] .tag-obs  { background: rgba(192,68,24,.1);  color: var(--accent2); }
+  [data-theme="light"] .tag-mem  { background: rgba(21,128,61,.1);  color: var(--green); }
+
+  /* ── THEME TOGGLE ── */
+  html { transition: background-color .3s; }
+  body { transition: background-color .3s, color .3s; }
+
+  #theme-toggle {
+    position: fixed; top: 1.25rem; right: 1.25rem; z-index: 1000;
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: .58rem; letter-spacing: .14em; text-transform: uppercase;
+    padding: .4rem .85rem .4rem .75rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .2s, color .2s, box-shadow .2s, background .3s;
+  }
+  #theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 14px rgba(0,119,170,.2);
+  }
+  #theme-toggle .ti {
+    font-size: 1rem; line-height: 1; display: block;
+    transition: transform .4s cubic-bezier(.175,.885,.32,1.275);
+  }
+  #theme-toggle:hover .ti { transform: rotate(30deg); }
+</style>
+</head>
+<body>
+
+<button id="theme-toggle" aria-label="Toggle theme">
+  <span class="ti">◑</span>Theme
+</button>
+
+<!-- ═══════ HERO ═══════ -->
+<div class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <p class="hero-label">Visual Explainer</p>
+  <h1>Agentic<br><span>AI</span></h1>
+  <p class="hero-sub">AI that doesn't just respond — it reasons, plans, acts, and adapts in pursuit of a goal.</p>
+  <p class="scroll-cue">scroll to explore</p>
+</div>
+
+<!-- ═══════ REACTIVE vs AGENTIC ═══════ -->
+<section>
+  <p class="section-label anim-target">01 — The Shift</p>
+  <h2 class="anim-target">From Reactive to <span style="color:var(--accent)">Agentic</span></h2>
+  <p class="lead anim-target">Traditional AI waits for a prompt and returns a response. Agentic AI takes ownership of a goal and works toward it through multiple steps.</p>
+
+  <div class="contrast-grid anim-target">
+    <div class="contrast-card reactive">
+      <h3>⬛ Reactive AI</h3>
+      <ul class="step-list">
+        <li><span class="icon">1</span> User provides a complete, specific prompt</li>
+        <li><span class="icon">2</span> Model generates a single response</li>
+        <li><span class="icon">3</span> Conversation ends or user re-prompts</li>
+        <li><span class="icon">4</span> No persistent memory between turns</li>
+        <li><span class="icon">5</span> No access to external tools or systems</li>
+      </ul>
+    </div>
+    <div class="contrast-card agentic">
+      <h3>⚡ Agentic AI</h3>
+      <ul class="step-list">
+        <li><span class="icon">→</span> User provides a high-level goal</li>
+        <li><span class="icon">→</span> Agent breaks it into sub-tasks autonomously</li>
+        <li><span class="icon">→</span> Executes, observes results, adjusts plan</li>
+        <li><span class="icon">→</span> Maintains memory across steps</li>
+        <li><span class="icon">→</span> Calls external tools: search, code, APIs</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ THE LOOP ═══════ -->
+<section style="text-align:center;">
+  <p class="section-label anim-target">02 — The Core Loop</p>
+  <h2 class="anim-target">Perceive → Reason → Act → <span style="color:var(--accent)">Repeat</span></h2>
+  <p class="lead anim-target" style="margin-inline:auto;">Agents run a continuous cognitive loop. Each cycle brings them closer to the goal.</p>
+
+  <div class="loop-wrap anim-target">
+    <div class="loop-outer">
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+        <div class="loop-ring r1"></div>
+        <div class="loop-ring r2"></div>
+        <div class="loop-center">🤖</div>
+      </div>
+      <div class="loop-nodes">
+        <div class="loop-node n-perceive">
+          <span class="node-icon">👁️</span>
+          Perceive
+          <div class="node-label">input</div>
+        </div>
+        <div class="loop-node n-reason">
+          <span class="node-icon">🧠</span>
+          Reason
+          <div class="node-label">think</div>
+        </div>
+        <div class="loop-node n-plan">
+          <span class="node-icon">📋</span>
+          Plan
+          <div class="node-label">strategy</div>
+        </div>
+        <div class="loop-node n-act">
+          <span class="node-icon">⚡</span>
+          Act
+          <div class="node-label">execute</div>
+        </div>
+        <div class="loop-node n-observe">
+          <span class="node-icon">📡</span>
+          Observe
+          <div class="node-label">feedback</div>
+        </div>
+        <div class="loop-node n-memory">
+          <span class="node-icon">💾</span>
+          Memory
+          <div class="node-label">context</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ TOOLS ═══════ -->
+<section>
+  <p class="section-label anim-target">03 — Superpowers</p>
+  <h2 class="anim-target">Tools Give Agents <span style="color:var(--accent)">Reach</span></h2>
+  <p class="lead anim-target">Agents extend beyond language by calling external tools — turning reasoning into real-world action.</p>
+
+  <div class="tools-grid anim-target">
+    <div class="tool-card">
+      <div class="t-icon">🔍</div>
+      <div class="t-name">Web Search</div>
+      <div class="t-desc">Query the live web for current information beyond training data.</div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon">💻</div>
+      <div class="t-name">Code Execution</div>
+      <div class="t-desc">Write and run code — Python, JS, bash — to compute, transform, or automate.</div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon">🗂️</div>
+      <div class="t-name">File & Memory</div>
+      <div class="t-desc">Read, write, and persist data across steps for long-horizon tasks.</div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon">🔗</div>
+      <div class="t-name">APIs & Services</div>
+      <div class="t-desc">Call Slack, GitHub, Jira, Salesforce, or any REST/GraphQL endpoint.</div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon">🗄️</div>
+      <div class="t-name">Databases</div>
+      <div class="t-desc">Query SQL/NoSQL stores, vector DBs, and structured knowledge bases.</div>
+    </div>
+    <div class="tool-card">
+      <div class="t-icon">🤝</div>
+      <div class="t-name">Sub-Agents</div>
+      <div class="t-desc">Spawn specialized child agents to parallelize complex multi-domain work.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STEP-BY-STEP FLOW ═══════ -->
+<section>
+  <p class="section-label anim-target">04 — How It Works</p>
+  <h2 class="anim-target">A Goal Becomes <span style="color:var(--accent)">Action</span></h2>
+  <p class="lead anim-target">Trace a single agentic run from user intent to completed task.</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div>
+      <div class="flow-content">
+        <div class="flow-title">User states a goal</div>
+        <div class="flow-desc">"Research competitors in our space and draft a SWOT summary."</div>
+        <span class="flow-tag tag-plan">TRIGGER</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div>
+      <div class="flow-content">
+        <div class="flow-title">Agent decomposes the task</div>
+        <div class="flow-desc">Breaks the goal into: (1) identify competitors, (2) gather data per competitor, (3) synthesize into SWOT framework.</div>
+        <span class="flow-tag tag-plan">PLAN</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div>
+      <div class="flow-content">
+        <div class="flow-title">Tool calls begin</div>
+        <div class="flow-desc">Searches the web, fetches company pages, reads financial filings, extracts relevant signals.</div>
+        <span class="flow-tag tag-act">ACT</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div>
+      <div class="flow-content">
+        <div class="flow-title">Observes & adjusts</div>
+        <div class="flow-desc">One competitor has sparse data. Agent pivots: searches for press releases and LinkedIn instead.</div>
+        <span class="flow-tag tag-obs">OBSERVE</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div>
+      <div class="flow-content">
+        <div class="flow-title">Memory accumulates</div>
+        <div class="flow-desc">All gathered facts are held in working context so no step is repeated and the final synthesis is coherent.</div>
+        <span class="flow-tag tag-mem">MEMORY</span>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div>
+      <div class="flow-content">
+        <div class="flow-title">Goal achieved — output delivered</div>
+        <div class="flow-desc">A structured SWOT document is produced, grounded in live data, ready for the user to review.</div>
+        <span class="flow-tag tag-plan">DONE</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ EXAMPLES ═══════ -->
+<section>
+  <p class="section-label anim-target">05 — Real Examples</p>
+  <h2 class="anim-target">Agents in <span style="color:var(--accent)">the Wild</span></h2>
+  <p class="lead anim-target">High-level goals, multi-step execution.</p>
+
+  <div class="examples-grid anim-target">
+    <div class="example-card">
+      <div class="ex-header">
+        <div class="ex-icon" style="background:rgba(0,229,255,.1)">🧑‍💻</div>
+        <div class="ex-title">Software Engineering</div>
+      </div>
+      <div class="ex-prompt">"Fix the failing tests in the auth module."</div>
+      <ul class="ex-steps">
+        <li>Read failing test output</li>
+        <li>Locate relevant source files</li>
+        <li>Identify root cause in code</li>
+        <li>Write & apply patch</li>
+        <li>Re-run tests to verify fix</li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <div class="ex-header">
+        <div class="ex-icon" style="background:rgba(255,107,53,.1)">📊</div>
+        <div class="ex-title">Data Analysis</div>
+      </div>
+      <div class="ex-prompt">"Analyze last quarter's sales and flag anomalies."</div>
+      <ul class="ex-steps">
+        <li>Pull data from warehouse API</li>
+        <li>Write & run analysis script</li>
+        <li>Identify statistical outliers</li>
+        <li>Cross-reference with calendar events</li>
+        <li>Generate annotated report</li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <div class="ex-header">
+        <div class="ex-icon" style="background:rgba(168,85,247,.1)">🔬</div>
+        <div class="ex-title">Research</div>
+      </div>
+      <div class="ex-prompt">"Summarize recent papers on RAG improvements."</div>
+      <ul class="ex-steps">
+        <li>Search arXiv & semantic scholar</li>
+        <li>Filter by recency & citations</li>
+        <li>Extract key contributions</li>
+        <li>Cluster by technique</li>
+        <li>Write structured literature summary</li>
+      </ul>
+    </div>
+    <div class="example-card">
+      <div class="ex-header">
+        <div class="ex-icon" style="background:rgba(34,197,94,.1)">🏦</div>
+        <div class="ex-title">Finance Ops</div>
+      </div>
+      <div class="ex-prompt">"Triage incoming support cases by priority."</div>
+      <ul class="ex-steps">
+        <li>Fetch open tickets from ServiceNow</li>
+        <li>Classify by type & urgency</li>
+        <li>Check SLA deadlines</li>
+        <li>Route to correct queue</li>
+        <li>Draft initial response drafts</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  AGENTIC AI — VISUAL EXPLAINER &nbsp;·&nbsp; BUILT WITH CLAUDE
+</footer>
+
+<script>
+  // Theme toggle
+  (function(){
+    const root=document.documentElement,btn=document.getElementById('theme-toggle'),
+          ic=btn.querySelector('.ti');
+    function set(t){
+      root.setAttribute('data-theme',t);
+      ic.textContent=t==='light'?'◐':'◑';
+      localStorage.setItem('theme',t);
+    }
+    const s=localStorage.getItem('theme');
+    set(s||(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'));
+    btn.addEventListener('click',()=>set(root.getAttribute('data-theme')==='light'?'dark':'light'));
+  })();
+
+  // Scroll-triggered animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        // stagger flow steps
+        if (e.target.classList.contains('flow')) {
+          e.target.querySelectorAll('.flow-step').forEach((step, i) => {
+            setTimeout(() => step.classList.add('visible'), i * 120);
+          });
+        }
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.anim-target, .flow').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
