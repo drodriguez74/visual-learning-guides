@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Evergreen Ecosystem — System Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f6f1;--bg2:#f0ede5;--bg3:#e8e4da;
+  --ink:#1a1a18;--ink2:#2d2d2a;
+  --rust:#c94a1a;--rust2:rgba(201,74,26,.1);--rust3:rgba(201,74,26,.06);
+  --slate:#2a3f5f;--slate2:rgba(42,63,95,.1);--slate3:rgba(42,63,95,.06);
+  --sage:#2d5a3d;--sage2:rgba(45,90,61,.1);--sage3:rgba(45,90,61,.06);
+  --amber:#8a6200;--amber2:rgba(138,98,0,.1);--amber3:rgba(138,98,0,.06);
+  --muted:#7a7a72;--line:rgba(26,26,24,.1);--line2:rgba(26,26,24,.06);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;line-height:1.6}
+
+/* ── HERO ── */
+.hero{
+  background:var(--ink2);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:5rem 2rem;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 47px,rgba(248,246,241,.02) 47px,rgba(248,246,241,.02) 48px),
+    repeating-linear-gradient(90deg,transparent,transparent 47px,rgba(248,246,241,.02) 47px,rgba(248,246,241,.02) 48px);
+}
+.hero-kicker{
+  font-family:'Fira Code',monospace;font-size:.62rem;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--rust);border:1px solid rgba(201,74,26,.3);padding:.35rem 1rem;border-radius:2px;
+  margin-bottom:2.5rem;position:relative;z-index:1;
+  opacity:0;animation:up .5s .1s forwards;
+}
+.hero h1{
+  font-family:'Instrument Serif',serif;font-size:clamp(3.2rem,8vw,6.5rem);
+  font-weight:400;line-height:.95;color:#f8f6f1;
+  position:relative;z-index:1;opacity:0;animation:up .7s .3s forwards;
+}
+.hero h1 em{font-style:italic;color:var(--rust)}
+.hero-sub{
+  max-width:620px;margin-top:1.8rem;font-size:.85rem;line-height:1.9;
+  color:rgba(248,246,241,.5);position:relative;z-index:1;
+  opacity:0;animation:up .6s .5s forwards;
+}
+.hero-principles{
+  display:flex;flex-wrap:wrap;gap:1px;background:rgba(248,246,241,.08);
+  border:1px solid rgba(248,246,241,.1);border-radius:3px;overflow:hidden;
+  margin-top:3rem;position:relative;z-index:1;
+  opacity:0;animation:up .5s .8s forwards;
+}
+.hp{
+  background:rgba(26,26,24,.6);padding:1rem 1.6rem;
+  display:flex;flex-direction:column;gap:.3rem;flex:1;min-width:140px;
+}
+.hp-val{font-family:'Instrument Serif',serif;font-size:1.6rem;color:#f8f6f1;line-height:1}
+.hp-lbl{font-family:'Fira Code',monospace;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(248,246,241,.4)}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ── NAV ── */
+.snav{
+  position:sticky;top:0;z-index:200;background:rgba(26,26,24,.96);backdrop-filter:blur(8px);
+  border-bottom:1px solid rgba(201,74,26,.2);
+  display:flex;overflow-x:auto;justify-content:center;flex-wrap:wrap;
+}
+.snav a{
+  font-family:'Fira Code',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(248,246,241,.4);text-decoration:none;padding:.7rem 1.2rem;white-space:nowrap;
+  border-right:1px solid rgba(248,246,241,.06);transition:color .2s;
+}
+.snav a:last-child{border-right:none}
+.snav a:hover{color:var(--rust)}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1200px;margin:0 auto;padding:0 2.5rem;position:relative}
+.sec{padding:5rem 0 2rem;border-top:1px solid var(--line)}
+.sec:first-child{border-top:none}
+.sh{display:grid;grid-template-columns:72px 1fr;gap:2rem;margin-bottom:3rem;align-items:start}
+.sn{font-family:'Instrument Serif',serif;font-size:3.5rem;font-weight:400;color:var(--line);line-height:1}
+.sl{font-family:'Fira Code',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--rust);margin-bottom:.4rem}
+.st{font-family:'Instrument Serif',serif;font-size:clamp(1.8rem,4vw,2.6rem);color:var(--ink);line-height:1.05;margin-bottom:.6rem}
+.sd{font-size:.8rem;line-height:1.9;color:var(--muted);max-width:640px}
+
+/* ── CARDS ── */
+.card{
+  border:1px solid var(--line);background:#fff;border-radius:3px;overflow:hidden;
+  margin-bottom:1.5rem;box-shadow:0 1px 12px rgba(26,26,24,.04);
+  opacity:0;transform:translateY(12px);transition:opacity .5s,transform .5s;
+}
+.card.vis{opacity:1;transform:none}
+.cb{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.6rem 1.4rem;background:var(--ink2);border-bottom:1px solid rgba(201,74,26,.2);
+}
+.cb-title{font-family:'Instrument Serif',serif;font-style:italic;font-size:1rem;color:#f8f6f1}
+.cb-tag{
+  margin-left:auto;font-family:'Fira Code',monospace;font-size:.5rem;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(248,246,241,.3);border:1px solid rgba(248,246,241,.1);
+  padding:.12rem .5rem;border-radius:2px;
+}
+.dots{display:flex;gap:.3rem}
+.dot{width:7px;height:7px;border-radius:50%}
+.dr{background:#ef4444}.dy{background:#f59e0b}.dg{background:#22c55e}
+.c2{display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:720px){.c2{grid-template-columns:1fr}}
+.cdiag{border-right:1px solid var(--line);padding:2rem;display:flex;align-items:center;justify-content:center;background:var(--bg);min-height:280px}
+@media(max-width:720px){.cdiag{border-right:none;border-bottom:1px solid var(--line)}}
+.cinfo{padding:2rem}
+.cq{font-family:'Instrument Serif',serif;font-style:italic;font-size:1rem;color:var(--rust);margin-bottom:.8rem}
+.cdesc{font-size:.73rem;line-height:1.9;color:var(--muted);margin-bottom:1.1rem}
+.tcols{display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.tcol{flex:1;min-width:110px}
+.tclbl{font-family:'Fira Code',monospace;font-size:.53rem;letter-spacing:.18em;text-transform:uppercase;color:var(--rust);margin-bottom:.4rem}
+.tul{list-style:none}
+.tul li{font-size:.68rem;color:var(--muted);line-height:1.8;padding-left:.85rem;position:relative}
+.tul li::before{content:'→';position:absolute;left:0;color:var(--rust);font-size:.6rem;top:.15rem}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem}
+.chip{font-family:'Fira Code',monospace;font-size:.53rem;background:var(--rust2);border:1px solid rgba(201,74,26,.2);color:var(--rust);padding:.18rem .65rem;border-radius:2px}
+.chip.s{background:var(--slate2);border-color:rgba(42,63,95,.2);color:var(--slate)}
+.chip.g{background:var(--sage2);border-color:rgba(45,90,61,.2);color:var(--sage)}
+.chip.a{background:var(--amber2);border-color:rgba(138,98,0,.2);color:var(--amber)}
+
+/* ── SVG ── */
+svg{width:100%;height:auto;font-family:'Space Grotesk',sans-serif}
+.b{fill:#fff;stroke:var(--line);stroke-width:1}
+.bI{fill:var(--ink2);stroke:var(--ink2)}
+.bR{fill:var(--rust2);stroke:rgba(201,74,26,.4);stroke-width:1}
+.bS{fill:var(--slate2);stroke:rgba(42,63,95,.4);stroke-width:1}
+.bG{fill:var(--sage2);stroke:rgba(45,90,61,.4);stroke-width:1}
+.bA{fill:var(--amber2);stroke:rgba(138,98,0,.4);stroke-width:1}
+.bBg{fill:var(--bg);stroke:var(--line);stroke-width:1}
+.t{fill:var(--ink);font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tI{fill:#f8f6f1;font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tR{fill:var(--rust);font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tS{fill:var(--slate);font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tG{fill:var(--sage);font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tA{fill:var(--amber);font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tM{fill:var(--muted);font-size:6px;text-anchor:middle;dominant-baseline:middle}
+.ts{font-size:5.5px}
+.arr{stroke:var(--rust);stroke-width:1.3;fill:none;marker-end:url(#aR)}
+.arrS{stroke:var(--slate);stroke-width:1.2;fill:none;marker-end:url(#aS)}
+.arrG{stroke:var(--sage);stroke-width:1.2;fill:none;marker-end:url(#aG)}
+.arrA{stroke:var(--amber);stroke-width:1.2;fill:none;marker-end:url(#aA)}
+.arrD{stroke:var(--muted);stroke-width:.9;stroke-dasharray:4,3;fill:none;marker-end:url(#aM)}
+
+/* ── LAYER STACK ── */
+.layer-stack{display:flex;flex-direction:column;gap:1px;margin-bottom:2rem}
+.layer{
+  display:grid;grid-template-columns:160px 1fr;overflow:hidden;
+  border:1px solid var(--line);border-radius:2px;
+  opacity:0;transform:translateX(-10px);transition:opacity .4s,transform .4s;
+}
+.layer.vis{opacity:1;transform:none}
+.layer-label{
+  padding:1rem 1.2rem;display:flex;align-items:center;justify-content:center;
+  font-family:'Instrument Serif',serif;font-style:italic;font-size:.9rem;text-align:center;
+}
+.layer-body{background:#fff;padding:.85rem 1.2rem;display:flex;flex-wrap:wrap;gap:.35rem;align-items:center}
+.li{font-family:'Fira Code',monospace;font-size:.58rem;border:1px solid var(--line);background:var(--bg);padding:.22rem .6rem;border-radius:2px;color:var(--ink2)}
+
+/* ── DECISION TABLE ── */
+.dtable{width:100%;border-collapse:collapse;font-size:.68rem}
+.dtable th{background:var(--ink2);color:#f8f6f1;padding:.55rem 1rem;text-align:left;font-family:'Fira Code',monospace;font-size:.55rem;letter-spacing:.1em;font-weight:400;border-bottom:2px solid rgba(201,74,26,.3)}
+.dtable td{padding:.6rem 1rem;border-bottom:1px solid var(--line2);color:var(--muted);line-height:1.6;vertical-align:top}
+.dtable tr:hover td{background:var(--bg2)}
+.tdh{font-weight:600;color:var(--ink);font-size:.72rem}
+.tdg{color:var(--sage)}.tdr{color:var(--rust)}.tda{color:var(--amber)}
+
+/* ── CODE BLOCK ── */
+.code{background:var(--ink2);border-radius:3px;padding:1.4rem 1.6rem;font-family:'Fira Code',monospace;font-size:.6rem;line-height:1.9;overflow-x:auto;margin:.6rem 0;border:1px solid rgba(201,74,26,.15)}
+.ck{color:#f0d080}.ca{color:#88c8d8}.cv{color:#a8d4a8}.cc{color:#5a6478;font-style:italic}.cs{color:#f8c4a0}
+
+/* ── FLOW STEPS ── */
+.flow-steps{display:flex;flex-direction:column;gap:0;margin-bottom:1.5rem}
+.fs{
+  display:grid;grid-template-columns:48px 1fr;gap:1rem;padding:1.2rem 0;
+  opacity:0;transform:translateX(-8px);transition:opacity .4s,transform .4s;
+}
+.fs.vis{opacity:1;transform:none}
+.fsl{display:flex;flex-direction:column;align-items:center}
+.fsd{width:13px;height:13px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.fsc{width:1px;flex:1;margin-top:4px}
+.fs:last-child .fsc{display:none}
+.fs-title{font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:.2rem}
+.fs-desc{font-size:.67rem;color:var(--muted);line-height:1.8}
+.fs-badge{display:inline-block;margin-top:.35rem;font-family:'Fira Code',monospace;font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;padding:.15rem .55rem;border-radius:2px}
+
+/* ── OPINIONATED RULES ── */
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:2rem}
+.rule-card{
+  border-left:3px solid var(--rust);background:#fff;padding:1.2rem 1.4rem;
+  border-radius:0 3px 3px 0;box-shadow:0 1px 8px rgba(26,26,24,.04);
+  opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s;
+}
+.rule-card.vis{opacity:1;transform:none}
+.rule-card.s{border-color:var(--slate)}
+.rule-card.g{border-color:var(--sage)}
+.rule-card.a{border-color:var(--amber)}
+.rule-num{font-family:'Fira Code',monospace;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.4rem}
+.rule-title{font-weight:600;font-size:.78rem;color:var(--ink);margin-bottom:.4rem}
+.rule-body{font-size:.67rem;color:var(--muted);line-height:1.7}
+.rule-enforce{font-family:'Fira Code',monospace;font-size:.52rem;margin-top:.5rem;padding:.2rem .5rem;border-radius:2px;display:inline-block}
+
+/* ── SCHEMA BLOCK ── */
+.schema-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:1.5rem}
+@media(max-width:720px){.schema-grid{grid-template-columns:1fr}}
+.schema-panel{background:#fff;padding:1.4rem}
+.schema-label{font-family:'Fira Code',monospace;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--rust);margin-bottom:.6rem}
+
+/* ── TRUST MODEL ── */
+.trust-row{
+  display:grid;grid-template-columns:140px 1fr auto;gap:1.5rem;align-items:start;
+  border-bottom:1px solid var(--line2);padding:1rem 0;
+}
+.trust-row:last-child{border-bottom:none}
+.trust-event{font-size:.72rem;font-weight:600;color:var(--ink)}
+.trust-flow{font-size:.67rem;color:var(--muted);line-height:1.7}
+.trust-badge{font-family:'Fira Code',monospace;font-size:.52rem;padding:.2rem .6rem;border-radius:2px;white-space:nowrap;align-self:start;margin-top:.1rem}
+
+/* footer */
+footer{background:var(--ink2);padding:3rem 2rem;text-align:center;position:relative;z-index:1}
+footer p{font-family:'Fira Code',monospace;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(201,74,26,.5)}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-kicker">System Design · Opinionated Architecture · Evergreen QA</p>
+  <h1>QA <em>Evergreen</em><br>Ecosystem</h1>
+  <p class="hero-sub">An opinionated, self-sustaining QA platform built on breadcrumb artifacts, role-scoped user journeys, autonomous test generation, and company-wide GitLab enforcement. One repo at a time. 50% floor. Path to 100%.</p>
+  <div class="hero-principles">
+    <div class="hp"><span class="hp-val">5</span><span class="hp-lbl">Ecosystem Layers</span></div>
+    <div class="hp"><span class="hp-val">1</span><span class="hp-lbl">Line CI Include</span></div>
+    <div class="hp"><span class="hp-val">AI</span><span class="hp-lbl">First-Pass Review</span></div>
+    <div class="hp"><span class="hp-val">Human</span><span class="hp-lbl">Final Approval</span></div>
+    <div class="hp"><span class="hp-val">50%</span><span class="hp-lbl">Coverage Floor</span></div>
+  </div>
+</section>
+
+<!-- NAV -->
+<nav class="snav">
+  <a href="#principles">Principles</a>
+  <a href="#layers">5 Layers</a>
+  <a href="#breadcrumb">Breadcrumbs</a>
+  <a href="#journeys">Journeys</a>
+  <a href="#generation">Generation</a>
+  <a href="#enforcement">Enforcement</a>
+  <a href="#autonomy">Autonomy</a>
+  <a href="#brownfield">Brownfield</a>
+  <a href="#onboarding">Onboarding</a>
+</nav>
+
+<!-- ══ 01 — PRINCIPLES ══ -->
+<div class="wrap" id="principles">
+<div class="sec">
+  <div class="sh"><div class="sn">01</div><div>
+    <p class="sl">North Star</p>
+    <h2 class="st">Opinionated Decisions</h2>
+    <p class="sd">Every design choice below is deliberate. These are the rules of the ecosystem — not suggestions. Deviation requires explicit override, not silence.</p>
+  </div></div>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-num" style="color:var(--rust)">Rule 01 · Prerequisite</div>
+      <div class="rule-title">OpenAPI spec is non-negotiable</div>
+      <div class="rule-body">Every Java backend must expose or generate an OpenAPI 3.x spec. If missing, a Spring Boot auto-generation step runs first. The pipeline hard-blocks on absence. No spec = no tests = no merge.</div>
+      <span class="rule-enforce" style="background:var(--rust2);color:var(--rust);border:1px solid rgba(201,74,26,.2)">enforced: pipeline gate</span>
+    </div>
+    <div class="rule-card s">
+      <div class="rule-num" style="color:var(--slate)">Rule 02 · Artifact</div>
+      <div class="rule-title">Breadcrumbs are versioned source files</div>
+      <div class="rule-body">The <code style="font-family:monospace;font-size:.65em">.ai-sdlc/qa-breadcrumbs.yaml</code> artifact is committed to the repo, diffed on every MR, and treated like code. Not a side-effect. Not external. Owned by the codebase.</div>
+      <span class="rule-enforce" style="background:var(--slate2);color:var(--slate);border:1px solid rgba(42,63,95,.2)">enforced: MR required file check</span>
+    </div>
+    <div class="rule-card g">
+      <div class="rule-num" style="color:var(--sage)">Rule 03 · Priority</div>
+      <div class="rule-title">Telemetry beats assumption</div>
+      <div class="rule-body">When Dynatrace session data exists, journey priority is telemetry-driven. High-traffic paths get comprehensive coverage. Low-traffic paths get smoke level. Static analysis is the fallback, never the preference.</div>
+      <span class="rule-enforce" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">enforced: generator config</span>
+    </div>
+    <div class="rule-card a">
+      <div class="rule-num" style="color:var(--amber)">Rule 04 · Autonomy</div>
+      <div class="rule-title">AI fixes, AI reviews, human approves</div>
+      <div class="rule-body">Self-healing generates a draft PR. AI performs the first-pass code review with confidence score. A human SDET makes the final call. Locator fixes auto-merge after 24h if no objection. Scenario changes always require human approval.</div>
+      <span class="rule-enforce" style="background:var(--amber2);color:var(--amber);border:1px solid rgba(138,98,0,.2)">enforced: PR workflow rules</span>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num" style="color:var(--rust)">Rule 05 · Adoption</div>
+      <div class="rule-title">One line to adopt, zero to break</div>
+      <div class="rule-body">Any repo joins the ecosystem by adding one <code style="font-family:monospace;font-size:.65em">include:</code> line to its <code style="font-family:monospace;font-size:.65em">.gitlab-ci.yml</code>. The shared template is additive — it never overwrites existing jobs. Feature flags control rollout per repo.</div>
+      <span class="rule-enforce" style="background:var(--rust2);color:var(--rust);border:1px solid rgba(201,74,26,.2)">enforced: include template design</span>
+    </div>
+    <div class="rule-card s">
+      <div class="rule-num" style="color:var(--slate)">Rule 06 · Brownfield</div>
+      <div class="rule-title">Source code access replaces instrumentation</div>
+      <div class="rule-body">Brownfield repos are scanned from source — React component tree, Spring controllers, Redux slices, OpenAPI spec. No runtime agent required. No changes to the application. The scanner runs externally and writes only to the QA repo.</div>
+      <span class="rule-enforce" style="background:var(--slate2);color:var(--slate);border:1px solid rgba(42,63,95,.2)">enforced: scanner design</span>
+    </div>
+    <div class="rule-card g">
+      <div class="rule-num" style="color:var(--sage)">Rule 07 · Coverage</div>
+      <div class="rule-title">50% is the floor, not the goal</div>
+      <div class="rule-body">Every onboarded repo targets 50% API + 50% UI coverage as the proof-of-concept bar. The path to 100% is automatic — the coverage audit agent files backlog tickets weekly until the gap closes. Coverage never regresses.</div>
+      <span class="rule-enforce" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">enforced: coverage gate + audit agent</span>
+    </div>
+    <div class="rule-card a">
+      <div class="rule-num" style="color:var(--amber)">Rule 08 · Roles</div>
+      <div class="rule-title">Every role gets its own journey set</div>
+      <div class="rule-body">Admin, super user, user, and pilot/demo roles each get independently generated journey files. A test tagged <code style="font-family:monospace;font-size:.65em">@role-admin</code> only runs in contexts where admin access is provisioned. Role drift in the app automatically triggers journey regeneration.</div>
+      <span class="rule-enforce" style="background:var(--amber2);color:var(--amber);border:1px solid rgba(138,98,0,.2)">enforced: role-scoped feature files</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 02 — FIVE LAYERS ══ -->
+<div class="wrap" id="layers">
+<div class="sec">
+  <div class="sh"><div class="sn">02</div><div>
+    <p class="sl">Architecture</p>
+    <h2 class="st">The Five-Layer Ecosystem</h2>
+    <p class="sd">Each layer has a single responsibility and a defined output contract. Layers communicate through versioned YAML artifacts — not runtime coupling. Any layer can be replaced without affecting the others.</p>
+  </div></div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Five-Layer Architecture — Data Flow</span><span class="cb-tag">Output Contract Driven</span></div>
+    <div class="cdiag" style="min-height:360px">
+      <svg viewBox="0 0 640 240" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="aR" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#c94a1a"/></marker>
+          <marker id="aS" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#2a3f5f"/></marker>
+          <marker id="aG" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#2d5a3d"/></marker>
+          <marker id="aA" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8a6200"/></marker>
+          <marker id="aM" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#7a7a72"/></marker>
+        </defs>
+
+        <!-- Layer 1: Detection -->
+        <rect x="8" y="10" width="116" height="80" rx="3" class="bI"/>
+        <text x="66" y="28" class="tI" style="font-size:6px;letter-spacing:.1em">LAYER 1</text>
+        <text x="66" y="42" class="tI" style="font-size:7.5px">Detection</text>
+        <rect x="16" y="52" width="100" height="13" rx="2" style="fill:rgba(248,246,241,.06)"/><text x="66" y="58.5" class="tI ts">workspace-analysis skill</text>
+        <rect x="16" y="68" width="100" height="13" rx="2" style="fill:rgba(248,246,241,.06)"/><text x="66" y="74.5" class="tI ts">→ project-profile.yaml</text>
+
+        <!-- output label -->
+        <text x="66" y="102" class="tR" style="font-size:5.5px">OUTPUT: qa-profile.yaml</text>
+
+        <line x1="124" y1="50" x2="148" y2="50" class="arr"/>
+
+        <!-- Layer 2: Breadcrumb -->
+        <rect x="148" y="10" width="116" height="80" rx="3" class="bR"/>
+        <text x="206" y="28" class="tR" style="font-size:6px;letter-spacing:.1em">LAYER 2</text>
+        <text x="206" y="42" class="t" style="font-size:7.5px">Breadcrumb</text>
+        <rect x="156" y="52" width="100" height="13" rx="2" class="b"/><text x="206" y="58.5" class="t ts">Route + Role + Action scan</text>
+        <rect x="156" y="68" width="100" height="13" rx="2" class="b"/><text x="206" y="74.5" class="t ts">Dynatrace journey priority</text>
+        <text x="206" y="102" class="tR" style="font-size:5.5px">OUTPUT: qa-breadcrumbs.yaml</text>
+
+        <line x1="264" y1="50" x2="288" y2="50" class="arr"/>
+
+        <!-- Layer 3: Generation -->
+        <rect x="288" y="10" width="116" height="80" rx="3" class="bS"/>
+        <text x="346" y="28" class="tS" style="font-size:6px;letter-spacing:.1em">LAYER 3</text>
+        <text x="346" y="42" class="t" style="font-size:7.5px">Generation</text>
+        <rect x="296" y="52" width="100" height="13" rx="2" class="b"/><text x="346" y="58.5" class="t ts">Feature files + Steps + POM</text>
+        <rect x="296" y="68" width="100" height="13" rx="2" class="b"/><text x="346" y="74.5" class="t ts">Postman + API contracts</text>
+        <text x="346" y="102" class="tS" style="font-size:5.5px">OUTPUT: QA repo draft PR</text>
+
+        <line x1="404" y1="50" x2="428" y2="50" class="arr"/>
+
+        <!-- Layer 4: Enforcement -->
+        <rect x="428" y="10" width="116" height="80" rx="3" class="bG"/>
+        <text x="486" y="28" class="tG" style="font-size:6px;letter-spacing:.1em">LAYER 4</text>
+        <text x="486" y="42" class="t" style="font-size:7.5px">Enforcement</text>
+        <rect x="436" y="52" width="100" height="13" rx="2" class="b"/><text x="486" y="58.5" class="t ts">Shared GitLab CI template</text>
+        <rect x="436" y="68" width="100" height="13" rx="2" class="b"/><text x="486" y="74.5" class="t ts">MR gates + 2 approvals</text>
+        <text x="486" y="102" class="tG" style="font-size:5.5px">OUTPUT: Pass / Block / Report</text>
+
+        <line x1="544" y1="50" x2="568" y2="50" class="arr"/>
+
+        <!-- Layer 5: Autonomy -->
+        <rect x="568" y="10" width="64" height="80" rx="3" class="bA"/>
+        <text x="600" y="28" class="tA" style="font-size:6px;letter-spacing:.1em">LAYER 5</text>
+        <text x="600" y="42" class="t" style="font-size:7.5px">Autonomy</text>
+        <rect x="574" y="52" width="52" height="13" rx="2" class="b"/><text x="600" y="58.5" class="t ts">Self-heal</text>
+        <rect x="574" y="68" width="52" height="13" rx="2" class="b"/><text x="600" y="74.5" class="t ts">Audit + Retire</text>
+        <text x="600" y="102" class="tA" style="font-size:5.5px">OUTPUT: Draft PRs</text>
+
+        <!-- Feedback loop -->
+        <path d="M600 90 Q600 130 346 130 Q148 130 66 90" stroke="#7a7a72" stroke-width=".9" stroke-dasharray="4,3" fill="none" marker-end="url(#aM)"/>
+        <text x="320" y="145" class="tM">Continuous feedback loop — telemetry + coverage delta → re-prioritize breadcrumbs</text>
+
+        <!-- Source inputs -->
+        <text x="66" y="165" class="tM" style="font-size:6px">INPUTS TO LAYER 1+2:</text>
+        <rect x="8" y="172" width="70" height="16" rx="2" class="bBg"/><text x="43" y="180" class="tM">React src/</text>
+        <rect x="82" y="172" width="70" height="16" rx="2" class="bBg"/><text x="117" y="180" class="tM">Java src/</text>
+        <rect x="156" y="172" width="70" height="16" rx="2" class="bBg"/><text x="191" y="180" class="tM">OpenAPI spec</text>
+        <rect x="230" y="172" width="70" height="16" rx="2" class="bBg"/><text x="265" y="180" class="tM">Dynatrace RUM</text>
+        <rect x="304" y="172" width="70" height="16" rx="2" class="bBg"/><text x="339" y="180" class="tM">Splunk logs</text>
+        <rect x="378" y="172" width="70" height="16" rx="2" class="bBg"/><text x="413" y="180" class="tM">Redux slices</text>
+        <rect x="452" y="172" width="80" height="16" rx="2" class="bBg"/><text x="492" y="180" class="tM">Spring @PreAuthorize</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="layer-stack">
+    <div class="layer">
+      <div class="layer-label" style="background:var(--ink2);color:#f8f6f1">Detection<br><span style="font-size:.65rem;opacity:.5">Extended workspace-analysis</span></div>
+      <div class="layer-body">
+        <span class="li">project-profile.yaml</span><span class="li">routing-strategy detected</span><span class="li">role-model detected</span><span class="li">openapi-present: true/false</span><span class="li">redux-slices mapped</span><span class="li">spring-controllers indexed</span><span class="li">dynatrace-available: true/false</span>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label" style="background:var(--rust2);color:var(--rust)">Breadcrumb<br><span style="font-size:.65rem;opacity:.7">Journey artifact emitter</span></div>
+      <div class="layer-body">
+        <span class="li">qa-breadcrumbs.yaml</span><span class="li">page-inventory per role</span><span class="li">action-map per page</span><span class="li">journey-priority: high/medium/low</span><span class="li">api-surface per module</span><span class="li">telemetry-source: dynatrace|static</span>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label" style="background:var(--slate2);color:var(--slate)">Generation<br><span style="font-size:.65rem;opacity:.7">Test artifact factory</span></div>
+      <div class="layer-body">
+        <span class="li">*.feature files</span><span class="li">*.steps.ts scaffolds</span><span class="li">*Page.ts POM classes</span><span class="li">postman-collection.json</span><span class="li">pact contracts</span><span class="li">coverage-manifest.json</span>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label" style="background:var(--sage2);color:var(--sage)">Enforcement<br><span style="font-size:.65rem;opacity:.7">Company-wide GitLab ruleset</span></div>
+      <div class="layer-body">
+        <span class="li">qa-ecosystem.gitlab-ci.yml (shared)</span><span class="li">breadcrumb-check job</span><span class="li">openapi-check job</span><span class="li">coverage-gate job</span><span class="li">MR comment reporter</span><span class="li">feature-flag per repo</span>
+      </div>
+    </div>
+    <div class="layer">
+      <div class="layer-label" style="background:var(--amber2);color:var(--amber)">Autonomy<br><span style="font-size:.65rem;opacity:.7">Self-maintaining agents</span></div>
+      <div class="layer-body">
+        <span class="li">locator-healer agent</span><span class="li">journey-drift detector</span><span class="li">test-retire agent</span><span class="li">coverage-audit agent (weekly)</span><span class="li">AI code reviewer</span><span class="li">draft PR generator</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 03 — BREADCRUMB SCHEMA ══ -->
+<div class="wrap" id="breadcrumb">
+<div class="sec">
+  <div class="sh"><div class="sn">03</div><div>
+    <p class="sl">The Core Artifact</p>
+    <h2 class="st">Breadcrumb Schema</h2>
+    <p class="sd">The <code style="font-family:monospace;font-size:.85em">.ai-sdlc/qa-breadcrumbs.yaml</code> is the single source of truth for what the application does, who can do it, and how important it is. Everything downstream — feature files, POM classes, Postman collections — is derived from this file.</p>
+  </div></div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">qa-breadcrumbs.yaml — Full Schema with Example</span><span class="cb-tag">Versioned · Diffable · Committed</span></div>
+    <div class="schema-grid">
+      <div class="schema-panel">
+        <div class="schema-label">Schema Structure</div>
+        <div class="code" style="font-size:.57rem">
+<span class="cc"># .ai-sdlc/qa-breadcrumbs.yaml
+# Generated by: breadcrumb-emitter agent
+# Sources: React src/ + Spring src/ + OpenAPI
+#          + Dynatrace RUM sessions
+# DO NOT hand-edit — re-run generator</span>
+
+<span class="ck">meta:</span>
+  <span class="ca">repo:</span>         <span class="cv">disputes-workstation</span>
+  <span class="ca">generated_at:</span> <span class="cv">2025-06-01T14:22:00Z</span>
+  <span class="ca">generator_ver:</span><span class="cv">2.1.0</span>
+  <span class="ca">telemetry_src:</span><span class="cv">dynatrace</span>  <span class="cc"># or: static</span>
+  <span class="ca">openapi_hash:</span> <span class="cv">a3f8c12d</span>
+
+<span class="ck">roles:</span>
+  - <span class="cv">admin</span>
+  - <span class="cv">super-user</span>
+  - <span class="cv">user</span>
+  - <span class="cv">pilot</span>
+
+<span class="ck">modules:</span>
+  - <span class="ca">id:</span> <span class="cv">disputes</span>
+    <span class="ca">label:</span> <span class="cv">Dispute Management</span>
+    <span class="ca">priority:</span> <span class="cv">high</span>     <span class="cc"># from Dynatrace</span>
+    <span class="ca">coverage_target:</span> <span class="cv">100</span>  <span class="cc"># %</span>
+
+    <span class="ck">pages:</span>
+      - <span class="ca">id:</span> <span class="cv">dispute-list</span>
+        <span class="ca">component:</span> <span class="cv">DisputeListPage</span>
+        <span class="ca">route:</span> <span class="cv">/disputes</span>
+        <span class="ca">roles:</span> [<span class="cv">admin</span>, <span class="cv">super-user</span>, <span class="cv">user</span>]
+        <span class="ca">priority:</span> <span class="cv">high</span>
+        <span class="ca">session_count:</span> <span class="cv">14820</span>  <span class="cc"># Dynatrace</span>
+        <span class="ck">actions:</span>
+          - <span class="ca">id:</span> <span class="cv">filter-by-status</span>
+            <span class="ca">type:</span> <span class="cv">ui-interaction</span>
+            <span class="ca">element:</span> <span class="cv">StatusFilterDropdown</span>
+            <span class="ca">api_calls:</span> [<span class="cv">GET /disputes?status={s}</span>]
+          - <span class="ca">id:</span> <span class="cv">open-dispute</span>
+            <span class="ca">type:</span> <span class="cv">navigation</span>
+            <span class="ca">target:</span> <span class="cv">dispute-detail</span>
+            <span class="ca">api_calls:</span> [<span class="cv">GET /disputes/{id}</span>]
+          - <span class="ca">id:</span> <span class="cv">export-csv</span>
+            <span class="ca">type:</span> <span class="cv">ui-interaction</span>
+            <span class="ca">roles:</span> [<span class="cv">admin</span>, <span class="cv">super-user</span>]
+            <span class="ca">api_calls:</span> [<span class="cv">GET /disputes/export</span>]
+
+      - <span class="ca">id:</span> <span class="cv">dispute-detail</span>
+        <span class="ca">component:</span> <span class="cv">DisputeDetailPage</span>
+        <span class="ca">route:</span> <span class="cv">/disputes/:id</span>
+        <span class="ca">roles:</span> [<span class="cv">admin</span>, <span class="cv">super-user</span>, <span class="cv">user</span>]
+        <span class="ca">priority:</span> <span class="cv">high</span>
+        <span class="ck">actions:</span>
+          - <span class="ca">id:</span> <span class="cv">submit-resolution</span>
+            <span class="ca">type:</span> <span class="cv">form-submit</span>
+            <span class="ca">roles:</span> [<span class="cv">admin</span>, <span class="cv">super-user</span>]
+            <span class="ca">api_calls:</span> [<span class="cv">POST /disputes/{id}/resolve</span>]
+          - <span class="ca">id:</span> <span class="cv">add-note</span>
+            <span class="ca">type:</span> <span class="cv">form-submit</span>
+            <span class="ca">roles:</span> [<span class="cv">admin</span>,<span class="cv">super-user</span>,<span class="cv">user</span>]
+            <span class="ca">api_calls:</span> [<span class="cv">POST /disputes/{id}/notes</span>]
+
+<span class="ck">api_surface:</span>
+  - <span class="ca">spec:</span> <span class="cv">openapi/disputes-api.yaml</span>
+    <span class="ca">base_url:</span> <span class="cv">/api/v1</span>
+    <span class="ca">endpoints:</span> <span class="cv">24</span>
+    <span class="ca">covered:</span>   <span class="cv">0</span>   <span class="cc"># updated by coverage agent</span>
+
+<span class="ck">journeys:</span>
+  - <span class="ca">id:</span> <span class="cv">analyst-dispute-resolution</span>
+    <span class="ca">role:</span> <span class="cv">super-user</span>
+    <span class="ca">priority:</span> <span class="cv">high</span>
+    <span class="ca">steps:</span>
+      - <span class="cv">login → dispute-list</span>
+      - <span class="cv">filter-by-status(OPEN)</span>
+      - <span class="cv">open-dispute</span>
+      - <span class="cv">submit-resolution</span>
+    <span class="ca">generated_feature:</span> <span class="cv">features/ui/disputes/analyst-resolution.feature</span>
+        </div>
+      </div>
+      <div class="schema-panel">
+        <div class="schema-label">How It's Generated — Brownfield vs Greenfield</div>
+        <div class="code" style="font-size:.57rem">
+<span class="cc"># breadcrumb_emitter.py
+# Runs as: python ai-agents/breadcrumb_emitter.py
+# Reads:   source repos (read-only access)
+# Writes:  .ai-sdlc/qa-breadcrumbs.yaml</span>
+
+<span class="ck">class</span> <span class="cs">BreadcrumbEmitter</span>:
+
+  <span class="ck">def</span> emit(self, profile: ProjectProfile):
+
+    <span class="cc"># 1. Detect routing strategy from profile</span>
+    router = RouteParser.for_strategy(
+      profile.routing_strategy
+      <span class="cc"># central_routes | file_based | modular</span>
+    )
+    pages = router.extract_pages(
+      profile.frontend_src
+    )
+
+    <span class="cc"># 2. Map roles from Spring Security</span>
+    roles = SpringRoleExtractor.extract(
+      profile.backend_src,
+      profile.security_config
+      <span class="cc"># reads @PreAuthorize annotations</span>
+      <span class="cc"># reads Redux auth slice for UI guards</span>
+    )
+
+    <span class="cc"># 3. Prioritize via Dynatrace (if available)</span>
+    <span class="ck">if</span> profile.dynatrace_available:
+      priority = DynatracePrioritizer\
+        .rank_pages(pages,
+          api_key=env.DYNATRACE_TOKEN)
+    <span class="ck">else</span>:
+      priority = StaticPrioritizer\
+        .rank_by_depth_and_name(pages)
+
+    <span class="cc"># 4. Map API surface from OpenAPI</span>
+    api = OpenAPIMapper.map(
+      profile.openapi_spec_path
+    )
+
+    <span class="cc"># 5. Derive journeys per role</span>
+    journeys = JourneyDeriver.derive(
+      pages=pages,
+      roles=roles,
+      priority=priority,
+      api=api,
+      ai_client=AnthropicClient()
+      <span class="cc"># AI synthesizes step sequences</span>
+      <span class="cc"># from page graph + action map</span>
+    )
+
+    <span class="cc"># 6. Write artifact</span>
+    BreadcrumbWriter.write(
+      path=<span class="cv">'.ai-sdlc/qa-breadcrumbs.yaml'</span>,
+      pages=pages, roles=roles,
+      journeys=journeys, api=api,
+      meta=profile.meta
+    )
+
+    <span class="cc"># 7. Diff against previous version</span>
+    <span class="cc"># If journeys removed → flag for retirement</span>
+    <span class="cc"># If journeys added   → trigger generation</span>
+    DriftDetector.diff_and_emit(
+      prev=<span class="cv">'.ai-sdlc/qa-breadcrumbs.prev.yaml'</span>,
+      curr=<span class="cv">'.ai-sdlc/qa-breadcrumbs.yaml'</span>
+    )
+        </div>
+        <div class="schema-label" style="margin-top:1rem">Drift Detection — What Triggers What</div>
+        <div style="margin-top:.5rem">
+          <table class="dtable">
+            <thead><tr><th>Breadcrumb Change</th><th>Action Triggered</th><th>Who Approves</th></tr></thead>
+            <tbody>
+              <tr><td>New page added</td><td>Generate feature + POM → draft PR</td><td class="tdg">AI review + SDET</td></tr>
+              <tr><td>Page removed</td><td>Flag tests for retirement → draft PR</td><td class="tda">SDET required</td></tr>
+              <tr><td>Action renamed</td><td>Heal locator → draft PR</td><td class="tdg">AI review + 24h auto-merge</td></tr>
+              <tr><td>Role removed from page</td><td>Retire role-scoped tests → draft PR</td><td class="tda">SDET required</td></tr>
+              <tr><td>New API endpoint</td><td>Generate API scenario → draft PR</td><td class="tdg">AI review + SDET</td></tr>
+              <tr><td>OpenAPI hash changed</td><td>Re-run API generation for module</td><td class="tdg">AI review + SDET</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 04 — JOURNEYS ══ -->
+<div class="wrap" id="journeys">
+<div class="sec">
+  <div class="sh"><div class="sn">04</div><div>
+    <p class="sl">Role-Scoped User Journeys</p>
+    <h2 class="st">Journey Derivation</h2>
+    <p class="sd">A journey is a named, role-scoped sequence of pages and actions that represents a meaningful unit of business value. Not every permutation — just the ones that matter. Telemetry tells us which ones matter most.</p>
+  </div></div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Journey Derivation — Telemetry-First Priority Model</span><span class="cb-tag">Dynatrace → Priority → Coverage Depth</span></div>
+    <div class="cdiag" style="min-height:300px">
+      <svg viewBox="0 0 620 200" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Dynatrace input -->
+        <rect x="8" y="30" width="88" height="60" rx="3" class="bA"/>
+        <text x="52" y="48" class="tA" style="font-size:6.5px">DYNATRACE</text>
+        <text x="52" y="62" class="tM">Session replays</text>
+        <text x="52" y="74" class="tM">Page sequences</text>
+        <text x="52" y="84" class="tM">API call chains</text>
+
+        <!-- Static fallback -->
+        <rect x="8" y="102" width="88" height="44" rx="3" class="bBg"/>
+        <text x="52" y="118" class="tM" style="font-size:6px">STATIC FALLBACK</text>
+        <text x="52" y="130" class="tM">Route depth</text>
+        <text x="52" y="140" class="tM">Component naming</text>
+
+        <line x1="96" y1="60" x2="118" y2="80" class="arrA"/>
+        <line x1="96" y1="124" x2="118" y2="100" class="arrD"/>
+
+        <!-- AI Journey Deriver -->
+        <rect x="118" y="50" width="110" height="80" rx="3" class="bI"/>
+        <text x="173" y="68" class="tI" style="font-size:6.5px">AI JOURNEY</text>
+        <text x="173" y="80" class="tI" style="font-size:6.5px">DERIVER</text>
+        <text x="173" y="95" class="tI ts">Page graph traversal</text>
+        <text x="173" y="107" class="tI ts">Role permission filter</text>
+        <text x="173" y="119" class="tI ts">Sequence synthesis</text>
+
+        <line x1="228" y1="90" x2="252" y2="90" class="arr"/>
+
+        <!-- Journey priority bins -->
+        <rect x="252" y="20" width="100" height="26" rx="2" class="bR"/>
+        <text x="302" y="29" class="tR" style="font-size:6px">HIGH PRIORITY</text>
+        <text x="302" y="40" class="tM ts">100% scenario coverage · every role</text>
+
+        <rect x="252" y="54" width="100" height="26" rx="2" class="bA"/>
+        <text x="302" y="63" class="tA" style="font-size:6px">MEDIUM PRIORITY</text>
+        <text x="302" y="74" class="tM ts">Happy path + 2 negatives</text>
+
+        <rect x="252" y="88" width="100" height="26" rx="2" class="bS"/>
+        <text x="302" y="97" class="tS" style="font-size:6px">LOW PRIORITY</text>
+        <text x="302" y="108" class="tM ts">Smoke test only</text>
+
+        <rect x="252" y="122" width="100" height="26" rx="2" class="bBg"/>
+        <text x="302" y="131" class="tM" style="font-size:6px">PILOT / DEMO</text>
+        <text x="302" y="142" class="tM ts">Isolated scenario set</text>
+
+        <!-- Output to feature files -->
+        <line x1="352" y1="33" x2="376" y2="40" class="arrR" style="stroke:var(--rust)"/>
+        <line x1="352" y1="67" x2="376" y2="70" class="arr"/>
+        <line x1="352" y1="101" x2="376" y2="100" class="arrS"/>
+        <line x1="352" y1="135" x2="376" y2="130" class="arrD"/>
+
+        <!-- Feature file outputs -->
+        <rect x="376" y="10" width="120" height="18" rx="2" class="bR"/>
+        <text x="436" y="19" class="tR ts">analyst-resolution.feature (8 scenarios)</text>
+
+        <rect x="376" y="44" width="120" height="18" rx="2" class="bA"/>
+        <text x="436" y="53" class="tA ts">user-view-dispute.feature (3 scenarios)</text>
+
+        <rect x="376" y="78" width="120" height="18" rx="2" class="bS"/>
+        <text x="436" y="87" class="tS ts">admin-export.feature (1 scenario)</text>
+
+        <rect x="376" y="112" width="120" height="18" rx="2" class="bBg"/>
+        <text x="436" y="121" class="tM ts">pilot-demo-flow.feature (2 scenarios)</text>
+
+        <!-- Role tags -->
+        <rect x="510" y="10" width="104" height="18" rx="2" style="fill:rgba(45,90,61,.08);stroke:rgba(45,90,61,.3)"/>
+        <text x="562" y="19" class="tG ts">@role-super-user @disputes @smoke</text>
+        <rect x="510" y="44" width="104" height="18" rx="2" style="fill:rgba(45,90,61,.08);stroke:rgba(45,90,61,.3)"/>
+        <text x="562" y="53" class="tG ts">@role-user @disputes @regression</text>
+        <rect x="510" y="78" width="104" height="18" rx="2" style="fill:rgba(45,90,61,.08);stroke:rgba(45,90,61,.3)"/>
+        <text x="562" y="87" class="tG ts">@role-admin @disputes @smoke</text>
+        <rect x="510" y="112" width="104" height="18" rx="2" style="fill:rgba(45,90,61,.08);stroke:rgba(45,90,61,.3)"/>
+        <text x="562" y="121" class="tG ts">@role-pilot @disputes @demo</text>
+
+        <line x1="496" y1="19" x2="510" y2="19" class="arrG"/>
+        <line x1="496" y1="53" x2="510" y2="53" class="arrG"/>
+        <line x1="496" y1="87" x2="510" y2="87" class="arrG"/>
+        <line x1="496" y1="121" x2="510" y2="121" class="arrG"/>
+
+        <text x="310" y="170" class="tM">Coverage target = f(priority) · High → 100% · Medium → 60% · Low → smoke · Pilot → isolated</text>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 05 — GENERATION ══ -->
+<div class="wrap" id="generation">
+<div class="sec">
+  <div class="sh"><div class="sn">05</div><div>
+    <p class="sl">Test Artifact Factory</p>
+    <h2 class="st">Generation Layer</h2>
+    <p class="sd">From one breadcrumb YAML, the generator produces the complete test artifact suite: feature files, TypeScript step scaffolds, Playwright POM classes, Postman collections, and Pact contract tests. Every artifact traces back to a breadcrumb entry.</p>
+  </div></div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Generation Pipeline — One Breadcrumb → Full Test Suite</span><span class="cb-tag">TypeScript · Playwright · Python AI</span></div>
+    <div class="cdiag" style="min-height:280px">
+      <svg viewBox="0 0 660 185" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Breadcrumb input -->
+        <rect x="6" y="50" width="90" height="80" rx="3" class="bR"/>
+        <text x="51" y="68" class="tR" style="font-size:6.5px">BREADCRUMB</text>
+        <text x="51" y="82" class="t ts">journey entry</text>
+        <text x="51" y="94" class="t ts">page + actions</text>
+        <text x="51" y="106" class="t ts">role + priority</text>
+        <text x="51" y="118" class="t ts">api_calls[]</text>
+
+        <line x1="96" y1="90" x2="120" y2="90" class="arr"/>
+
+        <!-- Generator agent -->
+        <rect x="120" y="40" width="100" height="100" rx="3" class="bI"/>
+        <text x="170" y="58" class="tI" style="font-size:6.5px">GENERATOR</text>
+        <text x="170" y="70" class="tI" style="font-size:6.5px">AGENT (Python)</text>
+        <rect x="128" y="78" width="84" height="13" rx="2" style="fill:rgba(248,246,241,.07)"/><text x="170" y="84.5" class="tI ts">anthropic SDK</text>
+        <rect x="128" y="95" width="84" height="13" rx="2" style="fill:rgba(248,246,241,.07)"/><text x="170" y="101.5" class="tI ts">jinja2 templates</text>
+        <rect x="128" y="112" width="84" height="13" rx="2" style="fill:rgba(248,246,241,.07)"/><text x="170" y="118.5" class="tI ts">openapi-parser</text>
+
+        <!-- Fan out arrows -->
+        <line x1="220" y1="65" x2="250" y2="30" class="arr"/>
+        <line x1="220" y1="78" x2="250" y2="62" class="arr"/>
+        <line x1="220" y1="90" x2="250" y2="90" class="arr"/>
+        <line x1="220" y1="102" x2="250" y2="118" class="arr"/>
+        <line x1="220" y1="115" x2="250" y2="150" class="arr"/>
+
+        <!-- Output artifacts -->
+        <rect x="250" y="14" width="120" height="28" rx="2" class="bS"/>
+        <text x="310" y="26" class="tS" style="font-size:6.5px">Gherkin Feature File</text>
+        <text x="310" y="36" class="tM ts">*.feature · Given/When/Then · @role @priority tags</text>
+
+        <rect x="250" y="46" width="120" height="28" rx="2" class="bS"/>
+        <text x="310" y="58" class="tS" style="font-size:6.5px">TypeScript Step Scaffold</text>
+        <text x="310" y="68" class="tM ts">*.steps.ts · async/await · World context</text>
+
+        <rect x="250" y="78" width="120" height="28" rx="2" class="bR"/>
+        <text x="310" y="90" class="tR" style="font-size:6.5px">Playwright POM Class</text>
+        <text x="310" y="100" class="tM ts">*Page.ts · getByRole · getByLabel locators</text>
+
+        <rect x="250" y="110" width="120" height="28" rx="2" class="bG"/>
+        <text x="310" y="122" class="tG" style="font-size:6.5px">Postman Collection</text>
+        <text x="310" y="132" class="tM ts">collection.json · env vars · auth flows</text>
+
+        <rect x="250" y="142" width="120" height="28" rx="2" class="bA"/>
+        <text x="310" y="154" class="tA" style="font-size:6.5px">Pact Contract Test</text>
+        <text x="310" y="164" class="tM ts">consumer contracts · OpenAPI validated</text>
+
+        <!-- QA repo target -->
+        <line x1="370" y1="28" x2="400" y2="80" class="arrS"/>
+        <line x1="370" y1="60" x2="400" y2="85" class="arrS"/>
+        <line x1="370" y1="92" x2="400" y2="90" class="arrS"/>
+        <line x1="370" y1="124" x2="400" y2="95" class="arrG"/>
+        <line x1="370" y1="156" x2="400" y2="100" class="arrA"/>
+
+        <rect x="400" y="40" width="120" height="100" rx="3" style="fill:rgba(45,90,61,.06);stroke:rgba(45,90,61,.3);stroke-width:1"/>
+        <text x="460" y="58" class="tG" style="font-size:6.5px">QA REPO</text>
+        <text x="460" y="70" class="tG" style="font-size:6.5px">(DRAFT PR)</text>
+        <rect x="408" y="78" width="104" height="13" rx="2" class="b"/><text x="460" y="84.5" class="t ts">features/ui/disputes/</text>
+        <rect x="408" y="95" width="104" height="13" rx="2" class="b"/><text x="460" y="101.5" class="t ts">steps/disputes/</text>
+        <rect x="408" y="112" width="104" height="13" rx="2" class="b"/><text x="460" y="118.5" class="t ts">pages/DisputePage.ts</text>
+        <rect x="408" y="129" width="104" height="13" rx="2" class="b"/><text x="460" y="135.5" class="t ts">postman/disputes.json</text>
+
+        <!-- AI Review + Human -->
+        <line x1="520" y1="90" x2="544" y2="75" class="arrD"/>
+        <rect x="544" y="45" width="110" height="30" rx="2" class="bI"/>
+        <text x="599" y="60" class="tI" style="font-size:6px">AI CODE REVIEW</text>
+        <text x="599" y="70" class="tI ts">confidence score + notes</text>
+        <line x1="599" y1="75" x2="599" y2="93" class="arrD"/>
+        <rect x="544" y="95" width="110" height="30" rx="2" class="bG"/>
+        <text x="599" y="110" class="tG" style="font-size:6px">HUMAN APPROVAL</text>
+        <text x="599" y="120" class="tG ts">SDET merges → QA repo live</text>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 06 — ENFORCEMENT ══ -->
+<div class="wrap" id="enforcement">
+<div class="sec">
+  <div class="sh"><div class="sn">06</div><div>
+    <p class="sl">Company-Wide GitLab Ruleset</p>
+    <h2 class="st">One Line to Enforce Everything</h2>
+    <p class="sd">A single shared GitLab CI template, maintained by your dedicated GitLab team, that any repo includes in one line. Additive only — never overwrites existing jobs. Feature-flagged so teams can roll in gradually without breaking existing pipelines.</p>
+  </div></div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Shared Template — qa-ecosystem.gitlab-ci.yml</span><span class="cb-tag">Maintained by GitLab Team · Central Repo</span></div>
+    <div style="padding:0">
+      <div class="code" style="margin:0;border-radius:0;border:none;font-size:.59rem;padding:1.6rem 2rem">
+<span class="cc"># ════════════════════════════════════════════════════════
+# HOW REPOS ADOPT THIS (one line in their .gitlab-ci.yml):
+#
+#   include:
+#     - project: 'platform/qa-ecosystem'
+#       ref: main
+#       file: 'qa-ecosystem.gitlab-ci.yml'
+#
+# FEATURE FLAGS (set as GitLab CI/CD variables per repo):
+#   QA_ECOSYSTEM_ENABLED:     "true"    # master switch
+#   QA_BREADCRUMB_ENFORCE:    "true"    # hard-gate on missing breadcrumbs
+#   QA_COVERAGE_GATE:         "50"      # minimum coverage % to pass
+#   QA_TELEMETRY_SOURCE:      "dynatrace" | "static"
+#   QA_BROWNFIELD_MODE:       "false"   # skip breadcrumb check during onboarding
+# ════════════════════════════════════════════════════════</span>
+
+<span class="cc"># ── JOB 1: OPENAPI PREREQUISITE CHECK ───────────────────</span>
+<span class="ck">qa:openapi-check:</span>
+  <span class="ck">stage:</span> <span class="cv">.pre</span>
+  <span class="ck">image:</span> <span class="cv">python:3.12-slim</span>
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$QA_ECOSYSTEM_ENABLED == "true"'</span>
+  <span class="ck">script:</span>
+    - <span class="cv">python $QA_SCRIPTS/check_openapi.py</span>
+      <span class="cc"># Fails pipeline if no spec found AND not auto-generable</span>
+      <span class="cc"># Auto-generates via springdoc if Spring Boot detected</span>
+  <span class="ck">allow_failure:</span> <span class="cv">false</span>   <span class="cc"># Hard block — no exceptions</span>
+
+<span class="cc"># ── JOB 2: BREADCRUMB FRESHNESS CHECK ───────────────────</span>
+<span class="ck">qa:breadcrumb-check:</span>
+  <span class="ck">stage:</span> <span class="cv">.pre</span>
+  <span class="ck">image:</span> <span class="cv">python:3.12-slim</span>
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$QA_ECOSYSTEM_ENABLED == "true" and $QA_BROWNFIELD_MODE != "true"'</span>
+  <span class="ck">script:</span>
+    - <span class="cv">python $QA_SCRIPTS/check_breadcrumbs.py</span>
+      <span class="cc"># Checks: .ai-sdlc/qa-breadcrumbs.yaml exists</span>
+      <span class="cc"># Checks: openapi_hash matches current spec</span>
+      <span class="cc"># Checks: no pages in src/ missing from breadcrumbs</span>
+      <span class="cc"># If stale: triggers breadcrumb-emitter, fails with instructions</span>
+  <span class="ck">allow_failure:</span> <span class="cv">false</span>
+
+<span class="cc"># ── JOB 3: AI SCOPE DETECTION ───────────────────────────</span>
+<span class="ck">qa:scope-detect:</span>
+  <span class="ck">stage:</span> <span class="cv">qa-analysis</span>
+  <span class="ck">image:</span> <span class="cv">python:3.12-slim</span>
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$CI_PIPELINE_SOURCE == "merge_request_event" and $QA_ECOSYSTEM_ENABLED == "true"'</span>
+  <span class="ck">script:</span>
+    - <span class="cv">python $QA_SCRIPTS/scope_detector.py</span>
+      <span class="cc"># Reads git diff + breadcrumbs → TEST_TAGS</span>
+      <span class="cc"># e.g. TEST_TAGS="@disputes or @auth"</span>
+    - <span class="cv">echo "TEST_TAGS=$TEST_TAGS" >> build.env</span>
+  <span class="ck">artifacts:</span>
+    <span class="ck">reports:</span>
+      <span class="ck">dotenv:</span> <span class="cv">build.env</span>
+
+<span class="cc"># ── JOB 4: FEATURE-SCOPED TEST RUN (on MR) ──────────────</span>
+<span class="ck">qa:run-feature-tests:</span>
+  <span class="ck">stage:</span> <span class="cv">qa-test</span>
+  <span class="ck">image:</span> <span class="cv">mcr.microsoft.com/playwright:v1.44.0-jammy</span>
+  <span class="ck">needs:</span> [<span class="cv">qa:scope-detect</span>]
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$CI_PIPELINE_SOURCE == "merge_request_event" and $QA_ECOSYSTEM_ENABLED == "true"'</span>
+  <span class="ck">before_script:</span>
+    - <span class="cv">cd $QA_REPO_PATH && npm ci --prefer-offline</span>
+    - <span class="cv">python $QA_SCRIPTS/locator_healer.py --pre-run</span>
+  <span class="ck">script:</span>
+    - <span class="cv">npx cucumber-js --tags "$TEST_TAGS"</span>
+      <span class="cv">--format allure-cucumberjs/reporter</span>
+  <span class="ck">retry:</span> {<span class="ck">max:</span> <span class="cv">1</span>, <span class="ck">when</span>: [<span class="cv">script_failure</span>]}
+
+<span class="cc"># ── JOB 5: COVERAGE GATE ────────────────────────────────</span>
+<span class="ck">qa:coverage-gate:</span>
+  <span class="ck">stage:</span> <span class="cv">qa-report</span>
+  <span class="ck">image:</span> <span class="cv">python:3.12-slim</span>
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$QA_ECOSYSTEM_ENABLED == "true" and $QA_COVERAGE_GATE != ""'</span>
+  <span class="ck">script:</span>
+    - <span class="cv">python $QA_SCRIPTS/coverage_gate.py --min $QA_COVERAGE_GATE</span>
+      <span class="cc"># Reads allure results + coverage-manifest.json</span>
+      <span class="cc"># Fails if coverage < QA_COVERAGE_GATE (default: 50)</span>
+      <span class="cc"># Posts coverage delta as MR comment</span>
+  <span class="ck">allow_failure:</span> <span class="cv">false</span>
+
+<span class="cc"># ── JOB 6: FULL REGRESSION (cron) ───────────────────────</span>
+<span class="ck">qa:regression:</span>
+  <span class="ck">stage:</span> <span class="cv">qa-test</span>
+  <span class="ck">image:</span> <span class="cv">mcr.microsoft.com/playwright:v1.44.0-jammy</span>
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$CI_PIPELINE_SOURCE == "schedule" and $QA_ECOSYSTEM_ENABLED == "true"'</span>
+  <span class="ck">script:</span>
+    - <span class="cv">cd $QA_REPO_PATH && npm ci</span>
+    - <span class="cv">npx cucumber-js --tags "@regression or @smoke"</span>
+      <span class="cv">--format allure-cucumberjs/reporter</span>
+  <span class="ck">parallel:</span> <span class="cv">6</span>
+
+<span class="cc"># ── JOB 7: REPORT + NOTIFY ──────────────────────────────</span>
+<span class="ck">qa:report:</span>
+  <span class="ck">stage:</span> <span class="cv">qa-notify</span>
+  <span class="ck">image:</span> <span class="cv">python:3.12-slim</span>
+  <span class="ck">when:</span> <span class="cv">always</span>
+  <span class="ck">script:</span>
+    - <span class="cv">allure generate allure-results -o allure-report --clean</span>
+    - <span class="cv">python $QA_SCRIPTS/report_narrator.py</span>   <span class="cc"># AI summary</span>
+    - <span class="cv">python $QA_SCRIPTS/email_sender.py --to "$QA_REPORT_EMAIL"</span>
+
+<span class="cc"># Cron schedules defined in GitLab UI per repo:
+# "Regression Tue" → 0 6 * * 2  | "Regression Thu" → 0 6 * * 4</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Enforcement Hierarchy — Who Owns What</span><span class="cb-tag">GitLab Team · DevOps · SDETs · Developers</span></div>
+    <div style="padding:1.5rem">
+      <table class="dtable">
+        <thead><tr><th>Owner</th><th>Owns</th><th>Can Override</th><th>Cannot Override</th></tr></thead>
+        <tbody>
+          <tr><td class="tdh">GitLab Team</td><td>qa-ecosystem template repo, shared scripts, version releases</td><td class="tdg">All defaults · Feature flag values · Gate thresholds</td><td class="tdr">2-approval MR rule (org policy)</td></tr>
+          <tr><td class="tdh">DevOps Team</td><td>Runner config, Docker image versions, cron schedule times</td><td class="tdg">Runner tags · Parallelism · Timeouts</td><td class="tdr">Hard gates · Coverage floor</td></tr>
+          <tr><td class="tdh">SDET Team</td><td>QA repo content, test quality, AI agent prompts, POM library</td><td class="tdg">Feature file content · Step impl · Journey scope</td><td class="tdr">Breadcrumb schema · Gate thresholds</td></tr>
+          <tr><td class="tdh">Developer</td><td>Application code, .feature files for new features (DoD)</td><td class="tda">QA_BROWNFIELD_MODE during onboarding sprint</td><td class="tdr">Disabling QA gates · Coverage floor</td></tr>
+          <tr><td class="tdh">Repo (via vars)</td><td>Feature flags, coverage target, telemetry source</td><td class="tdg">QA_COVERAGE_GATE · QA_TELEMETRY_SOURCE</td><td class="tdr">QA_ECOSYSTEM_ENABLED (only GitLab Team)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 07 — AUTONOMY ══ -->
+<div class="wrap" id="autonomy">
+<div class="sec">
+  <div class="sh"><div class="sn">07</div><div>
+    <p class="sl">Self-Maintaining System</p>
+    <h2 class="st">Autonomy Trust Model</h2>
+    <p class="sd">The system acts autonomously within defined trust boundaries. AI fixes and AI reviews. Humans approve. The trust level is proportional to the blast radius of the change.</p>
+  </div></div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Trust Boundaries — What the System Does vs What Humans Decide</span></div>
+    <div style="padding:1.5rem 2rem">
+      <div class="trust-row">
+        <div><div class="trust-event">Locator breaks</div><div style="font-size:.6rem;font-family:monospace;color:var(--muted)">e.g. CSS selector stale</div></div>
+        <div class="trust-flow">AI healer detects failure at runtime. DOM similarity scan finds new element. Patches <code style="font-family:monospace;font-size:.85em">*Page.ts</code>. Opens draft PR. AI code review posts confidence score. If ≥ 90% confidence and no human objection in 24h → auto-merge.</div>
+        <span class="trust-badge" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">Auto-merge 24h</span>
+      </div>
+      <div class="trust-row">
+        <div><div class="trust-event">Component renamed</div><div style="font-size:.6rem;font-family:monospace;color:var(--muted)">breadcrumb drift detected</div></div>
+        <div class="trust-flow">Breadcrumb differ detects rename. Re-generates affected POM class and step definitions. Opens draft PR with AI review noting what changed and why. SDET reviews and approves. No auto-merge.</div>
+        <span class="trust-badge" style="background:var(--amber2);color:var(--amber);border:1px solid rgba(138,98,0,.2)">SDET approval</span>
+      </div>
+      <div class="trust-row">
+        <div><div class="trust-event">New page added</div><div style="font-size:.6rem;font-family:monospace;color:var(--muted)">greenfield or brownfield</div></div>
+        <div class="trust-flow">Breadcrumb emitter adds new page entry. Generator creates feature file scaffold, step skeleton, POM class. AI reviews generated artifacts for completeness. Draft PR opened. SDET reviews, refines scenarios, approves.</div>
+        <span class="trust-badge" style="background:var(--amber2);color:var(--amber);border:1px solid rgba(138,98,0,.2)">SDET approval</span>
+      </div>
+      <div class="trust-row">
+        <div><div class="trust-event">Feature removed</div><div style="font-size:.6rem;font-family:monospace;color:var(--muted)">route deleted from source</div></div>
+        <div class="trust-flow">Drift detector flags orphaned tests. AI marks them @deprecated in the QA repo. Draft PR opened proposing retirement with rationale. SDET must explicitly approve deletion — orphaned tests are never silently removed.</div>
+        <span class="trust-badge" style="background:var(--rust2);color:var(--rust);border:1px solid rgba(201,74,26,.2)">SDET required</span>
+      </div>
+      <div class="trust-row">
+        <div><div class="trust-event">Flaky test detected</div><div style="font-size:.6rem;font-family:monospace;color:var(--muted)">> 3 intermittent fails</div></div>
+        <div class="trust-flow">Quarantine agent auto-tags @flaky and moves to quarantine suite immediately — no PR needed, no approval. Simultaneously files a Jira ticket with failure history attached. Flaky tests never block pipelines but are never silently lost.</div>
+        <span class="trust-badge" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">Fully autonomous</span>
+      </div>
+      <div class="trust-row" style="border-bottom:none">
+        <div><div class="trust-event">Coverage drops</div><div style="font-size:.6rem;font-family:monospace;color:var(--muted)">weekly audit</div></div>
+        <div class="trust-flow">Coverage audit agent runs weekly. Any module below its target gets a generated Jira ticket with the gap analysis, a prioritized backfill list, and draft feature file stubs attached. The pipeline hard-blocks if coverage falls below the configured floor (default 50%).</div>
+        <span class="trust-badge" style="background:var(--rust2);color:var(--rust);border:1px solid rgba(201,74,26,.2)">Hard gate</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 08 — BROWNFIELD ══ -->
+<div class="wrap" id="brownfield">
+<div class="sec">
+  <div class="sh"><div class="sn">08</div><div>
+    <p class="sl">Retrofit Strategy</p>
+    <h2 class="st">Brownfield Onboarding</h2>
+    <p class="sd">Existing production repos get full ecosystem coverage without touching their main branch. The scanner reads source code externally. All generated artifacts land in a new QA repo. The feature flag keeps everything parallel until the team is ready to flip.</p>
+  </div></div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Brownfield Onboarding Flow — Zero Source Repo Disruption</span><span class="cb-tag">Feature-Flagged · Parallel Branch</span></div>
+    <div style="padding:0">
+      <div class="flow-steps" style="padding:1.5rem 2rem">
+        <div class="fs">
+          <div class="fsl"><div class="fsd" style="background:var(--rust);box-shadow:0 0 8px rgba(201,74,26,.4)"></div><div class="fsc" style="background:linear-gradient(to bottom,var(--rust),var(--line))"></div></div>
+          <div>
+            <div class="fs-title">Sprint 0 — Prerequisites Check</div>
+            <div class="fs-desc">Run <code style="font-family:monospace;font-size:.85em">workspace-analysis</code> on the target repo. Verify: OpenAPI spec present (or auto-generate via springdoc). Read access confirmed to both frontend and backend source. Dynatrace API token available. Create dedicated QA repo: <code style="font-family:monospace;font-size:.85em">{app-name}-qa</code>.</div>
+            <span class="fs-badge" style="background:var(--rust2);color:var(--rust);border:1px solid rgba(201,74,26,.2)">Day 1–2 · No source repo changes</span>
+          </div>
+        </div>
+        <div class="fs">
+          <div class="fsl"><div class="fsd" style="background:var(--amber);box-shadow:0 0 8px rgba(138,98,0,.4)"></div><div class="fsc" style="background:linear-gradient(to bottom,var(--amber),var(--line))"></div></div>
+          <div>
+            <div class="fs-title">Sprint 0 — Breadcrumb Generation</div>
+            <div class="fs-desc">Run <code style="font-family:monospace;font-size:.85em">breadcrumb_emitter.py</code> against the source repo. Outputs <code style="font-family:monospace;font-size:.85em">.ai-sdlc/qa-breadcrumbs.yaml</code> committed to the <em>QA repo</em> — not the source repo. SDET reviews page inventory and journey derivation for accuracy. Corrections made before proceeding.</div>
+            <span class="fs-badge" style="background:var(--amber2);color:var(--amber);border:1px solid rgba(138,98,0,.2)">Day 2–3 · QA repo only</span>
+          </div>
+        </div>
+        <div class="fs">
+          <div class="fsl"><div class="fsd" style="background:var(--slate);box-shadow:0 0 8px rgba(42,63,95,.4)"></div><div class="fsc" style="background:linear-gradient(to bottom,var(--slate),var(--line))"></div></div>
+          <div>
+            <div class="fs-title">Week 1 — Generate Initial Test Suite</div>
+            <div class="fs-desc">Generator runs against breadcrumbs. Produces: feature files for all high-priority journeys, POM scaffolds for all mapped pages, API test suite from OpenAPI spec, Postman collection. All land as draft PR in QA repo. AI reviews and scores each artifact. SDET reviews, refines, merges.</div>
+            <span class="fs-badge" style="background:var(--slate2);color:var(--slate);border:1px solid rgba(42,63,95,.2)">Week 1 · QA repo draft PR</span>
+          </div>
+        </div>
+        <div class="fs">
+          <div class="fsl"><div class="fsd" style="background:var(--sage);box-shadow:0 0 8px rgba(45,90,61,.4)"></div><div class="fsc" style="background:linear-gradient(to bottom,var(--sage),var(--line))"></div></div>
+          <div>
+            <div class="fs-title">Week 2 — Add Ecosystem Include to Source Repo</div>
+            <div class="fs-desc">One line added to the source repo's <code style="font-family:monospace;font-size:.85em">.gitlab-ci.yml</code>. Variable <code style="font-family:monospace;font-size:.85em">QA_BROWNFIELD_MODE=true</code> set — this disables the breadcrumb freshness hard gate temporarily. Pipeline now runs QA jobs on every MR but does not block on breadcrumb staleness. Coverage reporting starts.</div>
+            <span class="fs-badge" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">Week 2 · First pipeline run</span>
+          </div>
+        </div>
+        <div class="fs">
+          <div class="fsl"><div class="fsd" style="background:var(--rust);box-shadow:0 0 8px rgba(201,74,26,.4)"></div><div class="fsc" style="background:linear-gradient(to bottom,var(--rust),var(--line))"></div></div>
+          <div>
+            <div class="fs-title">Weeks 3–6 — Coverage Climb to 50% Floor</div>
+            <div class="fs-desc">Coverage audit agent runs weekly. Jira tickets auto-filed for uncovered modules. SDET team backfills tests, aided by AI generation. High-priority journeys targeted first. Self-healing activates — any locator breaks from ongoing dev are patched automatically.</div>
+            <span class="fs-badge" style="background:var(--rust2);color:var(--rust);border:1px solid rgba(201,74,26,.2)">Weeks 3–6 · Target 50% floor</span>
+          </div>
+        </div>
+        <div class="fs">
+          <div class="fsl"><div class="fsd" style="background:var(--sage);box-shadow:0 0 8px rgba(45,90,61,.4)"></div></div>
+          <div>
+            <div class="fs-title">Week 6+ — Flip to Full Enforcement</div>
+            <div class="fs-desc">Once 50% floor confirmed: set <code style="font-family:monospace;font-size:.85em">QA_BROWNFIELD_MODE=false</code>. Breadcrumb freshness gate now enforced. Coverage gate now blocks MRs below floor. Repo is fully integrated. Announce to next team — pattern proven, adoption accelerates.</div>
+            <span class="fs-badge" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">Week 6 · Full enforcement · Next repo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 09 — ONBOARDING ══ -->
+<div class="wrap" id="onboarding">
+<div class="sec">
+  <div class="sh"><div class="sn">09</div><div>
+    <p class="sl">Adoption Playbook</p>
+    <h2 class="st">Repo Onboarding Checklist</h2>
+    <p class="sd">The complete checklist for bringing any repo into the ecosystem. Greenfield or brownfield. One team can complete this in a single sprint. The second team takes half the time.</p>
+  </div></div>
+
+  <div class="card" style="opacity:1;transform:none">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Full Onboarding Checklist — Shareable Per Repo</span></div>
+    <div style="padding:1.5rem 2rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+        <div>
+          <div class="tclbl" style="margin-bottom:.8rem">Prerequisites (Day 1)</div>
+          <ul class="tul">
+            <li>Read access granted to frontend + backend source repos</li>
+            <li>OpenAPI spec present or springdoc auto-generation confirmed</li>
+            <li>Dynatrace API token provisioned (or static mode accepted)</li>
+            <li>New QA repo created: <code style="font-family:monospace;font-size:.85em">{app}-qa</code></li>
+            <li><code style="font-family:monospace;font-size:.85em">workspace-analysis</code> skill run, profile committed</li>
+            <li>QA repo bootstrap applied (npm init, playwright, cucumber-js)</li>
+          </ul>
+          <div class="tclbl" style="margin-bottom:.8rem;margin-top:1.2rem">Breadcrumb + Generation (Days 2–5)</div>
+          <ul class="tul">
+            <li><code style="font-family:monospace;font-size:.85em">breadcrumb_emitter.py</code> run, YAML committed to QA repo</li>
+            <li>Page inventory reviewed by SDET — gaps noted</li>
+            <li>Journey derivation reviewed — priorities confirmed</li>
+            <li>Generator run — draft PR opened in QA repo</li>
+            <li>AI code review score reviewed by SDET</li>
+            <li>Feature files refined and merged to QA repo main</li>
+          </ul>
+        </div>
+        <div>
+          <div class="tclbl" style="margin-bottom:.8rem">Pipeline Integration (Week 2)</div>
+          <ul class="tul">
+            <li>One-line <code style="font-family:monospace;font-size:.85em">include:</code> added to source repo CI</li>
+            <li><code style="font-family:monospace;font-size:.85em">QA_ECOSYSTEM_ENABLED=true</code> set</li>
+            <li><code style="font-family:monospace;font-size:.85em">QA_BROWNFIELD_MODE=true</code> set for onboarding window</li>
+            <li><code style="font-family:monospace;font-size:.85em">QA_COVERAGE_GATE=50</code> set as target floor</li>
+            <li>Cron schedules created in GitLab UI (Tue + Thu 06:00)</li>
+            <li>Email distribution list set in <code style="font-family:monospace;font-size:.85em">QA_REPORT_EMAIL</code></li>
+            <li>First MR pipeline run verified — QA jobs visible</li>
+          </ul>
+          <div class="tclbl" style="margin-bottom:.8rem;margin-top:1.2rem">Go-Live Gate (Week 6)</div>
+          <ul class="tul">
+            <li>50% API coverage confirmed in coverage-manifest.json</li>
+            <li>50% UI coverage confirmed in allure report</li>
+            <li>Self-healing confirmed on at least one locator fix</li>
+            <li>First regression email report delivered successfully</li>
+            <li><code style="font-family:monospace;font-size:.85em">QA_BROWNFIELD_MODE=false</code> — full enforcement active</li>
+            <li>Retrospective held — lessons fed back to ecosystem template</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem;background:var(--ink2);border-radius:3px;padding:1.2rem 1.5rem">
+        <div style="font-family:'Fira Code',monospace;font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--rust);margin-bottom:.6rem">Definition of Done — Per Repo</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+          <span style="font-family:'Fira Code',monospace;font-size:.6rem;background:rgba(201,74,26,.15);border:1px solid rgba(201,74,26,.3);color:#f8c4a0;padding:.25rem .7rem;border-radius:2px">50% API coverage</span>
+          <span style="font-family:'Fira Code',monospace;font-size:.6rem;background:rgba(201,74,26,.15);border:1px solid rgba(201,74,26,.3);color:#f8c4a0;padding:.25rem .7rem;border-radius:2px">50% UI coverage</span>
+          <span style="font-family:'Fira Code',monospace;font-size:.6rem;background:rgba(201,74,26,.15);border:1px solid rgba(201,74,26,.3);color:#f8c4a0;padding:.25rem .7rem;border-radius:2px">breadcrumbs committed</span>
+          <span style="font-family:'Fira Code',monospace;font-size:.6rem;background:rgba(201,74,26,.15);border:1px solid rgba(201,74,26,.3);color:#f8c4a0;padding:.25rem .7rem;border-radius:2px">CI include active</span>
+          <span style="font-family:'Fira Code',monospace;font-size:.6rem;background:rgba(201,74,26,.15);border:1px solid rgba(201,74,26,.3);color:#f8c4a0;padding:.25rem .7rem;border-radius:2px">regression email live</span>
+          <span style="font-family:'Fira Code',monospace;font-size:.6rem;background:rgba(201,74,26,.15);border:1px solid rgba(201,74,26,.3);color:#f8c4a0;padding:.25rem .7rem;border-radius:2px">self-heal verified</span>
+          <span style="font-family:'Fira Code',monospace;font-size:.6rem;background:rgba(201,74,26,.15);border:1px solid rgba(201,74,26,.3);color:#f8c4a0;padding:.25rem .7rem;border-radius:2px">coverage gate enforced</span>
+          <span style="font-family:'Fira Code',monospace;font-size:.6rem;background:rgba(201,74,26,.15);border:1px solid rgba(201,74,26,.3);color:#f8c4a0;padding:.25rem .7rem;border-radius:2px">next team nominated</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<footer>
+  <p>QA Evergreen Ecosystem · System Design · Opinionated Architecture · Prepared with Claude</p>
+  <p style="margin-top:.5rem;font-size:.5rem;letter-spacing:.12em">workspace-analysis · breadcrumb-emitter · journey-deriver · generator-agent · qa-ecosystem.gitlab-ci · self-healing · coverage-gate</p>
+</footer>
+
+<script>
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('vis');
+    if (e.target.classList.contains('flow-steps')) {
+      e.target.querySelectorAll('.fs').forEach((s,i) =>
+        setTimeout(() => s.classList.add('vis'), i * 90));
+    }
+  });
+}, { threshold: 0.07 });
+
+document.querySelectorAll('.card,.layer,.rule-card,.fs,.flow-steps').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

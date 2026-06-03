@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-Accelerated QA Automation — Strategic Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --navy:   #0b1628;
+  --navy2:  #0f1e35;
+  --navy3:  #162540;
+  --gold:   #c9a84c;
+  --gold2:  #f0d080;
+  --gold3:  rgba(201,168,76,.12);
+  --cream:  #f5f0e6;
+  --cream2: #ede7d8;
+  --text:   #1a2540;
+  --muted:  #6b7a94;
+  --line:   rgba(201,168,76,.2);
+  --line2:  rgba(26,37,64,.12);
+  --green:  #2d7d52;
+  --red:    #a83232;
+  --blue:   #2a5fa8;
+  --teal:   #1e7a7a;
+}
+
+html{scroll-behavior:smooth}
+
+body{
+  background:var(--cream);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+/* Subtle paper texture */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
+  opacity:.6;
+}
+
+/* ══ HERO ══ */
+.hero{
+  background:var(--navy);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:5rem 3rem;
+  position:relative;overflow:hidden;
+}
+
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 70% 60% at 30% 40%, rgba(201,168,76,.06) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 70% at 80% 70%, rgba(42,95,168,.08) 0%,transparent 60%);
+}
+
+.hero-rule{
+  width:80px;height:1px;background:var(--gold);
+  margin:0 auto 2rem;
+  opacity:0;animation:riseIn .6s .2s forwards;
+}
+
+.hero-eyebrow{
+  font-family:'Fira Code',monospace;
+  font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:1.5rem;
+  opacity:0;animation:riseIn .5s .3s forwards;
+  position:relative;z-index:1;
+}
+
+h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3rem,7vw,6rem);
+  font-weight:700;line-height:.95;
+  color:#fff;
+  position:relative;z-index:1;
+  opacity:0;animation:riseIn .7s .5s forwards;
+}
+h1 em{color:var(--gold2);font-style:italic}
+
+.hero-sub{
+  max-width:640px;margin-top:2rem;font-size:.9rem;
+  line-height:1.9;color:rgba(245,240,230,.65);
+  position:relative;z-index:1;
+  opacity:0;animation:riseIn .6s .7s forwards;
+}
+
+.hero-meta{
+  display:flex;flex-wrap:wrap;gap:1rem;
+  justify-content:center;margin-top:3rem;
+  position:relative;z-index:1;
+  opacity:0;animation:riseIn .5s .9s forwards;
+}
+.hmeta{
+  font-family:'Fira Code',monospace;
+  font-size:.62rem;letter-spacing:.1em;
+  border:1px solid rgba(201,168,76,.3);
+  color:var(--gold);padding:.4rem 1rem;border-radius:2px;
+}
+
+.hero-kpis{
+  display:flex;flex-wrap:wrap;gap:1px;
+  background:rgba(201,168,76,.15);
+  border:1px solid rgba(201,168,76,.2);
+  border-radius:4px;overflow:hidden;
+  margin-top:3.5rem;
+  position:relative;z-index:1;
+  opacity:0;animation:riseIn .5s 1.1s forwards;
+}
+.hkpi{
+  background:rgba(11,22,40,.7);backdrop-filter:blur(4px);
+  padding:1.2rem 2rem;
+  display:flex;flex-direction:column;align-items:center;gap:.3rem;
+  flex:1;min-width:120px;
+}
+.hkpi-val{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.2rem;font-weight:700;color:var(--gold2);line-height:1;
+}
+.hkpi-lbl{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(245,240,230,.5)}
+
+@keyframes riseIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* ══ AUDIENCE TABS ══ */
+.audience-bar{
+  background:var(--navy2);
+  position:sticky;top:0;z-index:100;
+  border-bottom:1px solid var(--line);
+  display:flex;overflow-x:auto;
+  justify-content:center;flex-wrap:wrap;
+}
+.aud-tab{
+  font-family:'DM Sans',sans-serif;font-size:.7rem;letter-spacing:.08em;
+  color:rgba(245,240,230,.45);text-decoration:none;
+  padding:.8rem 1.6rem;white-space:nowrap;
+  border-right:1px solid rgba(201,168,76,.12);
+  transition:color .2s,background .2s;cursor:pointer;border:none;background:none;
+}
+.aud-tab:last-child{border-right:none}
+.aud-tab:hover,.aud-tab.active{color:var(--gold2);background:rgba(201,168,76,.06)}
+
+/* ══ WRAPPER ══ */
+.wrap{max-width:1200px;margin:0 auto;padding:0 2.5rem;position:relative;z-index:1}
+
+/* ══ SECTION ══ */
+.sec{padding:5rem 0 2rem;border-top:2px solid var(--line2)}
+.sec:first-child{border-top:none}
+
+.sh{display:grid;grid-template-columns:80px 1fr;gap:2rem;margin-bottom:3.5rem;align-items:start}
+.sn{
+  font-family:'Cormorant Garamond',serif;
+  font-size:4rem;font-weight:300;
+  color:var(--line2);line-height:1;padding-top:.3rem;
+}
+.sl{font-family:'Fira Code',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem}
+.st{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,2.8rem);font-weight:700;color:var(--navy);line-height:1.1;margin-bottom:.7rem}
+.sd{font-size:.82rem;line-height:1.9;color:var(--muted);max-width:660px}
+
+/* ══ CARDS ══ */
+.card{
+  border:1px solid var(--line2);
+  background:#fff;border-radius:4px;
+  overflow:hidden;margin-bottom:1.5rem;
+  box-shadow:0 2px 20px rgba(11,22,40,.06);
+  opacity:0;transform:translateY(14px);
+  transition:opacity .5s,transform .5s;
+}
+.card.vis{opacity:1;transform:none}
+.card:hover{box-shadow:0 4px 32px rgba(11,22,40,.1)}
+
+.cb{
+  display:flex;align-items:center;gap:.8rem;
+  padding:.7rem 1.5rem;
+  background:var(--navy);border-bottom:1px solid var(--line);
+}
+.cb-title{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.05rem;color:var(--gold2);
+}
+.cb-tag{
+  margin-left:auto;font-family:'Fira Code',monospace;
+  font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);border:1px solid rgba(255,255,255,.1);
+  padding:.15rem .55rem;border-radius:2px;color:rgba(245,240,230,.4);
+}
+.dots{display:flex;gap:.35rem}
+.dot{width:8px;height:8px;border-radius:50%}
+.dr{background:#ef4444}.dy{background:#f59e0b}.dg{background:#22c55e}
+
+.c2{display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:700px){.c2{grid-template-columns:1fr}}
+.cdiag{
+  border-right:1px solid var(--line2);padding:2rem;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--cream);min-height:280px;
+}
+@media(max-width:700px){.cdiag{border-right:none;border-bottom:1px solid var(--line2);min-height:220px}}
+.cinfo{padding:2rem}
+
+.cquote{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1rem;color:var(--teal);margin-bottom:.8rem;
+}
+.cdesc{font-size:.74rem;line-height:1.9;color:var(--muted);margin-bottom:1.2rem}
+
+.tcols{display:flex;gap:2rem;flex-wrap:wrap;margin-bottom:1rem}
+.tcol{flex:1;min-width:120px}
+.tclbl{
+  font-family:'Fira Code',monospace;font-size:.55rem;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.5rem;
+}
+.tul{list-style:none}
+.tul li{
+  font-size:.7rem;color:var(--muted);line-height:1.8;
+  padding-left:.9rem;position:relative;
+}
+.tul li::before{content:'·';position:absolute;left:0;color:var(--gold);font-size:1rem;line-height:1.2}
+
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.chip{
+  font-family:'Fira Code',monospace;font-size:.55rem;
+  background:var(--gold3);border:1px solid var(--line);
+  color:var(--gold);padding:.2rem .7rem;border-radius:2px;
+}
+.chip.b{background:rgba(42,95,168,.08);border-color:rgba(42,95,168,.2);color:var(--blue)}
+.chip.g{background:rgba(45,125,82,.08);border-color:rgba(45,125,82,.2);color:var(--green)}
+.chip.t{background:rgba(30,122,122,.08);border-color:rgba(30,122,122,.2);color:var(--teal)}
+
+/* ══ SVG ══ */
+svg{width:100%;height:auto;font-family:'DM Sans',sans-serif}
+.b   {fill:#fff;stroke:#d4cdc0;stroke-width:1.2}
+.bN  {fill:var(--navy);stroke:var(--navy);stroke-width:1}
+.bG  {fill:rgba(201,168,76,.1);stroke:var(--gold);stroke-width:1.2}
+.bB  {fill:rgba(42,95,168,.08);stroke:var(--blue);stroke-width:1}
+.bGr {fill:rgba(45,125,82,.08);stroke:var(--green);stroke-width:1}
+.bT  {fill:rgba(30,122,122,.08);stroke:var(--teal);stroke-width:1}
+.bR  {fill:rgba(168,50,50,.07);stroke:var(--red);stroke-width:1}
+.bCr {fill:var(--cream);stroke:#d4cdc0;stroke-width:1}
+.t   {fill:var(--text);font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tN  {fill:#fff;font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tG  {fill:#a07830;font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tGr {fill:var(--green);font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tB  {fill:var(--blue);font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tT  {fill:var(--teal);font-size:7px;text-anchor:middle;dominant-baseline:middle}
+.tM  {fill:var(--muted);font-size:6px;text-anchor:middle;dominant-baseline:middle}
+.ts  {font-size:5.5px}
+.arr  {stroke:var(--gold);stroke-width:1.4;fill:none;marker-end:url(#aG)}
+.arrB {stroke:var(--blue);stroke-width:1.2;fill:none;marker-end:url(#aB)}
+.arrGr{stroke:var(--green);stroke-width:1.2;fill:none;marker-end:url(#aGr)}
+.arrT {stroke:var(--teal);stroke-width:1.2;fill:none;marker-end:url(#aT)}
+.arrD {stroke:#d4cdc0;stroke-width:1;stroke-dasharray:4,3;fill:none;marker-end:url(#aD)}
+
+/* ══ ROADMAP TIMELINE ══ */
+.timeline{position:relative;margin-bottom:3rem}
+.tl-spine{
+  position:absolute;left:120px;top:0;bottom:0;
+  width:2px;background:linear-gradient(to bottom,var(--gold),rgba(201,168,76,.1));
+}
+
+.tl-phase{
+  display:grid;grid-template-columns:120px 1fr;
+  gap:2rem;margin-bottom:2rem;
+  opacity:0;transform:translateX(-12px);
+  transition:opacity .5s,transform .5s;
+}
+.tl-phase.vis{opacity:1;transform:none}
+
+.tl-left{
+  text-align:right;padding-right:2.5rem;padding-top:.4rem;
+}
+.tl-dot{
+  width:14px;height:14px;border-radius:50%;
+  background:var(--gold);position:absolute;
+  left:114px;margin-top:.35rem;
+  box-shadow:0 0 0 4px var(--cream),0 0 0 6px rgba(201,168,76,.3);
+}
+.tl-period{
+  font-family:'Fira Code',monospace;
+  font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.2rem;
+}
+.tl-pname{
+  font-family:'Cormorant Garamond',serif;font-weight:700;
+  font-size:1.1rem;color:var(--navy);
+}
+
+.tl-card{
+  border:1px solid var(--line2);background:#fff;
+  border-radius:4px;overflow:hidden;
+  box-shadow:0 2px 16px rgba(11,22,40,.05);
+}
+.tl-head{
+  padding:.8rem 1.4rem;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.tl-phase-label{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1rem;
+}
+.tl-coverage{
+  font-family:'Fira Code',monospace;font-size:.65rem;
+  padding:.25rem .7rem;border-radius:2px;
+}
+.tl-body{padding:1.2rem 1.4rem}
+
+.deliverable-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:.8rem;margin-top:1rem;
+}
+.deliv{
+  border:1px solid var(--line2);
+  background:var(--cream);
+  border-radius:3px;padding:.9rem;
+}
+.deliv-icon{font-size:1.1rem;margin-bottom:.4rem}
+.deliv-title{font-size:.72rem;font-weight:600;color:var(--navy);margin-bottom:.2rem}
+.deliv-desc{font-size:.62rem;color:var(--muted);line-height:1.6}
+
+@media(max-width:640px){
+  .tl-spine,.tl-dot{display:none}
+  .tl-phase{grid-template-columns:1fr}
+  .tl-left{text-align:left;padding-right:0}
+}
+
+/* ══ PHASE COLORS ══ */
+.ph1 .tl-head{background:#f0f8f4}
+.ph1 .tl-phase-label{color:var(--green)}
+.ph1 .tl-coverage{background:rgba(45,125,82,.1);color:var(--green);border:1px solid rgba(45,125,82,.2)}
+
+.ph2 .tl-head{background:#f0f4f8}
+.ph2 .tl-phase-label{color:var(--blue)}
+.ph2 .tl-coverage{background:rgba(42,95,168,.1);color:var(--blue);border:1px solid rgba(42,95,168,.2)}
+
+.ph3 .tl-head{background:rgba(201,168,76,.06)}
+.ph3 .tl-phase-label{color:var(--gold)}
+.ph3 .tl-coverage{background:var(--gold3);color:#a07830;border:1px solid var(--line)}
+
+.ph4 .tl-head{background:rgba(30,122,122,.06)}
+.ph4 .tl-phase-label{color:var(--teal)}
+.ph4 .tl-coverage{background:rgba(30,122,122,.1);color:var(--teal);border:1px solid rgba(30,122,122,.2)}
+
+.ph5 .tl-head{background:rgba(168,50,50,.04)}
+.ph5 .tl-phase-label{color:var(--red)}
+.ph5 .tl-coverage{background:rgba(168,50,50,.08);color:var(--red);border:1px solid rgba(168,50,50,.2)}
+
+.ph6 .tl-head{background:var(--navy)}
+.ph6 .tl-phase-label{color:var(--gold2)}
+.ph6 .tl-coverage{background:rgba(201,168,76,.2);color:var(--gold2);border:1px solid rgba(201,168,76,.3)}
+
+/* ══ KPI TABLE ══ */
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:1px;background:var(--line2);
+  border:1px solid var(--line2);border-radius:4px;overflow:hidden;
+  margin-bottom:2rem;
+  opacity:0;transform:translateY(14px);
+  transition:opacity .5s,transform .5s;
+}
+.kpi-grid.vis{opacity:1;transform:none}
+
+.kpi-item{background:#fff;padding:1.5rem}
+.kpi-val{
+  font-family:'Cormorant Garamond',serif;font-size:2.4rem;
+  font-weight:700;color:var(--navy);line-height:1;margin-bottom:.3rem;
+}
+.kpi-name{font-size:.65rem;font-weight:600;color:var(--text);margin-bottom:.2rem}
+.kpi-desc{font-size:.62rem;color:var(--muted);line-height:1.5}
+
+/* ══ CODE BLOCK ══ */
+.codeblock{
+  background:var(--navy);border-radius:4px;
+  padding:1.4rem 1.6rem;
+  font-family:'Fira Code',monospace;font-size:.63rem;
+  line-height:1.9;overflow-x:auto;margin:.8rem 0;
+  border:1px solid rgba(201,168,76,.15);
+}
+.ck{color:var(--gold2)}.ca{color:#6fb3d2}.cv{color:#a8d4a8}
+.cc{color:#7a8499;font-style:italic}.cs{color:#f0d080}
+
+/* ══ STAKEHOLDER SECTIONS ══ */
+.stake-tabs{
+  display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap;
+}
+.stake-tab{
+  font-size:.7rem;padding:.45rem 1.1rem;border-radius:3px;
+  border:1px solid var(--line2);background:#fff;
+  cursor:pointer;transition:all .2s;color:var(--muted);
+}
+.stake-tab.active,.stake-tab:hover{
+  background:var(--navy);color:var(--gold2);border-color:var(--navy);
+}
+.stake-content{display:none}
+.stake-content.active{display:block}
+
+/* ══ PITCH CARD ══ */
+.pitch-card{
+  border-left:3px solid var(--gold);
+  padding:1.2rem 1.5rem;background:#fff;
+  border-radius:0 4px 4px 0;margin-bottom:1rem;
+  box-shadow:0 1px 12px rgba(11,22,40,.05);
+}
+.pitch-head{display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem}
+.pitch-icon{font-size:1.2rem}
+.pitch-title{font-weight:600;font-size:.82rem;color:var(--navy)}
+.pitch-body{font-size:.72rem;color:var(--muted);line-height:1.8}
+
+/* ══ ARCH SECTION ══ */
+.arch-layers{display:flex;flex-direction:column;gap:1px;margin-bottom:1.5rem}
+.arch-layer{
+  display:grid;grid-template-columns:140px 1fr;
+  border:1px solid var(--line2);border-radius:3px;overflow:hidden;
+  opacity:0;transform:translateX(-10px);
+  transition:opacity .4s,transform .4s;
+}
+.arch-layer.vis{opacity:1;transform:none}
+.arch-lname{
+  background:var(--navy);padding:.9rem 1rem;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:.85rem;color:var(--gold2);text-align:center;
+}
+.arch-lcontent{
+  background:#fff;padding:.8rem 1.2rem;
+  display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;
+}
+.arch-item{
+  font-family:'Fira Code',monospace;font-size:.6rem;
+  padding:.25rem .65rem;border-radius:2px;
+  border:1px solid var(--line2);color:var(--text);
+  background:var(--cream);
+}
+
+/* ══ PROGRESS BAR ══ */
+.progress-row{margin-bottom:.9rem}
+.pr-head{display:flex;justify-content:space-between;margin-bottom:.3rem}
+.pr-label{font-size:.7rem;font-weight:600;color:var(--navy)}
+.pr-val{font-family:'Fira Code',monospace;font-size:.62rem;color:var(--gold)}
+.pr-track{height:6px;background:var(--cream2);border-radius:3px;overflow:hidden}
+.pr-fill{height:100%;border-radius:3px;background:linear-gradient(to right,var(--gold),var(--gold2));transition:width 1.2s ease}
+
+/* ══ COMPARISON TABLE ══ */
+.ctable{width:100%;border-collapse:collapse;font-size:.7rem}
+.ctable th{
+  background:var(--navy);color:var(--gold2);
+  padding:.6rem 1rem;text-align:left;
+  font-family:'Fira Code',monospace;font-size:.58rem;letter-spacing:.1em;font-weight:400;
+  border-bottom:2px solid var(--line);
+}
+.ctable td{
+  padding:.65rem 1rem;border-bottom:1px solid var(--line2);
+  color:var(--muted);line-height:1.6;vertical-align:top;
+}
+.ctable tr:hover td{background:var(--cream)}
+.tdh{font-weight:600;color:var(--navy)}
+.tdg{color:var(--green)}.tdr{color:var(--red)}
+
+/* footer */
+footer{
+  background:var(--navy);padding:3rem 2rem;
+  text-align:center;position:relative;z-index:1;
+}
+footer p{font-family:'Fira Code',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(201,168,76,.5)}
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="hero-rule"></div>
+  <p class="hero-eyebrow">Strategic Initiative · QA Transformation · 18-Month Plan</p>
+  <h1>AI-Accelerated<br><em>QA Automation</em><br>Roadmap</h1>
+  <p class="hero-sub">A phased transformation from manual testing to 100% UI + API automation coverage — powered by AI acceleration, Gherkin BDD, Page Object Model, and GitLab CI/CD with self-healing intelligence. Built on TypeScript + Playwright for tests, Python for AI agents.</p>
+  <div class="hero-meta">
+    <span class="hmeta">TypeScript · Cucumber-JS</span>
+    <span class="hmeta">Playwright · POM</span>
+    <span class="hmeta">Python · AI Agents</span>
+    <span class="hmeta">GitLab CI/CD</span>
+    <span class="hmeta">Greenfield + Brownfield</span>
+  </div>
+  <div class="hero-kpis">
+    <div class="hkpi"><span class="hkpi-val">100%</span><span class="hkpi-lbl">UI Coverage Target</span></div>
+    <div class="hkpi"><span class="hkpi-val">18mo</span><span class="hkpi-lbl">Full Rollout</span></div>
+    <div class="hkpi"><span class="hkpi-val">2×</span><span class="hkpi-lbl">Weekly Regression</span></div>
+    <div class="hkpi"><span class="hkpi-val">~70%</span><span class="hkpi-lbl">Defects Caught Pre-Prod</span></div>
+    <div class="hkpi"><span class="hkpi-val">AI</span><span class="hkpi-lbl">Self-Healing Tests</span></div>
+  </div>
+</section>
+
+<!-- ══ NAV ══ -->
+<nav class="audience-bar">
+  <a href="#vision" class="aud-tab">Vision</a>
+  <a href="#architecture" class="aud-tab">Architecture</a>
+  <a href="#framework" class="aud-tab">Framework</a>
+  <a href="#gitlab" class="aud-tab">GitLab CI</a>
+  <a href="#roadmap" class="aud-tab">Roadmap</a>
+  <a href="#kpis" class="aud-tab">KPIs</a>
+  <a href="#ai" class="aud-tab">AI Patterns</a>
+  <a href="#stakeholders" class="aud-tab">Pitch Decks</a>
+</nav>
+
+<!-- ══ 01 — VISION ══ -->
+<div class="wrap" id="vision">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">01</div>
+    <div>
+      <p class="sl">The Why</p>
+      <h2 class="st">The Golden Path Vision</h2>
+      <p class="sd">Every feature merged triggers targeted automated tests. Every week, a full regression runs twice. Every result is emailed with coverage stats, improvement trends, and AI-generated insights — with zero manual intervention.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">The Golden Path — Developer Pushes Code to Live</span><span class="cb-tag">End-to-End Flow</span></div>
+    <div class="cdiag" style="min-height:320px">
+      <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="aG" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#c9a84c"/></marker>
+          <marker id="aB" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#2a5fa8"/></marker>
+          <marker id="aGr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#2d7d52"/></marker>
+          <marker id="aT" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#1e7a7a"/></marker>
+          <marker id="aD" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#d4cdc0"/></marker>
+        </defs>
+
+        <!-- Developer -->
+        <rect x="6" y="70" width="68" height="60" rx="3" class="bB"/>
+        <text x="40" y="95" class="t" style="font-size:8px">👨‍💻</text>
+        <text x="40" y="110" class="tB ts">Developer</text>
+        <text x="40" y="120" class="tM ts">MR / Push</text>
+
+        <line x1="74" y1="100" x2="102" y2="100" class="arr"/>
+
+        <!-- GitLab MR -->
+        <rect x="102" y="58" width="82" height="84" rx="3" class="bG"/>
+        <text x="143" y="76" class="tG" style="font-size:6.5px;letter-spacing:.1em">GITLAB MR</text>
+        <rect x="110" y="84" width="66" height="14" rx="2" class="bCr"/><text x="143" y="91" class="t ts">Feature Branch</text>
+        <rect x="110" y="102" width="66" height="14" rx="2" class="bCr"/><text x="143" y="109" class="t ts">Code Review</text>
+        <rect x="110" y="120" width="66" height="14" rx="2" class="bCr"/><text x="143" y="127" class="t ts">Auto-Tag Tests</text>
+
+        <line x1="184" y1="100" x2="212" y2="100" class="arr"/>
+
+        <!-- QA Pipeline trigger -->
+        <rect x="212" y="40" width="108" height="120" rx="3" class="bN"/>
+        <text x="266" y="58" class="tN" style="font-size:6.5px;letter-spacing:.1em">QA PIPELINE</text>
+        <rect x="220" y="66" width="92" height="14" rx="2" style="fill:rgba(201,168,76,.15);stroke:rgba(201,168,76,.3);stroke-width:1"/>
+        <text x="266" y="73" style="fill:#c9a84c;font-size:5.5px;text-anchor:middle;dominant-baseline:middle">AI: Detect Changed Features</text>
+        <rect x="220" y="84" width="92" height="14" rx="2" style="fill:rgba(255,255,255,.06)"/><text x="266" y="91" class="tN ts">Select Feature Tests</text>
+        <rect x="220" y="102" width="92" height="14" rx="2" style="fill:rgba(255,255,255,.06)"/><text x="266" y="109" class="tN ts">API Tests (axios+zod)</text>
+        <rect x="220" y="120" width="92" height="14" rx="2" style="fill:rgba(255,255,255,.06)"/><text x="266" y="127" class="tN ts">UI Playwright Tests</text>
+        <rect x="220" y="138" width="92" height="14" rx="2" style="fill:rgba(255,255,255,.06)"/><text x="266" y="145" class="tN ts">Self-Heal if Locators Fail</text>
+
+        <line x1="320" y1="80" x2="348" y2="64" class="arrGr"/>
+        <line x1="320" y1="100" x2="348" y2="100" class="arrGr"/>
+        <line x1="320" y1="120" x2="348" y2="136" style="stroke:#a83232;stroke-width:1.2;fill:none;marker-end:url(#aB)"/>
+
+        <!-- Results -->
+        <rect x="348" y="46" width="90" height="30" rx="3" class="bGr"/>
+        <text x="393" y="61" class="tGr" style="font-size:6.5px">✓ PASS — Merge</text>
+
+        <rect x="348" y="84" width="90" height="30" rx="3" class="bG"/>
+        <text x="393" y="99" class="tG" style="font-size:6.5px">📊 Coverage Report</text>
+
+        <rect x="348" y="118" width="90" height="30" rx="3" class="bR"/>
+        <text x="393" y="133" class="tB" style="font-size:6.5px">✗ FAIL — Block + Alert</text>
+
+        <!-- Notifications -->
+        <line x1="438" y1="61" x2="466" y2="50" class="arrD"/>
+        <line x1="438" y1="99" x2="466" y2="92" class="arrD"/>
+        <line x1="438" y1="133" x2="466" y2="140" class="arrD"/>
+
+        <rect x="466" y="34" width="100" height="20" rx="2" class="b"/><text x="516" y="44" class="t ts">📧 Email Report</text>
+        <rect x="466" y="80" width="100" height="20" rx="2" class="b"/><text x="516" y="90" class="t ts">📈 KPI Dashboard</text>
+        <rect x="466" y="124" width="100" height="20" rx="2" class="b"/><text x="516" y="134" class="t ts">🔔 Slack / Teams Alert</text>
+
+        <!-- Cron schedule note -->
+        <rect x="466" y="158" width="208" height="20" rx="2" class="bCr" style="stroke:var(--gold);stroke-width:1"/>
+        <text x="570" y="168" class="tG" style="font-size:5.5px">🕐 Cron: Full Regression Tue 6AM + Thu 6AM</text>
+
+        <!-- AI tag -->
+        <rect x="100" y="168" width="112" height="22" rx="2" class="bG" style="stroke-dasharray:4,2"/>
+        <text x="156" y="179" class="tG" style="font-size:5.5px">⚡ AI: Auto-generates new tests</text>
+        <text x="156" y="187" class="tG" style="font-size:5.5px">from source code changes</text>
+      </svg>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 02 — ARCHITECTURE ══ -->
+<div class="wrap" id="architecture">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">02</div>
+    <div>
+      <p class="sl">Technical Blueprint</p>
+      <h2 class="st">Framework Architecture</h2>
+      <p class="sd">A layered architecture that separates concerns cleanly — business intent in Gherkin, orchestration in Step Definitions, and infrastructure abstraction in POM classes. AI agents operate at every layer.</p>
+    </div>
+  </div>
+
+  <div class="arch-layers">
+    <div class="arch-layer">
+      <div class="arch-lname">Business Layer</div>
+      <div class="arch-lcontent">
+        <span class="arch-item">Feature Files (.feature)</span>
+        <span class="arch-item">Gherkin Scenarios</span>
+        <span class="arch-item">Given / When / Then</span>
+        <span class="arch-item">Scenario Outlines</span>
+        <span class="arch-item">Background Steps</span>
+        <span class="arch-item">Tags: @smoke @regression @api @ui</span>
+        <span class="arch-item chip">AI generates from user stories</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-lname">Glue Layer</div>
+      <div class="arch-lcontent">
+        <span class="arch-item">Step Definitions (TypeScript)</span>
+        <span class="arch-item">@cucumber/cucumber · Hooks</span>
+        <span class="arch-item">World Object / Context</span>
+        <span class="arch-item">Data Tables</span>
+        <span class="arch-item">ts-node · tsconfig paths</span>
+        <span class="arch-item chip">AI scaffolds from new .feature files</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-lname" style="color:#6fb3d2">POM Layer</div>
+      <div class="arch-lcontent">
+        <span class="arch-item">Page Objects (per screen)</span>
+        <span class="arch-item">Playwright Locators (getByRole/testId/css)</span>
+        <span class="arch-item">Page Actions (click, fill, expect)</span>
+        <span class="arch-item">Component Objects (reusable)</span>
+        <span class="arch-item">Self-Healing: AI re-locates broken selectors</span>
+        <span class="arch-item chip b">AI generates POM from DOM inspection</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-lname" style="color:#88c8a0">API Layer</div>
+      <div class="arch-lcontent">
+        <span class="arch-item">API Clients (axios + TypeScript)</span>
+        <span class="arch-item">Request Builders (typed interfaces)</span>
+        <span class="arch-item">zod schema validation</span>
+        <span class="arch-item">Contract Tests (Pact/OpenAPI)</span>
+        <span class="arch-item">Data Factories (faker-js)</span>
+        <span class="arch-item chip g">AI generates from OpenAPI / Swagger specs</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-lname" style="color:#80c8c8">Infrastructure Layer</div>
+      <div class="arch-lcontent">
+        <span class="arch-item">Playwright Browser Factory</span>
+        <span class="arch-item">Chromium · Firefox · WebKit (Safari)</span>
+        <span class="arch-item">Auto-wait · Network Intercept · Trace</span>
+        <span class="arch-item">Test Data Management</span>
+        <span class="arch-item">Secrets / Config (env-specific .env)</span>
+        <span class="arch-item">Screenshot + Video on Failure</span>
+        <span class="arch-item chip t">Docker + GitLab Runner · mcr.microsoft.com/playwright</span>
+      </div>
+    </div>
+    <div class="arch-layer">
+      <div class="arch-lname" style="color:#d4a850">Reporting Layer</div>
+      <div class="arch-lcontent">
+        <span class="arch-item">Allure Reports (allure-playwright)</span>
+        <span class="arch-item">Cucumber HTML Reports</span>
+        <span class="arch-item">Python: Email Distribution (smtplib + jinja2)</span>
+        <span class="arch-item">Coverage Delta (Δ vs last run)</span>
+        <span class="arch-item">DORA Metrics Export</span>
+        <span class="arch-item chip">AI narrates failures in plain English</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Framework structure diagram -->
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">QA Repository Structure — Greenfield + Brownfield</span><span class="cb-tag">Dual-Mode</span></div>
+    <div class="c2">
+      <div class="cdiag">
+        <svg viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- Repo root -->
+          <rect x="70" y="6" width="160" height="28" rx="3" class="bN"/>
+          <text x="150" y="20" class="tN" style="font-size:7.5px">qa-automation-repo/</text>
+
+          <!-- Folders -->
+          <line x1="150" y1="34" x2="150" y2="50" class="arrD"/>
+
+          <!-- features/ -->
+          <rect x="10" y="50" width="100" height="20" rx="2" class="bG"/>
+          <text x="60" y="60" class="tG ts">features/</text>
+          <rect x="14" y="74" width="58" height="14" rx="1" class="bCr"/><text x="43" y="81" class="tM ts">api/ *.feature</text>
+          <rect x="14" y="92" width="58" height="14" rx="1" class="bCr"/><text x="43" y="99" class="tM ts">ui/ *.feature</text>
+          <rect x="14" y="110" width="58" height="14" rx="1" class="bCr"/><text x="43" y="117" class="tM ts">e2e/ *.feature</text>
+          <line x1="60" y1="70" x2="43" y2="74" class="arrD"/>
+          <line x1="60" y1="70" x2="43" y2="92" class="arrD"/>
+          <line x1="60" y1="70" x2="43" y2="110" class="arrD"/>
+          <line x1="60" y1="70" x2="60" y2="74" class="arrD"/>
+
+          <!-- steps/ -->
+          <rect x="125" y="50" width="50" height="20" rx="2" class="bB"/>
+          <text x="150" y="60" class="tB ts">steps/</text>
+          <rect x="118" y="74" width="64" height="14" rx="1" class="bCr"/><text x="150" y="81" class="tM ts">api.steps.ts</text>
+          <rect x="118" y="92" width="64" height="14" rx="1" class="bCr"/><text x="150" y="99" class="tM ts">ui.steps.ts</text>
+          <rect x="118" y="110" width="64" height="14" rx="1" class="bCr"/><text x="150" y="117" class="tM ts">common.steps.ts</text>
+          <line x1="150" y1="70" x2="150" y2="74" class="arrD"/>
+
+          <!-- pages/ -->
+          <rect x="190" y="50" width="100" height="20" rx="2" class="bT"/>
+          <text x="240" y="60" class="tT ts">pages/ (POM)</text>
+          <rect x="196" y="74" width="88" height="14" rx="1" class="bCr"/><text x="240" y="81" class="tM ts">LoginPage.ts</text>
+          <rect x="196" y="92" width="88" height="14" rx="1" class="bCr"/><text x="240" y="99" class="tM ts">DashboardPage.ts</text>
+          <rect x="196" y="110" width="88" height="14" rx="1" class="bCr"/><text x="240" y="117" class="tM ts">BasePage.ts</text>
+          <line x1="240" y1="70" x2="240" y2="74" class="arrD"/>
+
+          <!-- support/ -->
+          <rect x="10" y="142" width="88" height="20" rx="2" class="bCr" style="stroke:var(--line2)"/>
+          <text x="54" y="152" class="tM ts">support/</text>
+          <rect x="14" y="166" width="58" height="14" rx="1" class="bCr"/><text x="43" y="173" class="tM ts">hooks/</text>
+          <rect x="14" y="184" width="58" height="14" rx="1" class="bCr"/><text x="43" y="191" class="tM ts">testdata/</text>
+          <rect x="14" y="202" width="58" height="14" rx="1" class="bCr"/><text x="43" y="209" class="tM ts">factories/</text>
+
+          <!-- config/ -->
+          <rect x="110" y="142" width="80" height="20" rx="2" class="bCr" style="stroke:var(--line2)"/>
+          <text x="150" y="152" class="tM ts">config/</text>
+          <rect x="112" y="166" width="76" height="14" rx="1" class="bCr"/><text x="150" y="173" class="tM ts">dev.yml / staging.yml</text>
+          <rect x="112" y="184" width="76" height="14" rx="1" class="bCr"/><text x="150" y="191" class="tM ts">prod.yml</text>
+
+          <!-- reports/ + ci/ -->
+          <rect x="202" y="142" width="88" height="20" rx="2" class="bCr" style="stroke:var(--line2)"/>
+          <text x="246" y="152" class="tM ts">reports/ + .gitlab-ci</text>
+
+          <!-- ai-agents/ -->
+          <rect x="70" y="236" width="160" height="22" rx="3" class="bG" style="stroke-dasharray:5,2"/>
+          <text x="150" y="247" class="tG" style="font-size:6px">✨ ai-agents/ (scaffolder · healer · generator)</text>
+
+          <!-- Lines from root -->
+          <line x1="100" y1="34" x2="60" y2="50" class="arrD"/>
+          <line x1="150" y1="34" x2="150" y2="50" class="arrD"/>
+          <line x1="200" y1="34" x2="240" y2="50" class="arrD"/>
+          <line x1="100" y1="34" x2="54" y2="142" class="arrD"/>
+          <line x1="150" y1="34" x2="150" y2="142" class="arrD"/>
+          <line x1="200" y1="34" x2="246" y2="142" class="arrD"/>
+        </svg>
+      </div>
+      <div class="cinfo">
+        <p class="cquote">"One repo reads all. Source code is the spec."</p>
+        <p class="cdesc">The QA repo has read access to all application repositories. AI agents parse source code, OpenAPI specs, and UI component trees to auto-generate test scaffolding — then engineers review and finalize. Brownfield projects get reverse-engineered from existing endpoints and pages.</p>
+        <div class="tcols">
+          <div class="tcol">
+            <div class="tclbl">Greenfield</div>
+            <ul class="tul">
+              <li>AI reads new API contracts (OpenAPI)</li>
+              <li>Generates feature files from user stories</li>
+              <li>Scaffolds Step Definitions + POM</li>
+              <li>100% coverage from day one</li>
+              <li>Tests merge with feature code</li>
+            </ul>
+          </div>
+          <div class="tcol">
+            <div class="tclbl">Brownfield</div>
+            <ul class="tul">
+              <li>AI crawls existing UI (DOM snapshot)</li>
+              <li>Reads existing API routes / Swagger</li>
+              <li>Generates POM classes from pages</li>
+              <li>Coverage gap analysis vs existing tests</li>
+              <li>Incremental backfill strategy</li>
+            </ul>
+          </div>
+        </div>
+        <div class="chips">
+          <span class="chip">TypeScript · Cucumber-JS</span>
+          <span class="chip b">Playwright (UI Tests)</span>
+          <span class="chip g">axios + zod (API Tests)</span>
+          <span class="chip t">Python 3.12 (AI Agents)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 03 — FRAMEWORK ══ -->
+<div class="wrap" id="framework">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">03</div>
+    <div>
+      <p class="sl">BDD + POM in Practice</p>
+      <h2 class="st">Gherkin → Steps → POM</h2>
+      <p class="sd">The complete traceability chain: a business-readable Gherkin scenario maps to step definitions that delegate to Page Objects or API clients. AI agents keep all three layers in sync as the application evolves.</p>
+    </div>
+  </div>
+
+  <!-- UI Test Example -->
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">UI Test — Gherkin Feature → Step → POM Chain</span><span class="cb-tag">TypeScript · Playwright · POM</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line2)">
+      <div style="background:var(--cream);padding:1.2rem">
+        <div class="tclbl" style="margin-bottom:.6rem">① Feature File</div>
+        <div class="codeblock" style="font-size:.56rem;margin:0">
+<span class="cc"># features/ui/login.feature</span>
+<span class="ck">Feature:</span> <span class="cs">User Login</span>
+
+  <span class="ck">@ui @smoke</span>
+  <span class="ck">Scenario:</span> <span class="cs">Successful login</span>
+    <span class="ck">Given</span> user is on login page
+    <span class="ck">When</span>  enters valid credentials
+    <span class="ck">Then</span>  dashboard is displayed
+
+  <span class="ck">@ui @regression</span>
+  <span class="ck">Scenario Outline:</span> <span class="cs">Failed login</span>
+    <span class="ck">Given</span> user is on login page
+    <span class="ck">When</span>  enters <span class="ca">&lt;user&gt;</span> / <span class="ca">&lt;pass&gt;</span>
+    <span class="ck">Then</span>  error <span class="ca">&lt;msg&gt;</span> is shown
+    <span class="ck">Examples:</span>
+    <span class="ca">| user  | pass  | msg       |</span>
+    <span class="ca">| bad   | bad   | Invalid   |</span>
+    <span class="ca">| empty | empty | Required  |</span>
+        </div>
+      </div>
+      <div style="background:var(--cream);padding:1.2rem">
+        <div class="tclbl" style="margin-bottom:.6rem">② Step Definition</div>
+        <div class="codeblock" style="font-size:.56rem;margin:0">
+<span class="cc">// steps/login.steps.ts</span>
+<span class="ck">import</span> { Given, When, Then }
+  <span class="ck">from</span> <span class="cv">'@cucumber/cucumber'</span>;
+<span class="ck">import</span> { LoginPage } <span class="ck">from</span> <span class="cv">'../pages'</span>;
+<span class="ck">import</span> { World } <span class="ck">from</span> <span class="cv">'../support/world'</span>;
+
+Given(<span class="cv">'user is on login page'</span>,
+  <span class="ck">async function</span>(<span class="ck">this</span>: World) {
+    <span class="ck">this</span>.loginPage =
+      <span class="ck">new</span> LoginPage(<span class="ck">this</span>.page);
+    <span class="ck">await this</span>.loginPage.open();
+});
+
+When(<span class="cv">'enters valid credentials'</span>,
+  <span class="ck">async function</span>(<span class="ck">this</span>: World) {
+    <span class="ck">await this</span>.loginPage
+      .fillUsername(config.user)
+      .fillPassword(config.pass)
+      .submit();
+});
+
+Then(<span class="cv">'dashboard is displayed'</span>,
+  <span class="ck">async function</span>(<span class="ck">this</span>: World) {
+    <span class="ck">const</span> dash = <span class="ck">new</span>
+      DashboardPage(<span class="ck">this</span>.page);
+    <span class="ck">await</span> dash.assertLoaded();
+});
+        </div>
+      </div>
+      <div style="background:var(--cream);padding:1.2rem">
+        <div class="tclbl" style="margin-bottom:.6rem">③ POM Class</div>
+        <div class="codeblock" style="font-size:.56rem;margin:0">
+<span class="cc">// pages/LoginPage.ts</span>
+<span class="ck">import</span> { Page, Locator } <span class="ck">from</span>
+  <span class="cv">'@playwright/test'</span>;
+<span class="ck">import</span> { BasePage } <span class="ck">from</span>
+  <span class="cv">'./BasePage'</span>;
+
+<span class="ck">export class</span> <span class="cs">LoginPage</span>
+    <span class="ck">extends</span> <span class="ca">BasePage</span> {
+
+  <span class="cc">// Playwright locators
+  // (AI self-heals these)</span>
+  <span class="ck">readonly</span> username: Locator;
+  <span class="ck">readonly</span> password: Locator;
+  <span class="ck">readonly</span> submitBtn: Locator;
+
+  constructor(page: Page) {
+    <span class="ck">super</span>(page);
+    <span class="ck">this</span>.username =
+      page.getByLabel(<span class="cv">'Username'</span>);
+    <span class="ck">this</span>.password =
+      page.getByLabel(<span class="cv">'Password'</span>);
+    <span class="ck">this</span>.submitBtn =
+      page.getByRole(<span class="cv">'button'</span>,
+        {name: <span class="cv">'Log in'</span>});
+  }
+  <span class="ck">async</span> open() {
+    <span class="ck">await this</span>.page.goto(
+      config.loginUrl);
+  }
+  <span class="ck">async</span> submit() {
+    <span class="ck">await this</span>.submitBtn.click();
+  }
+}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Test Example -->
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">API Test — Gherkin Feature → Step → axios Client</span><span class="cb-tag">TypeScript · axios · zod</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line2)">
+      <div style="background:var(--cream);padding:1.2rem">
+        <div class="tclbl" style="margin-bottom:.6rem">① API Feature File</div>
+        <div class="codeblock" style="font-size:.57rem;margin:0">
+<span class="cc"># features/api/disputes.feature</span>
+<span class="ck">Feature:</span> <span class="cs">Disputes API</span>
+
+  <span class="ck">Background:</span>
+    <span class="ck">Given</span> API is authenticated
+    <span class="ck">And</span>   base URL is configured
+
+  <span class="ck">@api @smoke</span>
+  <span class="ck">Scenario:</span> <span class="cs">Create dispute returns 201</span>
+    <span class="ck">When</span>  POST <span class="ca">/disputes</span> with valid payload
+    <span class="ck">Then</span>  response status is <span class="cv">201</span>
+    <span class="ck">And</span>   response has <span class="ca">disputeId</span>
+    <span class="ck">And</span>   response matches schema
+
+  <span class="ck">@api @regression</span>
+  <span class="ck">Scenario:</span> <span class="cs">Get dispute by ID</span>
+    <span class="ck">Given</span> a dispute exists with id <span class="cv">"D-001"</span>
+    <span class="ck">When</span>  GET <span class="ca">/disputes/D-001</span>
+    <span class="ck">Then</span>  status is <span class="cv">200</span>
+    <span class="ck">And</span>   field status equals <span class="cv">"OPEN"</span>
+        </div>
+      </div>
+      <div style="background:var(--cream);padding:1.2rem">
+        <div class="tclbl" style="margin-bottom:.6rem">② API Step + axios Client</div>
+        <div class="codeblock" style="font-size:.57rem;margin:0">
+<span class="cc">// steps/disputes.api.steps.ts</span>
+<span class="ck">import</span> { When, Then } <span class="ck">from</span>
+  <span class="cv">'@cucumber/cucumber'</span>;
+<span class="ck">import</span> { disputeClient }
+  <span class="ck">from</span> <span class="cv">'../api/disputeClient'</span>;
+<span class="ck">import</span> { DisputeSchema }
+  <span class="ck">from</span> <span class="cv">'../schemas/dispute'</span>;
+
+When(<span class="cv">'POST /disputes with valid payload'</span>,
+  <span class="ck">async function</span>(<span class="ck">this</span>: World) {
+    <span class="ck">this</span>.response =
+      <span class="ck">await</span> disputeClient.create(
+        DisputeFactory.valid()
+      );
+});
+
+Then(<span class="cv">'response status is {int}'</span>,
+  <span class="ck">async function</span>(
+    <span class="ck">this</span>: World, code: <span class="ck">number</span>) {
+    expect(<span class="ck">this</span>.response.status)
+      .toBe(code);
+});
+
+Then(<span class="cv">'response matches schema'</span>,
+  <span class="ck">async function</span>(<span class="ck">this</span>: World) {
+    <span class="cc">// zod schema validation</span>
+    DisputeSchema.parse(
+      <span class="ck">this</span>.response.data);
+});
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Language Decision Card -->
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Language Decision — Why This Stack</span><span class="cb-tag">Agreed Architecture</span></div>
+    <div style="padding:1.5rem 2rem 1rem">
+      <p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--navy);margin-bottom:1.5rem">"Each job in the pipeline uses the best language for its job. Languages share nothing but artifacts."</p>
+      <table class="ctable" style="margin-bottom:1.5rem">
+        <thead>
+          <tr><th>Layer</th><th>Language</th><th>Key Libraries</th><th>Rationale</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tdh">Step Definitions</td>
+            <td><span style="font-family:'Fira Code',monospace;font-size:.65rem;color:var(--blue)">TypeScript</span></td>
+            <td style="font-family:'Fira Code',monospace;font-size:.6rem">@cucumber/cucumber · ts-node</td>
+            <td>Already your codebase. Strong typing catches POM errors at compile time.</td>
+          </tr>
+          <tr>
+            <td class="tdh">POM Classes</td>
+            <td><span style="font-family:'Fira Code',monospace;font-size:.65rem;color:var(--blue)">TypeScript</span></td>
+            <td style="font-family:'Fira Code',monospace;font-size:.6rem">@playwright/test · Locator API</td>
+            <td>Playwright is TypeScript-native. getByRole/getByLabel are more resilient than XPath.</td>
+          </tr>
+          <tr>
+            <td class="tdh">API Test Clients</td>
+            <td><span style="font-family:'Fira Code',monospace;font-size:.65rem;color:var(--blue)">TypeScript</span></td>
+            <td style="font-family:'Fira Code',monospace;font-size:.6rem">axios · zod · faker-js</td>
+            <td>axios + zod gives typed requests and schema validation in the same ecosystem.</td>
+          </tr>
+          <tr>
+            <td class="tdh">AI Agents</td>
+            <td><span style="font-family:'Fira Code',monospace;font-size:.65rem;color:var(--green)">Python 3.12</span></td>
+            <td style="font-family:'Fira Code',monospace;font-size:.6rem">anthropic · gitpython · bs4</td>
+            <td>Best AI/ML library ecosystem. LangChain, Anthropic SDK, DOM parsing all first-class.</td>
+          </tr>
+          <tr>
+            <td class="tdh">Reporting / Email</td>
+            <td><span style="font-family:'Fira Code',monospace;font-size:.65rem;color:var(--green)">Python 3.12</span></td>
+            <td style="font-family:'Fira Code',monospace;font-size:.6rem">jinja2 · smtplib · allure-python</td>
+            <td>20-line email sender + HTML template. No framework needed. Simple and debuggable.</td>
+          </tr>
+          <tr>
+            <td class="tdh">CI Glue</td>
+            <td><span style="font-family:'Fira Code',monospace;font-size:.65rem;color:var(--muted)">bash (minimal)</span></td>
+            <td style="font-family:'Fira Code',monospace;font-size:.6rem">echo · cp · if/else only</td>
+            <td>Max 10 lines per job. Anything more complex goes into Python. Shell = wiring only.</td>
+          </tr>
+          <tr>
+            <td class="tdh" style="color:var(--red)">❌ Java / Selenium</td>
+            <td><span style="font-family:'Fira Code',monospace;font-size:.65rem;color:var(--red)">Not used</span></td>
+            <td style="font-family:'Fira Code',monospace;font-size:.6rem;color:var(--muted)">—</td>
+            <td>Team is JS/TS. Migration cost unjustified. Playwright supersedes Selenium for new UI tests.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="background:rgba(42,95,168,.04);border:1px solid rgba(42,95,168,.15);border-radius:3px;padding:1rem 1.2rem;font-size:.7rem;color:var(--muted);line-height:1.8">
+        <strong style="color:var(--navy);font-size:.72rem">Key insight:</strong> Languages never cross job boundaries in GitLab CI — only artifacts do. The TypeScript test jobs output <code style="background:var(--cream2);padding:.1rem .3rem;border-radius:2px;font-family:'Fira Code',monospace;font-size:.62rem">allure-results/</code> JSON. The Python report job reads that JSON and sends the email. No shared runtime, no dependency conflicts, each image stays lean.
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="wrap" id="gitlab">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">04</div>
+    <div>
+      <p class="sl">Pipeline as Code</p>
+      <h2 class="st">GitLab CI — Golden Path</h2>
+      <p class="sd">Every merge request triggers the feature test suite. Full regression runs twice a week on a cron schedule. Reports are emailed automatically. Each pipeline job uses its own Docker image — Playwright for UI/API tests, Python for AI agents and reporting. No shared runtime required.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">.gitlab-ci.yml — Complete QA Pipeline</span><span class="cb-tag">Pipeline as Code</span></div>
+    <div style="padding:0">
+      <div class="codeblock" style="margin:0;border-radius:0;border:none;font-size:.59rem;padding:1.8rem 2rem">
+<span class="cc"># ═══════════════════════════════════════════════════════
+# QA AUTOMATION PIPELINE — AI-Accelerated Golden Path
+#
+# Language split (each job uses its own image):
+#   Tests (UI + API): TypeScript · Playwright · Cucumber-JS
+#   AI Agents:        Python 3.12 (anthropic · gitpython)
+#   Reporting:        Python 3.12 (jinja2 · smtplib)
+#   Glue / env:       bash (5-line wrappers only)
+#
+# On MR:   Feature-scoped suite (AI detects changed tags)
+# Cron:    Full regression Tue + Thu 06:00 UTC
+# ═══════════════════════════════════════════════════════</span>
+
+<span class="ck">stages:</span>
+  - <span class="cv">ai-analysis</span>    <span class="cc"># Python: detect changed features → TEST_TAGS</span>
+  - <span class="cv">api-tests</span>      <span class="cc"># TypeScript: axios + zod + Cucumber-JS</span>
+  - <span class="cv">ui-tests</span>       <span class="cc"># TypeScript: Playwright + Cucumber-JS</span>
+  - <span class="cv">e2e-tests</span>      <span class="cc"># TypeScript: Playwright full-stack flows</span>
+  - <span class="cv">report</span>         <span class="cc"># Python: Allure generate + coverage delta</span>
+  - <span class="cv">notify</span>         <span class="cc"># Python: email + Slack notification</span>
+
+<span class="ck">variables:</span>
+  <span class="ca">ALLURE_RESULTS:</span>   <span class="cv">"allure-results"</span>
+  <span class="ca">REPORT_EMAIL:</span>     <span class="cv">"$QA_EMAIL_LIST"</span>  <span class="cc"># GitLab CI variable</span>
+  <span class="ca">TEST_ENV:</span>         <span class="cv">"$CI_ENVIRONMENT_NAME"</span>
+
+<span class="cc"># ── IMAGE TEMPLATES ────────────────────────────────────</span>
+<span class="ck">.ts_test:</span> <span class="ca">&amp;ts_test</span>
+  <span class="cc"># Official Playwright image — Node 20 + all browsers</span>
+  <span class="ck">image:</span> <span class="cv">mcr.microsoft.com/playwright:v1.44.0-jammy</span>
+  <span class="ck">cache:</span>
+    <span class="ck">key:</span> <span class="cv">node-$CI_COMMIT_REF_SLUG</span>
+    <span class="ck">paths:</span> [<span class="cv">node_modules/</span>]
+  <span class="ck">before_script:</span>
+    - <span class="cv">npm ci --prefer-offline</span>
+  <span class="ck">artifacts:</span>
+    <span class="ck">when:</span> <span class="cv">always</span>
+    <span class="ck">paths:</span> [<span class="cv">$ALLURE_RESULTS</span>, <span class="cv">test-results/</span>]
+    <span class="ck">expire_in:</span> <span class="cv">30 days</span>
+
+<span class="ck">.py_agent:</span> <span class="ca">&amp;py_agent</span>
+  <span class="ck">image:</span> <span class="cv">python:3.12-slim</span>
+  <span class="ck">before_script:</span>
+    - <span class="cv">pip install -r ai-agents/requirements.txt -q</span>
+    <span class="cc"># anthropic gitpython jinja2 requests</span>
+
+<span class="cc"># ── AI ANALYSIS ────────────────────────────────────────</span>
+<span class="cc"># Python reads git diff → maps changed files to @tags
+# Outputs TEST_TAGS dotenv artifact consumed by test jobs</span>
+<span class="ck">ai-detect-scope:</span>
+  <span class="ca">&lt;&lt;:</span> <span class="ca">*py_agent</span>
+  <span class="ck">stage:</span> <span class="cv">ai-analysis</span>
+  <span class="ck">script:</span>
+    - <span class="cv">python ai-agents/scope_detector.py</span>
+      <span class="cc"># reads $CI_MERGE_REQUEST_DIFF_BASE_SHA</span>
+      <span class="cc"># calls Claude API to map files → cucumber @tags</span>
+      <span class="cc"># writes: TEST_TAGS="@disputes or @auth"</span>
+    - <span class="cv">echo "TEST_TAGS=$TEST_TAGS" &gt;&gt; build.env</span>
+  <span class="ck">artifacts:</span>
+    <span class="ck">reports:</span>
+      <span class="ck">dotenv:</span> <span class="cv">build.env</span>
+
+<span class="cc"># ── API TESTS ──────────────────────────────────────────</span>
+<span class="ck">api-feature-tests:</span>
+  <span class="ca">&lt;&lt;:</span> <span class="ca">*ts_test</span>
+  <span class="ck">stage:</span> <span class="cv">api-tests</span>
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$CI_PIPELINE_SOURCE == "merge_request_event"'</span>
+  <span class="ck">script:</span>
+    - <span class="cv">npx cucumber-js</span>
+      <span class="cv">--tags "@api and ($TEST_TAGS)"</span>
+      <span class="cv">--format @cucumber/pretty-formatter</span>
+      <span class="cv">--format allure-cucumberjs/reporter</span>
+    <span class="cc"># Only tests relevant to this MR's changes</span>
+
+<span class="ck">api-regression:</span>
+  <span class="ca">&lt;&lt;:</span> <span class="ca">*ts_test</span>
+  <span class="ck">stage:</span> <span class="cv">api-tests</span>
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$CI_PIPELINE_SOURCE == "schedule"'</span>
+  <span class="ck">script:</span>
+    - <span class="cv">npx cucumber-js --tags "@api"</span>
+      <span class="cv">--format allure-cucumberjs/reporter</span>
+  <span class="ck">parallel:</span> <span class="cv">4</span>   <span class="cc"># split across 4 GitLab runners</span>
+
+<span class="cc"># ── UI TESTS ───────────────────────────────────────────</span>
+<span class="ck">ui-feature-tests:</span>
+  <span class="ca">&lt;&lt;:</span> <span class="ca">*ts_test</span>
+  <span class="ck">stage:</span> <span class="cv">ui-tests</span>
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$CI_PIPELINE_SOURCE == "merge_request_event"'</span>
+  <span class="ck">script:</span>
+    <span class="cc"># Python healer runs first — patches broken locators</span>
+    - <span class="cv">pip install anthropic playwright -q</span>
+    - <span class="cv">python ai-agents/locator_healer.py --pre-run</span>
+    - <span class="cv">npx cucumber-js</span>
+      <span class="cv">--tags "@ui and ($TEST_TAGS)"</span>
+      <span class="cv">--format allure-cucumberjs/reporter</span>
+  <span class="ck">retry:</span>
+    <span class="ck">max:</span> <span class="cv">1</span>
+    <span class="ck">when:</span> [<span class="cv">script_failure</span>]  <span class="cc"># 1 retry catches transient flakes</span>
+
+<span class="ck">ui-regression:</span>
+  <span class="ca">&lt;&lt;:</span> <span class="ca">*ts_test</span>
+  <span class="ck">stage:</span> <span class="cv">ui-tests</span>
+  <span class="ck">rules:</span>
+    - <span class="ck">if:</span> <span class="cv">'$CI_PIPELINE_SOURCE == "schedule"'</span>
+  <span class="ck">script:</span>
+    - <span class="cv">npx cucumber-js --tags "@ui or @e2e"</span>
+      <span class="cv">--format allure-cucumberjs/reporter</span>
+  <span class="ck">parallel:</span> <span class="cv">6</span>   <span class="cc"># Playwright is fast — 6 runners, &lt;20 min total</span>
+
+<span class="cc"># ── REPORT ─────────────────────────────────────────────</span>
+<span class="ck">generate-report:</span>
+  <span class="ca">&lt;&lt;:</span> <span class="ca">*py_agent</span>
+  <span class="ck">stage:</span> <span class="cv">report</span>
+  <span class="ck">script:</span>
+    - <span class="cv">allure generate $ALLURE_RESULTS -o allure-report --clean</span>
+    - <span class="cv">python reporting/coverage_delta.py</span>
+      <span class="cc"># reads allure JSON → computes Δ vs last run</span>
+    - <span class="cv">python ai-agents/report_narrator.py</span>
+      <span class="cc"># calls Claude API: plain-English failure summary</span>
+      <span class="cc"># output: report-summary.txt used by email job</span>
+  <span class="ck">artifacts:</span>
+    <span class="ck">paths:</span> [<span class="cv">allure-report/</span>, <span class="cv">coverage-delta.json</span>,
+            <span class="cv">report-summary.txt</span>]
+
+<span class="cc"># ── NOTIFY ─────────────────────────────────────────────</span>
+<span class="ck">send-email-report:</span>
+  <span class="ca">&lt;&lt;:</span> <span class="ca">*py_agent</span>
+  <span class="ck">stage:</span> <span class="cv">notify</span>
+  <span class="ck">script:</span>
+    - <span class="cv">python reporting/email_sender.py</span>
+      <span class="cv">--to "$REPORT_EMAIL"</span>
+      <span class="cv">--subject "QA · $CI_COMMIT_REF_SLUG · $CI_PIPELINE_SOURCE"</span>
+      <span class="cv">--summary report-summary.txt</span>
+      <span class="cv">--kpis   coverage-delta.json</span>
+      <span class="cv">--report allure-report/index.html</span>
+    <span class="cc"># jinja2 HTML template + smtplib. No framework needed.</span>
+  <span class="ck">when:</span> <span class="cv">always</span>  <span class="cc"># send even on test failure</span>
+
+<span class="cc"># ── SCHEDULES (set in GitLab UI → CI/CD → Schedules) ───
+# "Full Regression Tue"  → Cron: 0 6 * * 2  → main
+# "Full Regression Thu"  → Cron: 0 6 * * 4  → main
+# Both set CI_PIPELINE_SOURCE = "schedule"</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 05 — ROADMAP ══ -->
+<div class="wrap" id="roadmap">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">05</div>
+    <div>
+      <p class="sl">18-Month Execution Plan</p>
+      <h2 class="st">Phased Rollout</h2>
+      <p class="sd">Six phases, each building on the last. Every phase ships working automation — no big bang. Coverage grows incrementally with AI acceleration compounding at each stage.</p>
+    </div>
+  </div>
+
+  <div class="timeline">
+    <div class="tl-spine"></div>
+
+    <!-- PHASE 1 -->
+    <div class="tl-phase ph1">
+      <div class="tl-left" style="position:relative">
+        <div class="tl-dot"></div>
+        <div class="tl-period">Months 1–3</div>
+        <div class="tl-pname">Foundation</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-head">
+          <span class="tl-phase-label">Phase 1 — Foundation & Framework Setup</span>
+          <span class="tl-coverage">Target: 20% API · 10% UI</span>
+        </div>
+        <div class="tl-body">
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:1rem;line-height:1.7">Establish the bedrock: repo structure, CI pipeline skeleton, framework conventions, team training, and first working test suites for the highest-priority happy paths. Prove the pattern before scaling it.</p>
+          <div class="deliverable-grid">
+            <div class="deliv"><div class="deliv-icon">🏗️</div><div class="deliv-title">QA Repo Scaffolding</div><div class="deliv-desc">Full repo structure with Cucumber, POM, RestAssured. Coding standards documented. PR template includes test coverage requirement.</div></div>
+            <div class="deliv"><div class="deliv-icon">🔧</div><div class="deliv-title">GitLab CI Skeleton</div><div class="deliv-desc">Basic pipeline: trigger on MR, run smoke tests, post results as GitLab CI badge. Email on failure.</div></div>
+            <div class="deliv"><div class="deliv-icon">🧪</div><div class="deliv-title">First API Suite</div><div class="deliv-desc">Top 5 critical API endpoints. 100% happy path + 1 negative per endpoint. Gherkin features, TypeScript step defs, axios clients, and zod schema validation.</div></div>
+            <div class="deliv"><div class="deliv-icon">🖥️</div><div class="deliv-title">First UI Suite</div><div class="deliv-desc">Login, navigation, and top 3 user flows. POM classes in TypeScript for all pages touched. Playwright running in the official mcr.microsoft.com/playwright Docker image on GitLab Runner.</div></div>
+            <div class="deliv"><div class="deliv-icon">🎓</div><div class="deliv-title">Team Training</div><div class="deliv-desc">Gherkin writing workshop for devs + QA. POM and step def conventions. 1-hour onboarding for new joiners.</div></div>
+            <div class="deliv"><div class="deliv-icon">⚡</div><div class="deliv-title">AI: First Scaffolder</div><div class="deliv-desc">AI agent reads OpenAPI spec and generates feature file stubs + step def skeletons. Reviewed and committed by SDET.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="tl-phase ph2">
+      <div class="tl-left" style="position:relative">
+        <div class="tl-dot" style="background:var(--blue);box-shadow:0 0 0 4px var(--cream),0 0 0 6px rgba(42,95,168,.3)"></div>
+        <div class="tl-period">Months 4–6</div>
+        <div class="tl-pname">Acceleration</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-head">
+          <span class="tl-phase-label">Phase 2 — Coverage Acceleration & Brownfield Backfill</span>
+          <span class="tl-coverage">Target: 50% API · 30% UI</span>
+        </div>
+        <div class="tl-body">
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:1rem;line-height:1.7">AI acceleration kicks in at full speed. Brownfield services get retroactive coverage via automated DOM crawling and API spec analysis. CI pipeline runs on every MR. Full regression cron starts.</p>
+          <div class="deliverable-grid">
+            <div class="deliv"><div class="deliv-icon">🤖</div><div class="deliv-title">AI POM Generator</div><div class="deliv-desc">Agent crawls existing app pages, extracts locators, and generates POM class scaffolding for all unmapped pages.</div></div>
+            <div class="deliv"><div class="deliv-icon">📋</div><div class="deliv-title">Full API Coverage</div><div class="deliv-desc">All REST endpoints covered: CRUD, auth, error cases, boundary values, contract tests via OpenAPI schema validation.</div></div>
+            <div class="deliv"><div class="deliv-icon">🕐</div><div class="deliv-title">Regression Cron</div><div class="deliv-desc">Twice-weekly full regression live. Tuesday + Thursday 6AM UTC. Email report with pass/fail stats and coverage delta.</div></div>
+            <div class="deliv"><div class="deliv-icon">📊</div><div class="deliv-title">KPI Dashboard v1</div><div class="deliv-desc">Allure dashboard published as GitLab Pages. Coverage %, pass rate, flakiness index, mean time to detect.</div></div>
+            <div class="deliv"><div class="deliv-icon">🔗</div><div class="deliv-title">E2E First Flows</div><div class="deliv-desc">Cross-service end-to-end scenarios: UI action → API call → DB assertion. Proves full stack integration.</div></div>
+            <div class="deliv"><div class="deliv-icon">📄</div><div class="deliv-title">Coverage Gap Report</div><div class="deliv-desc">AI analyzes all source code routes and UI components vs existing tests. Produces a prioritized backfill backlog.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="tl-phase ph3">
+      <div class="tl-left" style="position:relative">
+        <div class="tl-dot" style="background:var(--gold);box-shadow:0 0 0 4px var(--cream),0 0 0 6px rgba(201,168,76,.3)"></div>
+        <div class="tl-period">Months 7–9</div>
+        <div class="tl-pname">Intelligence</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-head">
+          <span class="tl-phase-label">Phase 3 — Self-Healing & AI Intelligence Layer</span>
+          <span class="tl-coverage">Target: 75% API · 55% UI</span>
+        </div>
+        <div class="tl-body">
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:1rem;line-height:1.7">The system starts healing itself. AI locator repair eliminates maintenance burden. Test generation from CI diff maps new code to new tests automatically. Flakiness detection and quarantine reduces noise.</p>
+          <div class="deliverable-grid">
+            <div class="deliv"><div class="deliv-icon">🔧</div><div class="deliv-title">Self-Healing Locators</div><div class="deliv-desc">AI agent detects broken CSS/XPath selectors at runtime. Uses DOM similarity scoring to find the new locator and auto-patches the POM class. PRs the fix.</div></div>
+            <div class="deliv"><div class="deliv-icon">🧬</div><div class="deliv-title">Auto-Test Generator</div><div class="deliv-desc">On every MR, AI reads the git diff, identifies new API endpoints or UI components, and generates draft feature files and step definitions for SDET review.</div></div>
+            <div class="deliv"><div class="deliv-icon">🚫</div><div class="deliv-title">Flakiness Quarantine</div><div class="deliv-desc">Tests that fail intermittently 3× are auto-tagged @flaky, moved to quarantine suite, and a ticket is created in Jira for investigation.</div></div>
+            <div class="deliv"><div class="deliv-icon">📧</div><div class="deliv-title">Rich Email Reports v2</div><div class="deliv-desc">AI-narrated summary: "3 tests failed — all related to the payment module. Likely regression from commit abc123." With HTML charts, delta stats, and coverage trend.</div></div>
+            <div class="deliv"><div class="deliv-icon">🔀</div><div class="deliv-title">Parallel Execution</div><div class="deliv-desc">UI tests parallelized across 6 GitLab runners. Total regression time under 20 minutes despite growing suite.</div></div>
+            <div class="deliv"><div class="deliv-icon">🎯</div><div class="deliv-title">Scope Detection v2</div><div class="deliv-desc">AI maps changed files to test tags with 95% accuracy. MR pipelines run only relevant tests — zero manual annotation needed.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="tl-phase ph4">
+      <div class="tl-left" style="position:relative">
+        <div class="tl-dot" style="background:var(--teal);box-shadow:0 0 0 4px var(--cream),0 0 0 6px rgba(30,122,122,.3)"></div>
+        <div class="tl-period">Months 10–12</div>
+        <div class="tl-pname">Maturity</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-head">
+          <span class="tl-phase-label">Phase 4 — Advanced Coverage & Contract Testing</span>
+          <span class="tl-coverage">Target: 90% API · 70% UI</span>
+        </div>
+        <div class="tl-body">
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:1rem;line-height:1.7">Near-complete API coverage. UI coverage reaches complex flows. Consumer-driven contract tests enforce cross-service compatibility. Performance baselines are added to regression runs.</p>
+          <div class="deliverable-grid">
+            <div class="deliv"><div class="deliv-icon">📜</div><div class="deliv-title">Contract Testing</div><div class="deliv-desc">Pact consumer-driven contracts between all microservices. API changes that break consumers fail CI before they merge.</div></div>
+            <div class="deliv"><div class="deliv-icon">⚡</div><div class="deliv-title">Performance Baseline</div><div class="deliv-desc">k6 / Gatling performance tests embedded in regression. Baseline established, deviations >20% fail the pipeline.</div></div>
+            <div class="deliv"><div class="deliv-icon">♿</div><div class="deliv-title">Accessibility Tests</div><div class="deliv-desc">Axe-core integrated into UI tests. WCAG 2.1 AA violations block merge to main. Reported in the same Allure dashboard.</div></div>
+            <div class="deliv"><div class="deliv-icon">🔐</div><div class="deliv-title">Security Smoke Tests</div><div class="deliv-desc">OWASP ZAP API scan on regression pipeline. Auth bypass, injection, and CORS checks automated in the pipeline.</div></div>
+            <div class="deliv"><div class="deliv-icon">📱</div><div class="deliv-title">Cross-Browser UI</div><div class="deliv-desc">Selenium Grid expanded: Chrome, Firefox, Safari, Edge. Mobile viewport tests via responsive simulation.</div></div>
+            <div class="deliv"><div class="deliv-icon">📈</div><div class="deliv-title">DORA Metrics Live</div><div class="deliv-desc">Change failure rate, MTTR, and deployment frequency tracked from pipeline data. Executive dashboard auto-updated.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="tl-phase ph5">
+      <div class="tl-left" style="position:relative">
+        <div class="tl-dot" style="background:var(--red);box-shadow:0 0 0 4px var(--cream),0 0 0 6px rgba(168,50,50,.3)"></div>
+        <div class="tl-period">Months 13–15</div>
+        <div class="tl-pname">Completeness</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-head">
+          <span class="tl-phase-label">Phase 5 — Full UI Coverage & Continuous Improvement Loop</span>
+          <span class="tl-coverage">Target: 95% API · 90% UI</span>
+        </div>
+        <div class="tl-body">
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:1rem;line-height:1.7">Systematic elimination of remaining coverage gaps. AI continuously audits new code vs test coverage and raises automatic tickets for uncovered paths. The improvement loop becomes self-sustaining.</p>
+          <div class="deliverable-grid">
+            <div class="deliv"><div class="deliv-icon">🔍</div><div class="deliv-title">Coverage Audit Agent</div><div class="deliv-desc">AI weekly audit: compares all route maps and UI component trees against test suite. Any gap &gt;0% creates a Jira ticket automatically.</div></div>
+            <div class="deliv"><div class="deliv-icon">🎭</div><div class="deliv-title">Visual Regression</div><div class="deliv-desc">Percy / BackstopJS screenshot comparison on all pages. UI pixel regressions flagged in the MR before merge.</div></div>
+            <div class="deliv"><div class="deliv-icon">🤝</div><div class="deliv-title">Dev-Written Tests</div><div class="deliv-desc">Developers write Gherkin feature files with their features. AI scaffolds the step defs. QA reviews. Definition of Done includes test coverage.</div></div>
+            <div class="deliv"><div class="deliv-icon">📊</div><div class="deliv-title">Executive Dashboard</div><div class="deliv-desc">Real-time coverage %, defect escape rate, automation ROI calculation (hours saved vs manual), and trend over 12 months.</div></div>
+            <div class="deliv"><div class="deliv-icon">🔄</div><div class="deliv-title">Test Lifecycle Mgmt</div><div class="deliv-desc">Obsolete tests auto-detected (no code path maps to them). Pruning keeps suite lean. Test health score per module.</div></div>
+            <div class="deliv"><div class="deliv-icon">🌐</div><div class="deliv-title">Multi-Env Coverage</div><div class="deliv-desc">Smoke suite runs on dev, staging, and prod post-deploy. Any prod regression pages on-call immediately.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="tl-phase ph6">
+      <div class="tl-left" style="position:relative">
+        <div class="tl-dot" style="background:var(--gold2);box-shadow:0 0 0 4px var(--cream),0 0 0 6px rgba(240,208,128,.4)"></div>
+        <div class="tl-period">Months 16–18</div>
+        <div class="tl-pname">100% Vision</div>
+      </div>
+      <div class="tl-card">
+        <div class="tl-head" style="background:var(--navy)">
+          <span class="tl-phase-label" style="color:var(--gold2)">Phase 6 — 100% Automation · Zero Manual Regression</span>
+          <span class="tl-coverage">Target: 100% API · 100% UI</span>
+        </div>
+        <div class="tl-body" style="background:rgba(201,168,76,.02)">
+          <p style="font-size:.74rem;color:var(--muted);margin-bottom:1rem;line-height:1.7">Full automation achieved. Manual regression testing is retired. QA team shifts entirely to exploratory testing, test strategy, and AI agent improvement. The system self-maintains and self-heals indefinitely.</p>
+          <div class="deliverable-grid">
+            <div class="deliv" style="border-color:var(--line);background:rgba(201,168,76,.04)"><div class="deliv-icon">🏆</div><div class="deliv-title">Zero Manual Regression</div><div class="deliv-desc">All regression testing is automated. Manual testing limited to exploratory sessions for new feature discovery only.</div></div>
+            <div class="deliv" style="border-color:var(--line);background:rgba(201,168,76,.04)"><div class="deliv-icon">🤖</div><div class="deliv-title">Fully Autonomous AI QA</div><div class="deliv-desc">AI generates tests for new features, heals broken tests, prunes obsolete ones, and maintains coverage — with SDET oversight only.</div></div>
+            <div class="deliv" style="border-color:var(--line);background:rgba(201,168,76,.04)"><div class="deliv-icon">📡</div><div class="deliv-title">Production Monitoring</div><div class="deliv-desc">Synthetic monitoring in production: critical flows run every 15 minutes. Incidents paged within 2 minutes of failure.</div></div>
+            <div class="deliv" style="border-color:var(--line);background:rgba(201,168,76,.04)"><div class="deliv-icon">💰</div><div class="deliv-title">ROI Realized</div><div class="deliv-desc">Full automation ROI report: hours saved, defects caught pre-prod, release velocity improvement, cost per test vs manual baseline.</div></div>
+            <div class="deliv" style="border-color:var(--line);background:rgba(201,168,76,.04)"><div class="deliv-icon">🎖️</div><div class="deliv-title">Industry Recognition</div><div class="deliv-desc">Open-source the AI QA framework (sanitized). Conference presentation. Internal certification program for QA practitioners.</div></div>
+            <div class="deliv" style="border-color:var(--line);background:rgba(201,168,76,.04)"><div class="deliv-icon">🔮</div><div class="deliv-title">Next Gen: AI Test Design</div><div class="deliv-desc">AI proposes entirely new test scenarios from production telemetry patterns. Proactive coverage of failure modes before they occur.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Coverage progression chart -->
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Coverage Growth — API & UI Over 18 Months</span></div>
+    <div style="padding:2rem">
+      <div style="margin-bottom:1.5rem">
+        <div class="pr-head"><span class="pr-label">API Coverage</span></div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.5rem">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 3</div>
+            <div class="pr-track"><div class="pr-fill" style="width:20%"></div></div>
+            <div style="font-size:.58rem;color:var(--gold);font-family:'Fira Code',monospace;margin-top:.2rem">20%</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 6</div>
+            <div class="pr-track"><div class="pr-fill" style="width:50%"></div></div>
+            <div style="font-size:.58rem;color:var(--gold);font-family:'Fira Code',monospace;margin-top:.2rem">50%</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 9</div>
+            <div class="pr-track"><div class="pr-fill" style="width:75%"></div></div>
+            <div style="font-size:.58rem;color:var(--gold);font-family:'Fira Code',monospace;margin-top:.2rem">75%</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 12</div>
+            <div class="pr-track"><div class="pr-fill" style="width:90%"></div></div>
+            <div style="font-size:.58rem;color:var(--gold);font-family:'Fira Code',monospace;margin-top:.2rem">90%</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 18</div>
+            <div class="pr-track"><div class="pr-fill" style="width:100%"></div></div>
+            <div style="font-size:.58rem;color:var(--green);font-family:'Fira Code',monospace;margin-top:.2rem">100% ✓</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="pr-head"><span class="pr-label">UI Coverage</span></div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:.5rem">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 3</div>
+            <div class="pr-track"><div class="pr-fill" style="width:10%;background:linear-gradient(to right,var(--blue),#6fb3d2)"></div></div>
+            <div style="font-size:.58rem;color:var(--blue);font-family:'Fira Code',monospace;margin-top:.2rem">10%</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 6</div>
+            <div class="pr-track"><div class="pr-fill" style="width:30%;background:linear-gradient(to right,var(--blue),#6fb3d2)"></div></div>
+            <div style="font-size:.58rem;color:var(--blue);font-family:'Fira Code',monospace;margin-top:.2rem">30%</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 9</div>
+            <div class="pr-track"><div class="pr-fill" style="width:55%;background:linear-gradient(to right,var(--blue),#6fb3d2)"></div></div>
+            <div style="font-size:.58rem;color:var(--blue);font-family:'Fira Code',monospace;margin-top:.2rem">55%</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 12</div>
+            <div class="pr-track"><div class="pr-fill" style="width:70%;background:linear-gradient(to right,var(--blue),#6fb3d2)"></div></div>
+            <div style="font-size:.58rem;color:var(--blue);font-family:'Fira Code',monospace;margin-top:.2rem">70%</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:.58rem;color:var(--muted);font-family:'Fira Code',monospace;margin-bottom:.3rem">Month 18</div>
+            <div class="pr-track"><div class="pr-fill" style="width:100%;background:linear-gradient(to right,var(--teal),var(--green))"></div></div>
+            <div style="font-size:.58rem;color:var(--green);font-family:'Fira Code',monospace;margin-top:.2rem">100% ✓</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 06 — KPIs ══ -->
+<div class="wrap" id="kpis">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">06</div>
+    <div>
+      <p class="sl">Metrics & Measurement</p>
+      <h2 class="st">KPIs & Success Metrics</h2>
+      <p class="sd">What gets measured gets improved. These metrics are tracked automatically from pipeline data and surfaced in the email reports and KPI dashboard — no manual tracking.</p>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-item"><div class="kpi-val">%</div><div class="kpi-name">Automation Coverage</div><div class="kpi-desc">% of user flows with automated tests. Separate tracked for API and UI. Grows each phase.</div></div>
+    <div class="kpi-item"><div class="kpi-val">△</div><div class="kpi-name">Coverage Delta</div><div class="kpi-desc">Week-over-week coverage change. Emailed with every regression run. Target: always positive.</div></div>
+    <div class="kpi-item"><div class="kpi-val">%</div><div class="kpi-name">Pass Rate</div><div class="kpi-desc">% tests passing per run. Flaky test quarantine keeps this &gt;95% for reliable signal.</div></div>
+    <div class="kpi-item"><div class="kpi-val">MTTD</div><div class="kpi-name">Mean Time to Detect</div><div class="kpi-desc">Avg time from code push to defect detection. Target: under 10 minutes for MR pipelines.</div></div>
+    <div class="kpi-item"><div class="kpi-val">DER</div><div class="kpi-name">Defect Escape Rate</div><div class="kpi-desc">% of prod defects not caught by automation. Target: &lt;5% by month 12. Tracks ROI directly.</div></div>
+    <div class="kpi-item"><div class="kpi-val">FI</div><div class="kpi-name">Flakiness Index</div><div class="kpi-desc">% of tests that fail intermittently. Target: &lt;2%. Self-healing AI keeps this in check.</div></div>
+    <div class="kpi-item"><div class="kpi-val">min</div><div class="kpi-name">Pipeline Duration</div><div class="kpi-desc">MR pipeline under 15 min. Full regression under 25 min (parallelized). Tracked per phase.</div></div>
+    <div class="kpi-item"><div class="kpi-val">ROI</div><div class="kpi-name">Automation ROI</div><div class="kpi-desc">Hours of manual testing saved × hourly rate. Target: 10× investment return by month 18.</div></div>
+  </div>
+
+  <!-- Email report mockup -->
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Email Report Format — Automated Every Run</span><span class="cb-tag">Allure · AI Summary</span></div>
+    <div style="padding:2rem;max-width:700px">
+      <div style="border:1px solid var(--line2);border-radius:4px;overflow:hidden;background:#fff">
+        <div style="background:var(--navy);padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem">
+          <span style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold2);font-size:1.1rem">QA Automation Report</span>
+          <span style="font-family:'Fira Code',monospace;font-size:.58rem;color:rgba(245,240,230,.4);margin-left:auto">feature/DISP-441 · Thu Jun 5 2025 · 06:14 UTC</span>
+        </div>
+        <div style="padding:1.2rem 1.5rem;border-bottom:1px solid var(--line2)">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.2rem">
+            <div style="text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--green);font-weight:700">142</div><div style="font-size:.58rem;color:var(--muted)">Passed</div></div>
+            <div style="text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--red);font-weight:700">3</div><div style="font-size:.58rem;color:var(--muted)">Failed</div></div>
+            <div style="text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--gold);font-weight:700">97.9%</div><div style="font-size:.58rem;color:var(--muted)">Pass Rate</div></div>
+            <div style="text-align:center"><div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--blue);font-weight:700">+2.1%</div><div style="font-size:.58rem;color:var(--muted)">Coverage Δ</div></div>
+          </div>
+          <div style="background:rgba(201,168,76,.08);border-left:3px solid var(--gold);padding:.8rem 1rem;border-radius:0 3px 3px 0;font-size:.68rem;color:var(--text);line-height:1.7">
+            <strong style="font-family:'Fira Code',monospace;font-size:.58rem;color:var(--gold)">⚡ AI ANALYSIS</strong><br>
+            3 failures are all in the <code style="background:var(--cream2);padding:.1rem .3rem;border-radius:2px">DisputeWorkstation</code> module — specifically the <code style="background:var(--cream2);padding:.1rem .3rem;border-radius:2px">status transition</code> flow. This correlates with commit <code style="background:var(--cream2);padding:.1rem .3rem;border-radius:2px">a3f8c12</code> (DISP-441) which modified the state machine. Recommend reviewing the <code style="background:var(--cream2);padding:.1rem .3rem;border-radius:2px">PENDING → REVIEW</code> transition logic. Self-healing updated 2 locators automatically in the last run.
+          </div>
+        </div>
+        <div style="padding:1rem 1.5rem;display:flex;gap:1rem;justify-content:space-between;align-items:center;flex-wrap:wrap">
+          <span style="font-size:.62rem;color:var(--muted)">API: 89% · UI: 72% · E2E: 65% · Duration: 14m 38s</span>
+          <a style="font-family:'Fira Code',monospace;font-size:.6rem;background:var(--navy);color:var(--gold2);padding:.3rem .8rem;border-radius:3px;text-decoration:none">View Full Allure Report →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 07 — AI PATTERNS ══ -->
+<div class="wrap" id="ai">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">07</div>
+    <div>
+      <p class="sl">AI Acceleration</p>
+      <h2 class="st">AI Agents at Every Layer</h2>
+      <p class="sd">AI isn't a bolt-on — it's woven through every layer of the framework. These are the specific AI patterns that make the system 10× faster to build and self-sustaining to maintain.</p>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:2rem">
+    <div class="pitch-card" style="border-color:var(--gold)">
+      <div class="pitch-head"><span class="pitch-icon">🔍</span><div class="pitch-title">Scope Detector Agent</div></div>
+      <div class="pitch-body">Reads git diff on every MR. Maps changed files (controllers, services, components) to their corresponding Cucumber @tags. Injects <code>TEST_TAGS</code> variable into GitLab CI — so only affected tests run. No manual annotation.</div>
+    </div>
+    <div class="pitch-card" style="border-color:var(--blue)">
+      <div class="pitch-head"><span class="pitch-icon">📝</span><div class="pitch-title">Feature File Generator</div></div>
+      <div class="pitch-body">Reads OpenAPI specs and user stories. Generates Gherkin feature files with Given/When/Then scenarios covering happy paths, edge cases, and negative tests. SDETs review, refine, and commit.</div>
+    </div>
+    <div class="pitch-card" style="border-color:var(--green)">
+      <div class="pitch-head"><span class="pitch-icon">🏗️</span><div class="pitch-title">Step Definition Scaffolder</div></div>
+      <div class="pitch-body">Given a new .feature file, generates matching Java/Python step definition skeleton with correct annotations, dependency injection, and wiring to POM or API client classes.</div>
+    </div>
+    <div class="pitch-card" style="border-color:var(--teal)">
+      <div class="pitch-head"><span class="pitch-icon">🖥️</span><div class="pitch-title">POM Generator</div></div>
+      <div class="pitch-body">Crawls application pages using a headless browser, extracts all interactive elements, and generates Page Object Model classes with locators, action methods, and verification helpers.</div>
+    </div>
+    <div class="pitch-card" style="border-color:var(--red)">
+      <div class="pitch-head"><span class="pitch-icon">🔧</span><div class="pitch-title">Self-Healing Locator Agent</div></div>
+      <div class="pitch-body">When a CSS selector or XPath fails at runtime, the agent takes a DOM snapshot, uses similarity scoring to find the new element, patches the POM class, and opens a PR with the fix — all in seconds.</div>
+    </div>
+    <div class="pitch-card" style="border-color:var(--gold)">
+      <div class="pitch-head"><span class="pitch-icon">📊</span><div class="pitch-title">Report Narrator Agent</div></div>
+      <div class="pitch-body">After each run, reads test results and produces a plain-English summary: which tests failed, why (correlated to recent commits), what modules are affected, and what action to take — sent in the email report.</div>
+    </div>
+    <div class="pitch-card" style="border-color:var(--blue)">
+      <div class="pitch-head"><span class="pitch-icon">🧹</span><div class="pitch-title">Coverage Audit Agent</div></div>
+      <div class="pitch-body">Weekly: scans all API routes and UI components against the test suite. Identifies uncovered paths and opens Jira tickets with auto-generated feature file drafts attached for SDET pickup.</div>
+    </div>
+    <div class="pitch-card" style="border-color:var(--teal)">
+      <div class="pitch-head"><span class="pitch-icon">🚫</span><div class="pitch-title">Flakiness Quarantine Agent</div></div>
+      <div class="pitch-body">Monitors test pass/fail history across runs. Tests failing intermittently &gt;3 times are auto-tagged @flaky, isolated into a quarantine suite, and a Jira investigation ticket is auto-created.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══ 08 — STAKEHOLDER PITCHES ══ -->
+<div class="wrap" id="stakeholders">
+<div class="sec">
+  <div class="sh">
+    <div class="sn">08</div>
+    <div>
+      <p class="sl">Getting Buy-In</p>
+      <h2 class="st">Stakeholder Pitch Decks</h2>
+      <p class="sd">Three audiences, three different value conversations. Same initiative — framed for what each group actually cares about.</p>
+    </div>
+  </div>
+
+  <div class="stake-tabs">
+    <button class="stake-tab active" onclick="showStake('exec')">🎯 Executive Leadership</button>
+    <button class="stake-tab" onclick="showStake('dev')">👨‍💻 Development Team</button>
+    <button class="stake-tab" onclick="showStake('qa')">🧪 QA SDETs</button>
+  </div>
+
+  <!-- EXECUTIVE -->
+  <div class="stake-content active" id="stake-exec">
+    <div class="card" style="opacity:1;transform:none">
+      <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Executive Pitch — Business Value First</span></div>
+      <div style="padding:2rem">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-style:italic;color:var(--navy);margin-bottom:1.5rem">"This initiative turns quality from a cost center into a competitive advantage — while reducing release risk and increasing deployment velocity."</p>
+
+        <div class="pitch-card" style="border-color:var(--green)">
+          <div class="pitch-head"><span class="pitch-icon">💰</span><div class="pitch-title">ROI: 10× Return on Investment by Month 18</div></div>
+          <div class="pitch-body">Manual regression currently costs ~40 engineering hours per sprint. Automation reduces that to zero. At $120/hour fully loaded, that's $4,800/sprint saved — $124,800/year. Initial investment: ~$60K in SDET time and tooling. Payback period: 6 months.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--blue)">
+          <div class="pitch-head"><span class="pitch-icon">🚀</span><div class="pitch-title">Release Velocity: 3× Faster Time to Production</div></div>
+          <div class="pitch-body">Automated pipelines run in 15 minutes vs 2-day manual regression cycles. Teams can release daily instead of bi-weekly. Features reach customers faster. Competitive releases no longer blocked by QA cycles.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--red)">
+          <div class="pitch-head"><span class="pitch-icon">🛡️</span><div class="pitch-title">Risk Reduction: 70% Fewer Production Defects</div></div>
+          <div class="pitch-body">Automated coverage catches regressions before they reach customers. Mean time to detect drops from days (after deploy) to minutes (on MR). Defect escape rate target: &lt;5%. Fewer Sev-1 incidents, lower remediation costs, higher customer trust.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--gold)">
+          <div class="pitch-head"><span class="pitch-icon">📊</span><div class="pitch-title">Compliance & Audit: Full Traceability</div></div>
+          <div class="pitch-body">Every test is traceable to a requirement. Every run is timestamped and archived. Coverage reports satisfy SOX, PCI, and internal audit requirements with zero manual documentation effort.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--teal)">
+          <div class="pitch-head"><span class="pitch-icon">🎯</span><div class="pitch-title">Ask: 3 SDETs + Tooling Budget for 18 Months</div></div>
+          <div class="pitch-body">We need 3 dedicated SDETs (or reallocation from current QA team), GitLab Runner compute budget (~$500/month), and AI tooling (Copilot Enterprise or equivalent). Total investment: ~$280K. ROI break-even: Month 6. Full return: Month 12.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEVELOPERS -->
+  <div class="stake-content" id="stake-dev">
+    <div class="card" style="opacity:1;transform:none">
+      <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Developer Pitch — Less Pain, Faster Feedback</span></div>
+      <div style="padding:2rem">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-style:italic;color:var(--navy);margin-bottom:1.5rem">"Your code is tested automatically. You find out in 10 minutes if you broke something — not 2 days after it hits production."</p>
+
+        <div class="pitch-card" style="border-color:var(--green)">
+          <div class="pitch-head"><span class="pitch-icon">⚡</span><div class="pitch-title">Instant Feedback on Every MR</div></div>
+          <div class="pitch-body">The pipeline runs only the tests relevant to your change — detected automatically by AI. No waiting for QA to manually verify. You get a ✓ or ✗ in your MR comments within 10-15 minutes. No surprises at sprint end.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--blue)">
+          <div class="pitch-head"><span class="pitch-icon">🤖</span><div class="pitch-title">AI Writes Your Test Scaffolding</div></div>
+          <div class="pitch-body">You write the Gherkin feature file (or the AI drafts it from your user story). AI scaffolds the step definitions and POM classes. Your job is to write good code and review AI-generated tests — not spend hours writing boilerplate test infrastructure.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--gold)">
+          <div class="pitch-head"><span class="pitch-icon">🔒</span><div class="pitch-title">No More "Works on My Machine"</div></div>
+          <div class="pitch-body">Tests run in clean Docker containers on every MR. Cross-browser, cross-env consistency is automated. If it passes the pipeline, it's been verified. Confidence to merge is built in, not hoped for.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--teal)">
+          <div class="pitch-head"><span class="pitch-icon">📋</span><div class="pitch-title">Your Ask: Write Gherkin With Your Feature</div></div>
+          <div class="pitch-body">Your Definition of Done includes a .feature file with at least 2 scenarios: a happy path and a failure path. The AI scaffolds everything else. This takes 10 minutes per feature and saves your team from production incidents.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QA SDETs -->
+  <div class="stake-content" id="stake-qa">
+    <div class="card" style="opacity:1;transform:none">
+      <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">QA SDET Pitch — Build Something That Scales</span></div>
+      <div style="padding:2rem">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-style:italic;color:var(--navy);margin-bottom:1.5rem">"You're not replacing manual testing — you're building the platform that makes manual testing unnecessary. This is SDET engineering at its finest."</p>
+
+        <div class="pitch-card" style="border-color:var(--green)">
+          <div class="pitch-head"><span class="pitch-icon">🏗️</span><div class="pitch-title">Own a Real Engineering Platform</div></div>
+          <div class="pitch-body">You're building a framework with AI agents, a self-healing engine, a coverage analytics system, and a fully automated CI pipeline. This is platform engineering — not writing click-through scripts. Your work scales to 10× coverage with the same team.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--blue)">
+          <div class="pitch-head"><span class="pitch-icon">🤖</span><div class="pitch-title">AI as Your Force Multiplier</div></div>
+          <div class="pitch-body">AI agents handle the tedious scaffolding — POM generation, step def skeletons, locator repair. Your expertise goes into test strategy, scenario design, edge case coverage, and AI agent improvement. Fewer tickets about broken selectors, more time on impactful work.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--gold)">
+          <div class="pitch-head"><span class="pitch-icon">📈</span><div class="pitch-title">Career-Defining Work</div></div>
+          <div class="pitch-body">You'll be building an AI-accelerated QA framework that can be presented at conferences, open-sourced, and becomes a reference architecture. This is the kind of work that goes in a portfolio and differentiates you as a Senior SDET / QA Architect.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--teal)">
+          <div class="pitch-head"><span class="pitch-icon">🎯</span><div class="pitch-title">Clear Ownership & Accountability</div></div>
+          <div class="pitch-body">Each SDET owns a module domain (API layer, UI layer, CI pipeline). Coverage metrics are visible and measurable. Your impact is directly quantifiable — coverage %, defects caught, pipeline efficiency improvements. No ambiguity about contribution.</div>
+        </div>
+        <div class="pitch-card" style="border-color:var(--red)">
+          <div class="pitch-head"><span class="pitch-icon">🔮</span><div class="pitch-title">18-Month Progression Path</div></div>
+          <div class="pitch-body">Month 3: framework contributor. Month 9: AI agent developer. Month 15: platform owner. Month 18: QA Architect. This roadmap is also a career roadmap for every SDET on the team — with concrete milestones and skill acquisition at each phase.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="card">
+    <div class="cb"><div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div><span class="cb-title">Before vs After — The Transformation</span></div>
+    <div style="padding:1rem">
+      <table class="ctable">
+        <thead>
+          <tr><th>Dimension</th><th>Before (Manual)</th><th>After (Automated + AI)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="tdh">Regression cycle</td><td class="tdr">2–3 days manual</td><td class="tdg">25 min automated, twice/week</td></tr>
+          <tr><td class="tdh">Defect detection time</td><td class="tdr">Days after deploy</td><td class="tdg">10 min on MR (pre-merge)</td></tr>
+          <tr><td class="tdh">Coverage visibility</td><td class="tdr">Estimated / unknown</td><td class="tdg">Real-time % with delta trend</td></tr>
+          <tr><td class="tdh">Test maintenance</td><td class="tdr">Hours of manual fixes</td><td class="tdg">AI self-heals broken locators</td></tr>
+          <tr><td class="tdh">New feature tests</td><td class="tdr">Written from scratch, delayed</td><td class="tdg">AI scaffolds on MR creation</td></tr>
+          <tr><td class="tdh">Reporting</td><td class="tdr">Manual spreadsheet</td><td class="tdg">Auto-email with AI narrative</td></tr>
+          <tr><td class="tdh">Cross-browser testing</td><td class="tdr">Ad-hoc / missing</td><td class="tdg">Chromium, Firefox, WebKit via Playwright</td></tr>
+          <tr><td class="tdh">QA team focus</td><td class="tdr">Clicking through scenarios</td><td class="tdg">Strategy, exploration, AI oversight</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<footer>
+  <p>AI-Accelerated QA Automation Roadmap · Confidential Strategic Plan · Prepared with Claude</p>
+  <p style="margin-top:.5rem;font-size:.5rem;letter-spacing:.15em">TypeScript · Cucumber-JS · Playwright · axios · zod · Python · GitLab CI · Allure · Self-Healing AI</p>
+</footer>
+
+<script>
+  // Audience tab switching (stakeholder pitches)
+  function showStake(id) {
+    document.querySelectorAll('.stake-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.stake-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById('stake-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // Scroll animations
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('vis');
+      if (e.target.classList.contains('timeline')) {
+        e.target.querySelectorAll('.tl-phase').forEach((p, i) =>
+          setTimeout(() => p.classList.add('vis'), i * 120));
+      }
+    });
+  }, { threshold: 0.07 });
+
+  document.querySelectorAll('.card,.kpi-grid,.arch-layer,.tl-phase,.mod-grid,.timeline').forEach(el => io.observe(el));
+
+  // Animate progress bars when visible
+  const prIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.querySelectorAll('.pr-fill').forEach(bar => {
+        const w = bar.style.width;
+        bar.style.width = '0';
+        setTimeout(() => bar.style.width = w, 100);
+      });
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.card').forEach(el => prIO.observe(el));
+</script>
+</body>
+</html>
