@@ -468,9 +468,62 @@ footer{
   text-align:center;position:relative;z-index:1;
 }
 footer p{font-family:'Fira Code',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(201,168,76,.5)}
+
+/* ── DARK THEME ── */
+html{transition:background-color .3s}
+body{transition:background-color .3s,color .3s}
+
+[data-theme="dark"]{
+  --cream:  #0d1525;
+  --cream2: #121e35;
+  --text:   #c8d5e8;
+  --muted:  #7a8aaa;
+  --line:   rgba(201,168,76,.18);
+  --line2:  rgba(160,170,200,.09);
+  --green:  #38a86a;
+  --red:    #cc5050;
+  --blue:   #4a80d8;
+  --teal:   #2a9a9a;
+}
+[data-theme="dark"] body::before{opacity:.2}
+[data-theme="dark"] .card{background:#0f1d30}
+[data-theme="dark"] .kpi-item{background:#0f1d30}
+[data-theme="dark"] .tl-card{background:#0f1d30}
+[data-theme="dark"] .pitch-card{background:#0f1d30}
+[data-theme="dark"] .arch-lcontent{background:#0f1d30}
+[data-theme="dark"] .stake-tab{background:#0f1d30;border-color:var(--line2);color:var(--muted)}
+[data-theme="dark"] .stake-tab.active,[data-theme="dark"] .stake-tab:hover{background:var(--navy);color:var(--gold2)}
+[data-theme="dark"] .deliv{background:#121e35}
+[data-theme="dark"] .cdiag{background:#0a1220}
+[data-theme="dark"] .ctable tr:hover td{background:#0f1d30}
+[data-theme="dark"] .ph1 .tl-head{background:rgba(45,125,82,.1)}
+[data-theme="dark"] .ph2 .tl-head{background:rgba(42,95,168,.1)}
+[data-theme="dark"] .b{fill:#0f1d30;stroke:#2a3d55}
+[data-theme="dark"] .bCr{fill:#121e35;stroke:#2a3d55}
+
+/* ── THEME TOGGLE ── */
+#theme-toggle{
+  position:fixed;top:1.25rem;right:1.25rem;z-index:1000;
+  display:flex;align-items:center;gap:.55rem;
+  background:var(--cream);
+  border:1px solid var(--line);
+  color:var(--gold);
+  font-family:'Fira Code',monospace;
+  font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;
+  padding:.4rem .9rem;border-radius:2px;
+  cursor:pointer;
+  transition:border-color .2s,background .3s;
+}
+#theme-toggle:hover{border-color:var(--gold);background:var(--gold3)}
+#theme-toggle .ti{font-size:.9rem;line-height:1;transition:transform .35s;display:block}
+#theme-toggle:hover .ti{transform:rotate(25deg)}
 </style>
 </head>
 <body>
+
+<button id="theme-toggle" aria-label="Toggle theme">
+  <span class="ti">◐</span>Theme
+</button>
 
 <!-- ══ HERO ══ -->
 <section class="hero">
@@ -1678,6 +1731,21 @@ Then(<span class="cv">'response matches schema'</span>,
     document.getElementById('stake-' + id).classList.add('active');
     event.target.classList.add('active');
   }
+
+  // Theme toggle
+  (function(){
+    const root=document.documentElement,btn=document.getElementById('theme-toggle'),
+          ic=btn.querySelector('.ti');
+    function set(t){
+      if(t==='dark') root.setAttribute('data-theme','dark');
+      else root.removeAttribute('data-theme');
+      ic.textContent=t==='dark'?'◑':'◐';
+      localStorage.setItem('theme',t);
+    }
+    const s=localStorage.getItem('theme');
+    set(s||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+    btn.addEventListener('click',()=>set(root.getAttribute('data-theme')==='dark'?'light':'dark'));
+  })();
 
   // Scroll animations
   const io = new IntersectionObserver(entries => {
