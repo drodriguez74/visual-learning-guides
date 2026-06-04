@@ -343,7 +343,7 @@ body{transition:background-color .3s,color .3s}
     <div class="rule-card a">
       <div class="rule-num" style="color:var(--amber)">Rule 04 · Autonomy</div>
       <div class="rule-title">AI fixes, AI reviews, human approves</div>
-      <div class="rule-body">Self-healing generates a draft PR. AI performs the first-pass code review with confidence score. A human SDET makes the final call. Locator fixes auto-merge after 24h if no objection. Scenario changes always require human approval.</div>
+      <div class="rule-body">Self-healing generates a draft PR. AI code review posts a confidence score (40% semantic equivalence + 30% post-patch test pass + 30% blast radius). Locator fixes auto-merge after 24h at ≥90% confidence. Scenario changes always require SDET. Circuit breaker: 3 heals on the same locator in 30 days → Jira escalation, no auto-merge. Regulated repos set <code style="font-family:monospace;font-size:.8em">QA_AUTOHEALER_AUTOMERGE=false</code>.</div>
       <span class="rule-enforce" style="background:var(--amber2);color:var(--amber);border:1px solid rgba(138,98,0,.2)">enforced: PR workflow rules</span>
     </div>
     <div class="rule-card">
@@ -361,7 +361,7 @@ body{transition:background-color .3s,color .3s}
     <div class="rule-card g">
       <div class="rule-num" style="color:var(--sage)">Rule 07 · Coverage</div>
       <div class="rule-title">50% is the floor, not the goal</div>
-      <div class="rule-body">Every onboarded repo targets 50% API + 50% UI coverage as the proof-of-concept bar. The path to 100% is automatic — the coverage audit agent files backlog tickets weekly until the gap closes. Coverage never regresses.</div>
+      <div class="rule-body">Every onboarded repo targets 50% as the PoC bar. <strong style="color:var(--ink)">Metric is explicit:</strong> UI coverage = journeys with ≥1 passing scenario ÷ total breadcrumb journeys. API coverage = endpoints with status + schema validation ÷ total OpenAPI endpoints. Pact consumer-only contracts don't count until the provider verifies. Coverage never regresses below the gate.</div>
       <span class="rule-enforce" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">enforced: coverage gate + audit agent</span>
     </div>
     <div class="rule-card a">
@@ -668,7 +668,7 @@ body{transition:background-color .3s,color .3s}
             <tbody>
               <tr><td>New page added</td><td>Generate feature + POM → draft PR</td><td class="tdg">AI review + SDET</td></tr>
               <tr><td>Page removed</td><td>Flag tests for retirement → draft PR</td><td class="tda">SDET required</td></tr>
-              <tr><td>Action renamed</td><td>Heal locator → draft PR</td><td class="tdg">AI review + 24h auto-merge</td></tr>
+              <tr><td>Action renamed</td><td>Heal locator → draft PR with confidence score</td><td class="tdg">AI review + 24h auto-merge if ≥90% confidence · 3rd heal = Jira escalation</td></tr>
               <tr><td>Role removed from page</td><td>Retire role-scoped tests → draft PR</td><td class="tda">SDET required</td></tr>
               <tr><td>New API endpoint</td><td>Generate API scenario → draft PR</td><td class="tdg">AI review + SDET</td></tr>
               <tr><td>OpenAPI hash changed</td><td>Re-run API generation for module</td><td class="tdg">AI review + SDET</td></tr>
@@ -934,7 +934,9 @@ body{transition:background-color .3s,color .3s}
     - <span class="cv">python $QA_SCRIPTS/scope_detector.py</span>
       <span class="cc"># Reads git diff + breadcrumbs → TEST_TAGS</span>
       <span class="cc"># e.g. TEST_TAGS="@disputes or @auth"</span>
-    - <span class="cv">echo "TEST_TAGS=$TEST_TAGS" >> build.env</span>
+      <span class="cc"># GUARD: if no modules changed, defaults to "@smoke"</span>
+      <span class="cc"># Empty --tags runs entire suite — never allowed on MR</span>
+    - <span class="cv">echo "TEST_TAGS=${TEST_TAGS:-@smoke}" >> build.env</span>
   <span class="ck">artifacts:</span>
     <span class="ck">reports:</span>
       <span class="ck">dotenv:</span> <span class="cv">build.env</span>
@@ -1027,8 +1029,8 @@ body{transition:background-color .3s,color .3s}
     <div style="padding:1.5rem 2rem">
       <div class="trust-row">
         <div><div class="trust-event">Locator breaks</div><div style="font-size:.6rem;font-family:monospace;color:var(--muted)">e.g. CSS selector stale</div></div>
-        <div class="trust-flow">AI healer detects failure at runtime. DOM similarity scan finds new element. Patches <code style="font-family:monospace;font-size:.85em">*Page.ts</code>. Opens draft PR. AI code review posts confidence score. If ≥ 90% confidence and no human objection in 24h → auto-merge.</div>
-        <span class="trust-badge" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">Auto-merge 24h</span>
+        <div class="trust-flow">AI healer detects failure at runtime. DOM scan finds new element. Patches <code style="font-family:monospace;font-size:.85em">*Page.ts</code>. Draft PR opened. AI posts confidence score (semantic equivalence + post-patch test pass + blast radius). ≥90% → auto-merge after 24h. <strong style="color:var(--ink)">Circuit breaker:</strong> same locator healed 3× in 30 days → Jira escalation, healing suspended. Set <code style="font-family:monospace;font-size:.85em">QA_AUTOHEALER_AUTOMERGE=false</code> for regulated repos.</div>
+        <span class="trust-badge" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">Auto-merge 24h · ≥90% confidence</span>
       </div>
       <div class="trust-row">
         <div><div class="trust-event">Component renamed</div><div style="font-size:.6rem;font-family:monospace;color:var(--muted)">breadcrumb drift detected</div></div>
