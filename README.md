@@ -23,6 +23,12 @@ Or jump directly to any guide:
 | **E2E BDD Automation** | `https://drodriguez74.github.io/visual-learning-guides/e2e-bdd-playwright-ai.html` |
 | **Jupyter Notebooks + Plotly** | `https://drodriguez74.github.io/visual-learning-guides/jupyter-plotly-explainer.html` |
 | **Speak Like a CEO** | `https://drodriguez74.github.io/visual-learning-guides/speak-like-a-ceo.html` |
+| **Agentic AI Explainer** | `https://drodriguez74.github.io/visual-learning-guides/agentic-ai-explainer.html` |
+| **Apigee Gateway** | `https://drodriguez74.github.io/visual-learning-guides/apigee-explainer.html` |
+| **Architectural Design Patterns** | `https://drodriguez74.github.io/visual-learning-guides/arch-patterns-explainer.html` |
+| **Harness CD** | `https://drodriguez74.github.io/visual-learning-guides/harness-cd-explainer.html` |
+| **AI-Accelerated QA Roadmap** | `https://drodriguez74.github.io/visual-learning-guides/qa-automation-roadmap.html` |
+| **QA Evergreen Ecosystem** | `https://drodriguez74.github.io/visual-learning-guides/qa-evergreen-ecosystem.html` |
 
 ## Guides
 
@@ -181,6 +187,101 @@ Or jump directly to any guide:
 | **Power Phrase Bank** | 4 categories × 4 phrases: Open with Authority, Show Active Intelligence, Push Back Without Conflict, Close with Conviction |
 | **Books Worth Reading** | 6 recommendations: Never Split the Difference, Talk Like TED, Simply Said, The Art of Thinking Clearly, How to Win Friends, Exactly What to Say |
 | **Daily Disciplines** | 5 rules: prepare an insight, never fill silence, replace "I think", absorb long-form writing, debrief one conversation weekly |
+
+---
+
+---
+
+### 12 · Agentic AI Explainer
+`agentic-ai-explainer.html` — Dark Sci-fi (Syne + IBM Plex Mono) · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **The Shift** | Reactive vs. Agentic — side-by-side comparison of single-turn response vs. goal-directed autonomous execution |
+| **The Core Loop** | Animated Perceive → Reason → Plan → Act → Observe → Memory diagram with rotating orbital rings |
+| **Superpowers** | Six tool categories agents use: Web Search, Code Execution, File & Memory, APIs, Databases, Sub-Agents |
+| **How It Works** | Step-by-step traced flow from user goal to completed SWOT analysis — plan, act, observe, memory, done |
+| **Real Examples** | Four real-world agent patterns: Software Engineering, Data Analysis, Research, Finance Ops |
+
+---
+
+### 13 · Apigee Gateway
+`apigee-explainer.html` — Dark Warm Editorial (Playfair Display + JetBrains Mono) · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Overview** | High-level architecture: Clients → Apigee Gateway → Backends with SVG diagram |
+| **API Proxy** | Proxy Endpoint vs Target Endpoint anatomy — virtual host, pre/conditional/post flows |
+| **Flow Pipeline** | Full Request → Response pipeline: 6 numbered stages across Proxy and Target endpoints |
+| **KVM** | Key Value Maps — 3 scope levels (Org/Env/Proxy), runtime diagram, sample policy XML |
+| **SOAP → REST** | Before/after comparison, 7-step conversion pipeline, policies used diagram |
+| **Policies** | 30+ policies organized by category: Security, Transform, Traffic Mgmt, Mediation |
+| **Compare** | Apigee vs AWS API Gateway, Kong, Azure API Mgmt, MuleSoft |
+
+---
+
+### 14 · Architectural Design Patterns
+`arch-patterns-explainer.html` — Light Blueprint (DM Serif Display + Fira Code) · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Layered / N-Tier** | 4-layer stack diagram (Presentation → Business → Persistence → Database) with strengths/weaknesses |
+| **Microservices** | Client → API Gateway → Services → Event Bus → DBs diagram — bounded context, team autonomy |
+| **Event-Driven** | Producers → Broker → Consumers with event log; async decoupling explained |
+| **CQRS + Event Sourcing** | Write model vs. read model split; event store → projection → read model flow |
+| **Hexagonal** | Ports & Adapters hexagon diagram — Driving side (REST/CLI/Tests) vs Driven side (DB/Kafka/Email) |
+| **Saga** | Happy path vs. failure + compensating transactions — Choreography vs. Orchestration |
+| **Comparison** | 6-pattern comparison table: Best For, Consistency, Complexity, Scale |
+
+---
+
+### 15 · Harness CD
+`harness-cd-explainer.html` — Dark Tech (Bebas Neue + Nunito + Roboto Mono) · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Platform Architecture** | End-to-end SVG: Sources → Control Plane → Delegates → Target infrastructure |
+| **The Delegate** | Outbound-only security model — no inbound ports, polls control plane, executes inside VPC |
+| **Pipeline Anatomy** | Full Trigger → Dev → Approval → Staging → Approval → Prod pipeline with CV verify steps |
+| **Deployment Strategies** | Rolling, Canary (with traffic weight diagram), Blue-Green, Custom — all script-free |
+| **Continuous Verification** | ML anomaly scoring flow — Deploy → Verify → APM query → auto-rollback if threshold exceeded |
+| **Governance & OPA** | On-Save + On-Run policy enforcement with Rego code examples |
+| **GitOps & Modules** | ArgoCD integration flow; all 8 Harness platform modules; comparison vs GitHub Actions, Argo, Spinnaker |
+
+---
+
+### 16 · AI-Accelerated QA Automation Roadmap
+`qa-automation-roadmap.html` — Light Editorial (Cormorant Garamond + DM Sans + Fira Code) · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Golden Path Vision** | End-to-end flow: Developer push → GitLab MR → QA Pipeline → AI scope detection → results |
+| **Framework Architecture** | 6-layer stack: Business (Gherkin) → Glue (Steps) → POM → API → Infrastructure → Reporting |
+| **Gherkin → Steps → POM Chain** | Annotated 3-column code view: feature file + step definition + Playwright POM class |
+| **API Test Chain** | Gherkin feature file + axios/zod step definition — typed requests and schema validation |
+| **Language Decision** | TypeScript for tests, Python for AI agents — why each, what's explicitly not used (Java/Selenium) |
+| **GitLab CI Pipeline** | Full 7-job pipeline spec with YAML — scope detect, feature tests, regression cron, coverage gate |
+| **18-Month Roadmap** | 6-phase timeline: Foundation → Brownfield Retrofit → Scale → Self-Healing → Full Automation → Optimization |
+| **KPIs & Metrics** | Coverage %, pass rate, MTTD, flakiness index, pipeline duration targets |
+| **AI Patterns** | Self-healing locator repair, test generation from OpenAPI, failure narration |
+| **Stakeholder Pitches** | Tabbed decks: QA Team, Engineering Manager, CTO, Product Owner — different language for each audience |
+
+---
+
+### 17 · QA Evergreen Ecosystem
+`qa-evergreen-ecosystem.html` — Light Warm (Space Grotesk + Instrument Serif + Fira Code) · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Opinionated Decisions** | 8 rules: OpenAPI non-negotiable, breadcrumbs as versioned source, telemetry beats assumption, AI fixes/human approves, one-line adoption, brownfield strategy, 50% floor, role-scoped journeys |
+| **Five-Layer Architecture** | Detection → Breadcrumb → Generation → Enforcement → Autonomy with data flow SVG |
+| **Breadcrumb Schema** | Full `qa-breadcrumbs.yaml` with roles, pages, actions, journeys, API surface — plus `breadcrumb_emitter.py` code |
+| **Journey Derivation** | Telemetry-first priority model: Dynatrace → AI Journey Deriver → priority bins → feature files with role tags |
+| **Generation Layer** | One breadcrumb → Gherkin + TypeScript steps + Playwright POM + Postman + Pact — with QA repo draft PR flow |
+| **Enforcement** | Full `qa-ecosystem.gitlab-ci.yml` — 7 jobs, feature flags, TEST_TAGS guard, ownership hierarchy table |
+| **Autonomy Trust Model** | Locator heal, component rename, new/removed pages, flaky quarantine, coverage drops — per-event trust level and exit condition |
+| **Brownfield Onboarding** | 6-step flow: prerequisites → breadcrumb → generate → include → coverage climb → full enforcement |
+| **Onboarding Checklist** | Complete per-repo DoD checklist — shareable with app teams |
 
 ---
 
