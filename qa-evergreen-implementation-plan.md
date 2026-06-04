@@ -292,7 +292,12 @@ qa-toolkit/
   - `central_routes` — reads `src/routes.tsx` or `src/App.tsx`
   - `file_based` — traverses `src/pages/` directory structure (Next.js style)
   - `modular` — reads each feature module's route registration file
-- [ ] `spring_role_extractor.py` — parses `@PreAuthorize` annotations from Spring controllers, maps to role identifiers. Cross-references Redux auth slice (`authSlice.ts`) for UI-side role guards
+- [ ] `spring_role_extractor.py` — extracts role model using a priority-ordered fallback chain:
+  1. `@PreAuthorize` annotations on controllers (most common)
+  2. `@RolesAllowed` and `@Secured` annotations (older Spring Security)
+  3. `HttpSecurity` configuration blocks in `SecurityConfig.java` (programmatic assignments)
+  4. **Manual override:** if `qa-profile.yaml` contains a `role_override` block, it takes precedence over all parsed values — used for apps with ACL tables, custom `PermissionEvaluator` beans, or method-level security that static analysis cannot resolve
+  Cross-references Redux auth slice (`authSlice.ts`) for UI-side role guards to confirm role names match frontend and backend
 - [ ] `dynatrace_prioritizer.py` — queries Dynatrace Sessions API for page-level session counts over last 90 days. Returns priority map: `{route: "high"|"medium"|"low"}`
 - [ ] `openapi_mapper.py` — reads OpenAPI YAML/JSON spec, extracts all endpoints grouped by tag/module with HTTP method and path
 - [ ] `journey_deriver.py` — uses Anthropic Claude API to synthesize journey sequences from page graph + role permission map. Produces `journeys[]` entries in breadcrumb schema
@@ -396,10 +401,21 @@ QA_ECOSYSTEM_ENABLED    = true
 QA_BROWNFIELD_MODE      = true      # soft mode during onboarding
 QA_COVERAGE_GATE        = 50
 QA_TELEMETRY_SOURCE     = dynatrace
-QA_REPO_PATH            = /path/to/{pilot-app}-qa
+QA_REPO_PATH            = $CI_BUILDS_DIR/{pilot-app}-qa   # see checkout note below
+QA_BASE_URL             = https://{pilot-app}.dev.fiserv.com
 QA_REPORT_EMAIL         = qa-team@fiserv.com,dev-lead@fiserv.com
 DYNATRACE_TOKEN         = [provisioned token]
 ```
+
+> **QA repo checkout mechanism:** The `qa:run-feature-tests` and `qa:regression` jobs run in the *source* repo's pipeline — the QA repo is not automatically checked out. The shared template's `before_script` for these jobs clones it:
+> ```bash
+> git clone --depth 1 \
+>   "https://qa-toolkit-token:${QA_TOOLKIT_TOKEN}@gitlab.fiserv.com/{app}-qa.git" \
+>   "$QA_REPO_PATH"
+> ```
+> `QA_TOOLKIT_TOKEN` is a read-only Deploy Token scoped to the QA repo, stored as a masked CI/CD variable at `platform/` group level. Adds ~15–20 seconds per job. `QA_REPO_PATH` should use `$CI_BUILDS_DIR` as the base to ensure it lands on the runner's fast disk.
+
+> **Parallel artifact namespacing:** The `qa:regression` job uses `parallel: 6`. Each instance writes to `allure-results-$CI_NODE_INDEX/` — not `allure-results/` — to prevent artifact collision. The `qa:report` job runs after all instances complete and merges them: `allure generate allure-results-{1..6} -o allure-report`. The shared template handles this automatically.
 
 - [ ] Open a test MR and verify all QA pipeline jobs are visible and running
 - [ ] Verify email report is delivered on first regression cron run
@@ -517,6 +533,28 @@ The emitter is AI-assisted but not perfect. SDETs may correct generated breadcru
 - Made in the breadcrumb file directly (it is a valid source file)
 - Committed with a message starting with `fix(breadcrumbs):`
 - Documented in the PR description so corrections feed back into emitter improvements
+
+### Drift Event Format
+
+`DriftDetector.diff_and_emit()` writes `.ai-sdlc/drift-events.yaml` on every breadcrumb regeneration. This is the contract that Layer 5 agents consume — each event type maps to exactly one agent action:
+
+```yaml
+events:
+  - type: action_renamed      # → locator_healer.py
+    page_id: dispute-detail
+    old_action: submit-btn
+    new_action: resolve-action
+    timestamp: 2025-06-15T10:22:00Z
+  - type: page_added          # → generator_agent.py
+    page_id: dispute-notes
+    route: /disputes/:id/notes
+    timestamp: 2025-06-15T10:22:00Z
+  - type: page_removed        # → drift_detector.py (retirement PR)
+    page_id: legacy-export
+    timestamp: 2025-06-15T10:22:00Z
+```
+
+Valid event types: `page_added` | `page_removed` | `action_added` | `action_renamed` | `role_added` | `role_removed` | `api_endpoint_added` | `api_endpoint_removed`. Unknown event types are logged as warnings and do not trigger agent actions. The file is committed to the QA repo alongside the regenerated breadcrumbs.
 
 ### Coverage Metric — Explicit Definition
 
@@ -655,6 +693,9 @@ All behavior is controlled by per-repo CI/CD variables. No changes to the shared
 | `QA_REPORT_EMAIL` | — | Comma-separated email list for regression reports |
 | `QA_REPO_PATH` | — | Path to the application's QA repo on the runner |
 | `QA_AUTOHEALER_AUTOMERGE` | `true` | Set to `false` to disable all auto-merging for regulated environments (SOX, PCI-DSS, HIPAA). All healer PRs then require explicit SDET approval regardless of confidence score. |
+| `QA_BASE_URL` | — | Base URL of the application under test (e.g., `https://app.dev.fiserv.com`). Required — all Playwright and API tests use this. Set at group level for dev, override at project level for staging/prod pipeline runs. |
+| `QA_HEAL_CONFIDENCE_THRESHOLD` | `90` | Minimum confidence score for locator healer auto-merge eligibility. Raise to `95` or `100` for high-risk repos. |
+| `QA_TOOLKIT_TOKEN` | — | Read-only Deploy Token for cloning the QA repo onto the runner. Scoped to the specific QA repo only. Set at project level. |
 
 > **Empty `TEST_TAGS` guard:** If `scope_detector.py` finds no relevant changed modules (e.g., a docs-only commit or a new config file), `$TEST_TAGS` is set to `@smoke` rather than left empty. An empty `--tags` flag in Cucumber runs the entire suite, which is never the intent on an MR pipeline. The `scope_detector.py` script enforces this fallback explicitly.
 
@@ -725,6 +766,16 @@ If a single locator (identified by its `page + locator_id` key) is healed **3 or
 
 Repeated healing at the same site is a signal that the component itself is unstable or uses an anti-pattern for locating — both require human judgment, not another automated patch.
 
+### Legitimate Coverage Reduction
+
+The "coverage never regresses" gate blocks MRs that legitimately remove a feature and its tests. This workflow handles planned coverage reduction without bypassing governance:
+
+1. The PR deleting the feature includes a `.ai-sdlc/coverage-reduction-justification.yaml` file (generated via `python qa-toolkit/agents/coverage_audit.py --justify`)
+2. The `qa:coverage-gate` job detects this file and switches from **BLOCK** to **WARN** for this MR only
+3. The file requires: `reason` (one of: `feature_removed` | `scope_reduced` | `test_consolidation`), `affected_journeys[]`, `approved_by` (SDET GitLab username), `ticket` (Jira link)
+4. After merge, the coverage baseline recalculates from the new journey count — the 50% floor applies to the new total, not the historical total
+5. The justification file is committed permanently and logged in the audit trail
+
 ### Regulated Environment Compliance
 
 For environments subject to SOX, PCI-DSS, or HIPAA change management policies:
@@ -740,7 +791,7 @@ A test is quarantined when it fails intermittently in 3 or more pipeline runs wi
 1. Tags the test `@flaky` in the feature file (commits directly to a branch, opens PR)
 2. Creates a Jira ticket with: test name, failure history, last 3 error messages, link to Allure reports
 3. The test continues to run in the `@flaky` quarantine suite (separate job, non-blocking)
-4. Once the Jira ticket is resolved and the test passes consistently for 5 runs, the `@flaky` tag is removed
+4. **Exit condition (both required):** `flakiness_quarantine.py` monitors the quarantine suite run history. The `@flaky` tag is removed only when: (a) the test passes on **5 consecutive runs** in the quarantine job — not 5 total, consecutive — AND (b) the Jira ticket is in `Done` or `Resolved` status, confirmed via Jira REST API. If either condition is unmet, the tag stays. When both are met, the agent opens a PR removing `@flaky` — this PR still requires SDET approval since the fix should be understood before the test re-enters the blocking suite.
 
 ---
 
@@ -913,9 +964,24 @@ A repo is considered fully onboarded into the QA Evergreen Ecosystem when **all*
 
 | Purpose | Image | Notes |
 |---|---|---|
-| UI + API tests | `mcr.microsoft.com/playwright:v1.44.0-jammy` | Node 20 + Chromium + Firefox + WebKit pre-installed |
+| UI + API tests | `mcr.microsoft.com/playwright:v1.44.0-jammy` | Node 20 + Chromium + Firefox + WebKit pre-installed. **Versioning strategy:** the GitLab team owns this pin. A quarterly scheduled job in `platform/qa-ecosystem` runs the latest Playwright image against the pilot QA repo's `@smoke` suite. If green, the template is updated and released as a minor version with a 2-week announcement window. Repos pinning to a version tag (recommended) are not auto-updated. |
 | AI agents + reporting | `python:3.12-slim` | Minimal image. Dependencies installed per job from `requirements.txt` |
 | Allure report generation | `python:3.12-slim` with `allure-commandline` | Installed via npm in the job |
+
+### Claude Model Selection
+
+Different tasks have different cost/quality tradeoffs. All agents using the same model inflates cost 3–5×.
+
+| Agent | Task | Model | Rationale |
+|---|---|---|---|
+| `journey_deriver.py` | Synthesize journey sequences from page graph | `claude-sonnet-4-6` | Complex reasoning over large context — quality matters |
+| `generator_agent.py` | Generate Gherkin + TypeScript + POM | `claude-sonnet-4-6` | Code generation requires strong reasoning |
+| `locator_healer.py` | Classify locator equivalence + confidence score | `claude-haiku-4-5` | High-frequency, simple classification — cost-sensitive |
+| `report_narrator.py` | Narrate test failures in plain English | `claude-haiku-4-5` | Fast generation from structured input |
+| `coverage_audit.py` | Identify gaps + generate feature stubs | `claude-haiku-4-5` | Template-driven generation — Haiku is sufficient |
+| AI code reviewer | Review generated PRs for correctness | `claude-sonnet-4-6` | Review quality directly affects auto-merge safety |
+
+Model IDs are environment variables in `platform/qa-toolkit` (`QA_MODEL_REASONING`, `QA_MODEL_FAST`) and can be overridden per-repo. **Prompt caching** is mandatory for all agents that repeatedly read the same breadcrumb file, OpenAPI spec, or template files — use `cache_control: {"type": "ephemeral"}` on large static blocks. For a 15-repo ecosystem running breadcrumb checks twice weekly, caching reduces API cost by an estimated 60–70%. Requires `anthropic>=0.25.0`.
 
 ### External Integrations
 
@@ -925,7 +991,8 @@ A repo is considered fully onboarded into the QA Evergreen Ecosystem when **all*
 | Splunk | Log-based failure correlation in AI reports | REST API — `SPLUNK_TOKEN` CI variable |
 | Anthropic Claude API | AI agent intelligence (journey derivation, generation, review, narration) | `QA_ANTHROPIC_KEY` CI variable (group-level) |
 | Jira | Auto-filing tickets for coverage gaps and flaky tests | REST API — `JIRA_TOKEN` CI variable |
-| GitLab API | Opening draft PRs from autonomous agents | `CI_JOB_TOKEN` (built-in) |
+| GitLab API | Opening draft PRs from autonomous agents | `CI_JOB_TOKEN` (built-in, scoped via CI job token allowlist — source repos must explicitly allow `platform/qa-toolkit` in their token allowlist settings) |
+| Pact Broker | Publishing consumer contracts + provider verification results | `PACT_BROKER_TOKEN` CI variable. Broker hosted at `platform/pact-broker` (internal GitLab Pages). Access restricted to `platform/` group members only — consumer contracts describe API topology and must not be publicly accessible. |
 
 ---
 
