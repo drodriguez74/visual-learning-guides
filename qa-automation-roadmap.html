@@ -1082,7 +1082,7 @@ Then(<span class="cv">'response matches schema'</span>,
     <div>
       <p class="sl">Pipeline as Code</p>
       <h2 class="st">GitLab CI — Golden Path</h2>
-      <p class="sd">Every merge request triggers the feature test suite. Full regression runs twice a week on a cron schedule. Reports are emailed automatically. Each pipeline job uses its own Docker image — Playwright for UI/API tests, Python for AI agents and reporting. No shared runtime required.</p>
+      <p class="sd">Every merge request triggers the feature test suite. Full regression runs twice a week on a cron schedule. Reports are emailed automatically. Each pipeline job uses its own Docker image — Playwright for UI/API tests, Python for AI agents and reporting. No shared runtime required. <em>This is the single-repo view; the company-wide enforcement model (shared template, coverage gates, MR gate semantics via <code style="font-family:monospace;font-size:.85em">QA_TARGET_MODE</code>, breadcrumb checks) is specified in the <a href="qa-evergreen-ecosystem.html" style="color:var(--blue)">QA Evergreen Ecosystem</a> design.</em></p>
     </div>
   </div>
 
@@ -1147,6 +1147,8 @@ Then(<span class="cv">'response matches schema'</span>,
       <span class="cc"># reads $CI_MERGE_REQUEST_DIFF_BASE_SHA</span>
       <span class="cc"># calls Claude API to map files → cucumber @tags</span>
       <span class="cc"># writes: TEST_TAGS="@disputes or @auth"</span>
+      <span class="cc"># on API error: TEST_TAGS="@smoke" + DEGRADED MODE warning</span>
+      <span class="cc"># — an Anthropic outage must never freeze merges</span>
     - <span class="cv">echo "TEST_TAGS=$TEST_TAGS" &gt;&gt; build.env</span>
   <span class="ck">artifacts:</span>
     <span class="ck">reports:</span>
@@ -1182,15 +1184,17 @@ Then(<span class="cv">'response matches schema'</span>,
   <span class="ck">rules:</span>
     - <span class="ck">if:</span> <span class="cv">'$CI_PIPELINE_SOURCE == "merge_request_event"'</span>
   <span class="ck">script:</span>
-    <span class="cc"># Python healer runs first — patches broken locators</span>
-    - <span class="cv">pip install anthropic playwright -q</span>
-    - <span class="cv">python ai-agents/locator_healer.py --pre-run</span>
+    <span class="cc"># Heal patches arrive as an artifact from the ai-analysis</span>
+    <span class="cc"># stage (Python) — the healer never runs inside the</span>
+    <span class="cc"># Playwright image. Languages never cross job boundaries;</span>
+    <span class="cc"># only artifacts do.</span>
+    - <span class="cv">cp -r heal-patches/. . 2>/dev/null || true</span>
     - <span class="cv">npx cucumber-js</span>
       <span class="cv">--tags "@ui and ($TEST_TAGS)"</span>
       <span class="cv">--format allure-cucumberjs/reporter</span>
   <span class="ck">retry:</span>
     <span class="ck">max:</span> <span class="cv">1</span>
-    <span class="ck">when:</span> [<span class="cv">script_failure</span>]  <span class="cc"># 1 retry catches transient flakes</span>
+    <span class="ck">when:</span> [<span class="cv">script_failure</span>]  <span class="cc"># retried-then-passed is still recorded as a flake signal</span>
 
 <span class="ck">ui-regression:</span>
   <span class="ca">&lt;&lt;:</span> <span class="ca">*ts_test</span>
@@ -1560,7 +1564,7 @@ Then(<span class="cv">'response matches schema'</span>,
     </div>
     <div class="pitch-card" style="border-color:var(--green)">
       <div class="pitch-head"><span class="pitch-icon">🏗️</span><div class="pitch-title">Step Definition Scaffolder</div></div>
-      <div class="pitch-body">Given a new .feature file, generates matching Java/Python step definition skeleton with correct annotations, dependency injection, and wiring to POM or API client classes.</div>
+      <div class="pitch-body">Given a new .feature file, generates a matching TypeScript step definition skeleton with correct @cucumber/cucumber imports, World context typing, and wiring to POM or API client classes.</div>
     </div>
     <div class="pitch-card" style="border-color:var(--teal)">
       <div class="pitch-head"><span class="pitch-icon">🖥️</span><div class="pitch-title">POM Generator</div></div>
@@ -1568,7 +1572,7 @@ Then(<span class="cv">'response matches schema'</span>,
     </div>
     <div class="pitch-card" style="border-color:var(--red)">
       <div class="pitch-head"><span class="pitch-icon">🔧</span><div class="pitch-title">Self-Healing Locator Agent</div></div>
-      <div class="pitch-body">When a CSS selector or XPath fails at runtime, the agent takes a DOM snapshot, uses similarity scoring to find the new element, patches the POM class, and opens a PR with the fix — all in seconds.</div>
+      <div class="pitch-body">When a selector fails at runtime, the agent first replays the step's Gherkin intent via agent-browser — if the intent also fails, it files a defect instead of healing. If the intent succeeds, it finds the new element in the accessibility-tree snapshot, patches the POM class, and opens a PR. Auto-merge requires a corroborating breadcrumb drift event — unexplained DOM changes stay red.</div>
     </div>
     <div class="pitch-card" style="border-color:var(--gold)">
       <div class="pitch-head"><span class="pitch-icon">📊</span><div class="pitch-title">Report Narrator Agent</div></div>
@@ -1580,7 +1584,11 @@ Then(<span class="cv">'response matches schema'</span>,
     </div>
     <div class="pitch-card" style="border-color:var(--teal)">
       <div class="pitch-head"><span class="pitch-icon">🚫</span><div class="pitch-title">Flakiness Quarantine Agent</div></div>
-      <div class="pitch-body">Monitors test pass/fail history across runs. Tests failing intermittently &gt;3 times are auto-tagged @flaky, isolated into a quarantine suite, and a Jira investigation ticket is auto-created.</div>
+      <div class="pitch-body">Monitors test pass/fail history across runs — including retried-then-passed results, which count as flakes. Tests failing intermittently &gt;3 times are auto-tagged @flaky, isolated into a quarantine suite, and a Jira investigation ticket is auto-created.</div>
+    </div>
+    <div class="pitch-card" style="border-color:var(--red)">
+      <div class="pitch-head"><span class="pitch-icon">🌐</span><div class="pitch-title">Agent-Browser Verification Crawl</div></div>
+      <div class="pitch-body">Weekly cron: the agent-browser CLI logs in as each role (encrypted auth vault), walks every route, and diffs the live accessibility tree against the breadcrumb inventory — catching feature-flagged pages, role-access mismatches, and unrendered actions that static analysis can't see. Fenced by --allowed-domains and --action-policy; never on the blocking MR path.</div>
     </div>
   </div>
 </div>

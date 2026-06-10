@@ -27,6 +27,7 @@
 16. [Definition of Done — Per Repo](#16-definition-of-done--per-repo)
 17. [Tooling & Infrastructure](#17-tooling--infrastructure)
 18. [Open Questions & Decisions Log](#18-open-questions--decisions-log)
+19. [Agent Browser Integration](#19-agent-browser-integration)
 
 ---
 
@@ -177,6 +178,8 @@ The following runner configurations are required:
 
 ### Rule 5 — Two Approvals Already Enforced
 
+Confirmed: all MR merges require two human approvals. The ecosystem's QA coverage gate adds a third **non-human gate** — the pipeline must pass. This is enforced via GitLab branch protection rules (the `qa:coverage-gate` job must succeed before merge is permitted).
+
 ### Rule 6 — Secret Management
 
 All tokens and API keys used by the ecosystem must be:
@@ -185,6 +188,7 @@ All tokens and API keys used by the ecosystem must be:
 - Named with the `QA_` prefix for namespace isolation
 - Rotated every 90 days (a scheduled audit job in `platform/qa-ecosystem` alerts when tokens are approaching expiry)
 - Never echoed to pipeline logs (GitLab's `masked` flag enforces this; the CI template explicitly uses `--no-verbose` flags on any command that could print token values)
+- **The Anthropic key is never exposed directly to consumer repo pipelines.** Masking is not exfiltration-proof (base64 trivially defeats it), and a group-level key readable by every included pipeline is a company-wide blast radius. Agents call a thin gateway in `platform/qa-toolkit` that holds the real key and enforces per-repo quotas — which also provides the per-repo cost attribution the KPI dashboard needs.
 
 The `qa-toolkit` service account uses purpose-scoped tokens:
 
@@ -195,7 +199,13 @@ The `qa-toolkit` service account uses purpose-scoped tokens:
 | GitLab API | `api` scope, `platform/` group only | Scoped to prevent lateral access |
 | Jira | `write:jira-work` only | File tickets, no read of unrelated projects |
 
-Confirmed: all MR merges require two human approvals. The ecosystem's QA coverage gate adds a third **non-human gate** — the pipeline must pass. This is enforced via GitLab branch protection rules (the `qa:coverage-gate` job must succeed before merge is permitted).
+### Rule 7 — Role-Scoped Test Accounts & Synthetic Data (Hard Prerequisite)
+
+Every role in the breadcrumb role model (`admin`, `super-user`, `user`, `pilot`) requires a dedicated test account in every environment under test. Without them, role-scoped journeys (`@role-admin`, role-boundary scenarios) cannot execute, and no agent-browser verification job can authenticate. Provisioned during onboarding Week 1, owned by the app team:
+
+- **Credentials** stored as masked GitLab CI/CD variables (`QA_CRED_{ROLE}_USER` / `QA_CRED_{ROLE}_PASS`) at project level. For local and agent use, the same credentials are registered in the agent-browser auth vault (`agent-browser auth save {app}-{role} --url $QA_BASE_URL --username ... --password-stdin`), with state encrypted via `AGENT_BROWSER_ENCRYPTION_KEY` and auto-expired via `AGENT_BROWSER_STATE_EXPIRE_DAYS=7`.
+- **Synthetic data only.** Test environments must contain no production or cardholder data (PCI-DSS scope). All entities are created by faker-js factories. Any DOM snapshot, screenshot, or log shipped to an AI agent is therefore synthetic by construction.
+- **Per-run namespacing.** Parallel pipelines share one dev environment. Every entity a test creates is prefixed `qa-{CI_PIPELINE_ID}-` so concurrent MR pipelines and the `parallel: 6` regression runners never mutate each other's state. A nightly cleanup job deletes entities older than 48 hours.
 
 ---
 
@@ -245,7 +255,7 @@ Confirmed: all MR merges require two human approvals. The ecosystem's QA coverag
 - [ ] Configure shared GitLab runners with Playwright and Python images
 - [ ] Set up `platform/` GitLab group with shared CI/CD variables:
   - `QA_SCRIPTS` — path to shared Python scripts
-  - `QA_ANTHROPIC_KEY` — Anthropic API key for AI agents
+  - `QA_ANTHROPIC_KEY` — Anthropic API key, held by the `platform/qa-toolkit` gateway only (Rule 6 — consumer repo pipelines call the gateway, never the key)
   - `QA_DEFAULT_COVERAGE_GATE` — `50`
 
 **SDET Team:**
@@ -363,8 +373,9 @@ npx playwright install chromium firefox webkit
 ### Week 6 — Breadcrumb Generation & Review
 
 - [ ] Run `breadcrumb_emitter.py` against pilot source repos
+- [ ] Run the agent-browser verification crawl (`breadcrumb_verifier.py`, Section 19.1) per role against dev — diff discovered pages/actions vs the generated breadcrumbs
 - [ ] Review generated `qa-breadcrumbs.yaml` with SDET team:
-  - Verify page inventory is complete (compare against app sitemap)
+  - Verify page inventory is complete (review the crawl diff report — not hand-navigation)
   - Verify roles map correctly (confirm with dev lead)
   - Review journey derivation — correct any illogical sequences
   - Confirm Dynatrace priority scores look reasonable
@@ -377,7 +388,7 @@ npx playwright install chromium firefox webkit
 - [ ] AI code review runs automatically on all generated artifacts
 - [ ] SDET reviews draft PR in QA repo:
   - Feature files: verify scenario wording is accurate and testable
-  - POM classes: verify locators are correct (manual spot-check against app)
+  - POM classes: every generated locator pre-validated by the agent-browser pass (Section 19.2) — SDET manually reviews only the flagged failures
   - Step definitions: complete the TODO implementations
   - Postman collection: import and verify against live API
 - [ ] Merge approved artifacts to QA repo `main`
@@ -407,15 +418,14 @@ QA_REPORT_EMAIL         = qa-team@fiserv.com,dev-lead@fiserv.com
 DYNATRACE_TOKEN         = [provisioned token]
 ```
 
-> **QA repo checkout mechanism:** The `qa:run-feature-tests` and `qa:regression` jobs run in the *source* repo's pipeline — the QA repo is not automatically checked out. The shared template's `before_script` for these jobs clones it:
+> **QA repo checkout mechanism:** The `qa:run-feature-tests` and `qa:regression` jobs run in the *source* repo's pipeline — the QA repo is not automatically checked out. The shared template's `before_script` for these jobs clones it using a git credential helper — never a token embedded in the URL (tokens in URLs leak into process listings, error messages, and verbose git output):
 > ```bash
-> git clone --depth 1 \
->   "https://qa-toolkit-token:${QA_TOOLKIT_TOKEN}@gitlab.fiserv.com/{app}-qa.git" \
->   "$QA_REPO_PATH"
+> git -c credential.helper='!f(){ echo "username=qa-toolkit-token"; echo "password=${QA_TOOLKIT_TOKEN}"; };f' \
+>   clone --depth 1 "https://gitlab.fiserv.com/{app}-qa.git" "$QA_REPO_PATH"
 > ```
 > `QA_TOOLKIT_TOKEN` is a read-only Deploy Token scoped to the QA repo, stored as a masked CI/CD variable at `platform/` group level. Adds ~15–20 seconds per job. `QA_REPO_PATH` should use `$CI_BUILDS_DIR` as the base to ensure it lands on the runner's fast disk.
 
-> **Parallel artifact namespacing:** The `qa:regression` job uses `parallel: 6`. Each instance writes to `allure-results-$CI_NODE_INDEX/` — not `allure-results/` — to prevent artifact collision. The `qa:report` job runs after all instances complete and merges them: `allure generate allure-results-{1..6} -o allure-report`. The shared template handles this automatically.
+> **Parallel artifact namespacing & sharding:** The `qa:regression` job uses `parallel: 6`. Cucumber-JS does **not** shard across CI nodes natively — the shared template splits the suite deterministically by hashing each feature file path modulo `$CI_NODE_TOTAL` and passing the resulting file list to each node. Each instance writes to `allure-results-$CI_NODE_INDEX/` — not `allure-results/` — to prevent artifact collision. The `qa:report` job runs after all instances complete and merges them: `allure generate allure-results-{1..6} -o allure-report`. The shared template handles both automatically.
 
 - [ ] Open a test MR and verify all QA pipeline jobs are visible and running
 - [ ] Verify email report is delivered on first regression cron run
@@ -522,7 +532,7 @@ The breadcrumb file is considered stale when any of the following is true:
 
 - The `openapi_hash` field does not match the current spec hash
 - A React route exists in source that is not in the breadcrumb `pages[]` list
-- The file was last generated before the most recent commit to `src/`
+- The `source_commit` field in `meta:` does not match the source repo's HEAD SHA for any path under `src/` (commit-SHA comparison only — never file mtime, which shallow `--depth 1` clones reset to checkout time)
 
 When stale, the `qa:breadcrumb-check` job fails with instructions to re-run the emitter. This ensures breadcrumbs never silently drift from the application.
 
@@ -574,6 +584,8 @@ These numbers come from `coverage_gate.py` reading `coverage-manifest.json` and 
 | `low` | Dynatrace bottom 25% / static fallback | 20% | Smoke test only |
 | `pilot` | Pages accessible only to `pilot` role | Isolated | Separate `@demo` suite |
 
+> **New-feature override:** Session counts punish exactly the code most likely to break — a page shipped last sprint has zero sessions and would land in `low`. Any page or journey younger than the 90-day telemetry window defaults to `high` until it has a full window of real data. Zero sessions means *new*, not *unimportant*.
+
 ---
 
 ## 10. The Generation Pipeline
@@ -618,6 +630,8 @@ For each journey entry in the breadcrumb file, the generator produces:
 - Test assertions for status codes and response schema
 
 **5. Pact Provider Verification (Required for API Coverage Credit)**
+
+Consumer contracts are seeded from the breadcrumb `api_calls[]` data — the endpoints, parameters, and response fields the frontend *actually uses* — never from the provider's OpenAPI spec alone. Generating both sides of a contract from the provider spec would verify the spec against itself and defeat the purpose of consumer-driven contracts; the breadcrumb action map is what makes the consumer side genuinely consumer-derived.
 
 Generated consumer Pact contracts are not counted toward API coverage until the provider verifies them. The generation pipeline also produces:
 
@@ -680,6 +694,17 @@ qa-ecosystem/
 | `qa:coverage-gate` | `qa-report` | Always (if enabled) | Yes | `python:3.12-slim` |
 | `qa:report` | `qa-notify` | Always | No | `python:3.12-slim` |
 
+### MR Pipeline Semantics — Test the MR's Build, Not Yesterday's Deploy
+
+A UI test job can only be a valid merge gate if the environment it tests **contains the MR's code**. Pointing `qa:run-feature-tests` at a shared dev URL validates the *currently deployed* build, not the change under review. The template supports two explicit modes, selected via `QA_TARGET_MODE`:
+
+| Mode | How it works | Gate semantics |
+|---|---|---|
+| `review` (preferred) | The repo deploys a review app per MR (`environment: review/$CI_COMMIT_REF_SLUG`). QA test jobs declare `needs: [deploy:review]` and `QA_BASE_URL` is overridden with the review app URL. | `qa:run-feature-tests` **blocks merge** — it is testing the MR's build. |
+| `dev-canary` (fallback) | No review apps available. QA test jobs run against the shared dev environment. | `qa:run-feature-tests` is **informational** (`allow_failure: true`) — only `qa:openapi-check`, `qa:breadcrumb-check`, and `qa:coverage-gate` block. The blocking UI run happens post-merge against dev, with an auto-revert-on-red policy owned by the app team. |
+
+There is no third mode. A repo that runs MR UI tests against shared dev *and* lets them block merge is gating developers on an environment their change hasn't reached — the template refuses that configuration (`QA_TARGET_MODE` unset + blocking UI job = pipeline config error). `dev-canary` mode additionally requires the per-run data namespacing from Rule 7, since concurrent pipelines share environment state.
+
 ### Feature Flag Variables
 
 All behavior is controlled by per-repo CI/CD variables. No changes to the shared template are needed for per-repo customization.
@@ -696,8 +721,11 @@ All behavior is controlled by per-repo CI/CD variables. No changes to the shared
 | `QA_BASE_URL` | — | Base URL of the application under test (e.g., `https://app.dev.fiserv.com`). Required — all Playwright and API tests use this. Set at group level for dev, override at project level for staging/prod pipeline runs. |
 | `QA_HEAL_CONFIDENCE_THRESHOLD` | `90` | Minimum confidence score for locator healer auto-merge eligibility. Raise to `95` or `100` for high-risk repos. |
 | `QA_TOOLKIT_TOKEN` | — | Read-only Deploy Token for cloning the QA repo onto the runner. Scoped to the specific QA repo only. Set at project level. |
+| `QA_TARGET_MODE` | — | `review` or `dev-canary` (see MR Pipeline Semantics above). Required when `QA_ECOSYSTEM_ENABLED=true` — determines whether `qa:run-feature-tests` blocks merge. |
 
 > **Empty `TEST_TAGS` guard:** If `scope_detector.py` finds no relevant changed modules (e.g., a docs-only commit or a new config file), `$TEST_TAGS` is set to `@smoke` rather than left empty. An empty `--tags` flag in Cucumber runs the entire suite, which is never the intent on an MR pipeline. The `scope_detector.py` script enforces this fallback explicitly.
+
+> **Claude API outage guard:** `qa:scope-detect` sits on the MR critical path and calls the Claude API. An Anthropic outage or rate-limit must never become a company-wide merge freeze: on any API error (timeout, 429, 5xx), `scope_detector.py` falls back to `TEST_TAGS=@smoke`, exits 0, and emits a `DEGRADED MODE: static scope fallback` warning in the job log and MR comment. The same fail-open-to-smoke rule applies to any agent on a blocking path; agents on non-blocking paths (healer, narrator) fail closed and retry on the next run.
 
 ### Branch Protection Integration
 
@@ -757,6 +785,13 @@ The AI reviewer's confidence score is a weighted composite, not an arbitrary num
 
 **Threshold:** ≥ 90% composite score required for auto-merge eligibility. All scores are logged in `.ai-sdlc/locator-heal-log.json` with element fingerprints for audit and trend analysis.
 
+### Drift Corroboration — Healing Must Never Mask a Defect
+
+A high confidence score proves the healer *found a substitute element* — not that the UI change was *intentional*. If a developer accidentally breaks a button's accessible name, a naive healer patches the test to match the broken UI and the suite goes green. Two additional gates prevent this:
+
+1. **Drift-event corroboration (required for auto-merge).** Auto-merge eligibility requires a matching `action_renamed` (or component-rename) event in the latest breadcrumb diff — source-side evidence that the change was deliberate. A locator failure with **no** corresponding drift event means the DOM changed in a way the source scan cannot explain: the healer opens a *failure report*, not a patch, and the test stays red. Accessible-name changes without drift events are additionally flagged for accessibility review, because a changed accessible name is a real user-facing regression for screen-reader users.
+2. **Intent replay triage (agent-browser).** Before proposing any patch, the healer replays the failing step's *intent* — the Gherkin text is already a natural-language goal — via `agent-browser -q chat "<gherkin step text>"` against the same environment. If the agent achieves the intent, the failure is a script/locator problem → heal candidate. If the agent also fails, the behavior itself is likely broken → file a defect Jira, never heal. The replay transcript and `agent-browser screenshot --annotate` output are attached to whichever artifact results (heal PR or defect ticket). See Section 19.
+
 ### Circuit Breaker
 
 If a single locator (identified by its `page + locator_id` key) is healed **3 or more times within a 30-day rolling window**, `locator_healer.py` stops auto-patching that locator and instead:
@@ -786,7 +821,7 @@ For environments subject to SOX, PCI-DSS, or HIPAA change management policies:
 
 ### Flakiness Management
 
-A test is quarantined when it fails intermittently in 3 or more pipeline runs within a rolling 14-day window. The flakiness quarantine agent:
+A test is quarantined when it fails intermittently in 3 or more pipeline runs within a rolling 14-day window. **Retried-then-passed counts as an intermittent failure**: the MR jobs use `retry: max: 1`, which makes the *pipeline* green on a retry pass — without this rule, the retry policy would hide exactly the flakes the quarantine agent exists to catch. The signal source is the Allure retry status per scenario, not the pipeline result. The flakiness quarantine agent:
 
 1. Tags the test `@flaky` in the feature file (commits directly to a branch, opens PR)
 2. Creates a Jira ticket with: test name, failure history, last 3 error messages, link to Allure reports
@@ -811,7 +846,7 @@ This playbook is executed for every existing production application being onboar
 ### Week 2 — Breadcrumb Generation & Review
 
 - [ ] Run `breadcrumb_emitter.py` — review output with QA Champion
-- [ ] Verify page inventory: open the application, navigate to every section, confirm all routes are captured
+- [ ] Verify page inventory: run the agent-browser verification crawl per role (Section 19.1); review its diff report with the QA Champion instead of hand-navigating every section
 - [ ] Verify role model: confirm with dev lead which roles exist and their permission boundaries
 - [ ] Review top 10 journeys by Dynatrace priority — confirm they match real user workflows
 - [ ] Commit reviewed breadcrumbs to QA repo
@@ -820,7 +855,7 @@ This playbook is executed for every existing production application being onboar
 
 - [ ] Run `generator_agent.py` — review draft PR
 - [ ] Complete TODO implementations in step definitions (implement actual Playwright actions)
-- [ ] Spot-check generated locators against live application — fix any that don't resolve
+- [ ] Agent-browser locator validation pass (Section 19.2) confirms every generated locator resolves and is interactable — fix the flagged ones
 - [ ] Import Postman collection, run against dev environment, fix any failures
 - [ ] Merge approved artifacts to QA repo `main`
 - [ ] Run first smoke suite manually: `npx cucumber-js --tags "@smoke"`
@@ -868,10 +903,14 @@ All metrics are captured automatically from pipeline data and surfaced in:
 | UI Coverage % | User journeys with at least one automated scenario | `covered journeys / total journeys` | ≥ 50% floor, trending to 100% |
 | Coverage Delta (Δ) | Week-over-week coverage change | Computed per regression run | Always ≥ 0 (never regresses) |
 | Pass Rate | % of tests passing in latest run | `passed / total` (excluding quarantined) | ≥ 95% |
-| Mean Time to Detect (MTTD) | Time from code push to defect detection | Pipeline duration for MR run | < 15 minutes |
-| Flakiness Index | % of tests tagged @flaky | `flaky / total` | < 2% |
+| MR Feedback Latency | Time from code push to test verdict on the MR | Pipeline duration for MR run | < 15 minutes |
+| Flakiness Index | % of tests tagged @flaky | `flaky / total` | < 2% (enforced — see note) |
 | Pipeline Duration — MR | Total time for feature-scoped MR run | CI duration log | < 15 minutes |
 | Pipeline Duration — Regression | Total time for full regression run | CI duration log | < 25 minutes |
+
+> **Quarantine cannot launder the pass rate.** Because Pass Rate excludes quarantined tests, an unbounded quarantine would let the suite look healthy while rotting. The Flakiness Index is therefore *enforced*, not aspirational: when `flaky / total` exceeds 2%, the quarantine agent stops adding tests (new flakes fail the pipeline instead) until the backlog is burned down. Quarantined count is always displayed next to Pass Rate in every report.
+>
+> *(The former "MTTD" metric was renamed — pipeline duration measures feedback latency, not defect detection time. True detection time for escaped defects is attributed under the portfolio Defect Escape Rate.)*
 
 ### Portfolio Metrics (Executive Dashboard)
 
@@ -893,6 +932,9 @@ Annual manual testing cost:                  $115,200
 
 Ecosystem investment (one-time setup):       ~$60,000 (SDET time + tooling)
 Ongoing cost (maintenance + scaling):        ~$2,000/month
+  ├─ Claude API (with prompt caching):       ~$300–600/month per active repo wave
+  ├─ Runner compute (Playwright + agents):   ~$400/month
+  └─ SDET review time (heal/gen PRs):        remainder, amortized
 
 Break-even point:                            Month 6
 Year 1 net savings:                          ~$55,000 per repo in ecosystem
@@ -910,7 +952,7 @@ Year 2+ net savings per repo:                ~$115,000/year
 | Generated breadcrumbs have significant inaccuracies | Medium | High | SDET review gate before any test generation runs. Corrections feed back into emitter improvements. |
 | Developer resistance to writing `.feature` files as DoD | High | Medium | Make it easy — AI drafts the file, dev just reviews. Provide 10-minute workshop. The pipeline only blocks if the file is missing for new user-facing features. |
 | GitLab runner capacity insufficient for scale | Medium | Medium | DevOps monitors runner utilization. Scale ahead of each onboarding wave. Playwright's speed means fewer runners needed than Selenium. |
-| Self-healing creates incorrect patches | Low | High | 90% confidence threshold before auto-merge. 24-hour review window. SDET always has veto. Blast radius limited to locator-level changes only. |
+| Self-healing creates incorrect patches or masks a real UI regression | Medium | High | 90% confidence threshold + **drift-event corroboration** (no source-side rename event = no patch, test stays red). Agent-browser intent replay triages locator-vs-defect before any patch (§12, §19.3). 24-hour review window. SDET always has veto. Blast radius limited to locator-level changes only. |
 | AI-generated scenarios miss business logic nuances | Medium | Medium | SDET review is mandatory for all generated feature files before merge. AI is a first draft, not a final product. |
 | Contractor turnover erodes breadcrumb accuracy | Medium | High | Breadcrumbs are auto-regenerated on every significant source change. Human review is a checkpoint, not the primary maintenance mechanism. |
 | Coverage gate blocks legitimate MRs during ramp-up | High | Medium | `QA_BROWNFIELD_MODE=true` during onboarding sprint. Gate only activates after SDET confirms 50% floor is achievable. |
@@ -920,6 +962,11 @@ Year 2+ net savings per repo:                ~$115,000/year
 | OpenAPI specs are syntactically valid but semantically poor | High | Medium | `qa:openapi-check` enforces annotation quality bar (typed DTOs, `@Operation` annotations) before onboarding. Poor specs produce WARNING + mandatory Jira item before generation proceeds. |
 | AI confidence scores are not independently validated after deployment | Medium | Medium | Confidence formula is documented (Section 12). False-positive rate reviewed monthly by QA Architect via `locator-heal-log.json` trend analysis. Threshold can be raised per-repo via `QA_HEAL_CONFIDENCE_THRESHOLD` CI variable. |
 | Automated Jira ticket creation without triage owner creates noise and resentment | High | Medium | Coverage gap tickets are filed against the app team's board with a designated `QA-Champion` assignee set at onboarding time. Tickets include generated feature file stubs so the work is bounded. Weekly creation volume is capped at 5 tickets per repo — larger gaps are batched into one planning ticket. |
+| MR gate tests an environment that does not contain the MR's code | High | High | `QA_TARGET_MODE` is mandatory (§11). `review` mode deploys a review app per MR and the gate blocks; `dev-canary` mode demotes the UI run to informational and relies on post-merge auto-revert. The template rejects a blocking UI job against shared dev. |
+| Shared dev environment state collisions across parallel pipelines | High | Medium | Rule 7: synthetic-only data, `qa-{CI_PIPELINE_ID}-` entity namespacing, nightly cleanup TTL. Role accounts are per-role, not per-runner — runners never mutate shared fixtures. |
+| Prompt injection via source comments, page content, or Jira text steers agents that hold GitLab write tokens | Medium | High | Generation/healer agents run with no tool access during LLM calls; outputs are schema-validated before any git or API action. Agent-browser jobs run fenced with `--allowed-domains` and `--action-policy`. The AI reviewer is never the sole gate on AI-generated output. |
+| Anthropic API outage blocks all merges via `qa:scope-detect` | Medium | High | Blocking-path agents fail open to `@smoke` with a DEGRADED MODE warning (§11). Non-blocking agents fail closed and retry next run. |
+| Agent-browser verification jobs are slow, token-expensive, and nondeterministic | Medium | Low | Agent-browser lanes are cron/async only — never on the blocking MR path (§19). Deterministic Playwright remains the test of record; agents verify, heal, triage, and discover. |
 
 ---
 
@@ -967,6 +1014,7 @@ A repo is considered fully onboarded into the QA Evergreen Ecosystem when **all*
 | UI + API tests | `mcr.microsoft.com/playwright:v1.44.0-jammy` | Node 20 + Chromium + Firefox + WebKit pre-installed. **Versioning strategy:** the GitLab team owns this pin. A quarterly scheduled job in `platform/qa-ecosystem` runs the latest Playwright image against the pilot QA repo's `@smoke` suite. If green, the template is updated and released as a minor version with a 2-week announcement window. Repos pinning to a version tag (recommended) are not auto-updated. |
 | AI agents + reporting | `python:3.12-slim` | Minimal image. Dependencies installed per job from `requirements.txt` |
 | Allure report generation | `python:3.12-slim` with `allure-commandline` | Installed via npm in the job |
+| Agent-browser verification | Playwright image + `npm install -g agent-browser` + `agent-browser install` | Cron lanes only (Section 19). Pinned version in the template. Sessions closed in `after_script` via `agent-browser close --all`. |
 
 ### Claude Model Selection
 
@@ -982,6 +1030,12 @@ Different tasks have different cost/quality tradeoffs. All agents using the same
 | AI code reviewer | Review generated PRs for correctness | `claude-sonnet-4-6` | Review quality directly affects auto-merge safety |
 
 Model IDs are environment variables in `platform/qa-toolkit` (`QA_MODEL_REASONING`, `QA_MODEL_FAST`) and can be overridden per-repo. **Prompt caching** is mandatory for all agents that repeatedly read the same breadcrumb file, OpenAPI spec, or template files — use `cache_control: {"type": "ephemeral"}` on large static blocks. For a 15-repo ecosystem running breadcrumb checks twice weekly, caching reduces API cost by an estimated 60–70%. Requires `anthropic>=0.25.0`.
+
+**Data governance (decide before Week 1, not after legal asks):** Every agent sends proprietary source code, DOM snapshots, and screenshots to the Claude API. Three controls make that defensible at a Fortune 100 financial:
+
+1. A signed **zero-data-retention agreement** with Anthropic covers all direct API usage, or regulated repos route through **AWS Bedrock / GCP Vertex** private endpoints (same models, traffic stays inside the cloud tenancy — the model ID env vars support either).
+2. Rule 7 guarantees test environments contain **synthetic data only**, so DOM snapshots and screenshots are free of PII/cardholder data by construction.
+3. The gateway in `platform/qa-toolkit` logs every outbound payload type (source / DOM / screenshot) per repo for audit.
 
 ### External Integrations
 
@@ -1011,6 +1065,8 @@ Model IDs are environment variables in `platform/qa-toolkit` (`QA_MODEL_REASONIN
 | Brownfield strategy | Feature-flagged parallel branch + separate QA repo | Zero disruption to source repo `main`. `QA_BROWNFIELD_MODE` controls gate enforcement. |
 | Journey prioritization | Dynatrace-first, static-analysis fallback | Real telemetry beats assumption. Fallback ensures brownfield repos with no telemetry still work. |
 | Coverage floor | 50% API + 50% UI | Proven PoC threshold. Undeniable enough to drive adoption. Path to 100% is automated. |
+| Browser verification tooling | `agent-browser` CLI, cron lanes only | Accessibility-tree perception matches the semantic locator strategy. Built-in guardrails (`--allowed-domains`, `--action-policy`, auth vault). Deterministic Playwright remains the test of record (Section 19). |
+| MR gate environment | `QA_TARGET_MODE` review / dev-canary | A merge gate must test the MR's build. Review apps where possible; informational canary + post-merge revert where not (Section 11). |
 
 ### Open Questions
 
@@ -1025,5 +1081,57 @@ Model IDs are environment variables in `platform/qa-toolkit` (`QA_MODEL_REASONIN
 
 ---
 
+## 19. Agent Browser Integration
+
+The toolkit uses the **`agent-browser` CLI** (`npm install -g agent-browser`, then `agent-browser install` for browser binaries) — a daemon-based browser automation CLI built for AI agents. Its primitives map directly onto the ecosystem's weakest points: `snapshot` returns the accessibility tree with stable `@ref` handles (the same semantic layer our locator rules are built on), `diff snapshot` compares page states, `find role|label|testid` resolves semantic locators, `chat` executes a natural-language goal, and the auth vault + `--allowed-domains` / `--action-policy` flags provide the guardrails a financial application requires.
+
+**Operating boundary (non-negotiable):** agent-browser lanes run in **cron/async jobs only — never on the blocking MR path**. Agent runs are slower, token-metered, and nondeterministic; deterministic Playwright remains the test of record. Agents *verify, heal, triage, and discover* — they do not replace tests. All `chat`-mode model calls route through the same `platform/qa-toolkit` gateway as every other agent (Section 17 data governance applies).
+
+### 19.1 Breadcrumb Verification Crawl (Layer 2)
+
+Static parsing cannot see feature-flagged routes, role-conditional rendering, or runtime-composed UI — which is why the playbook previously required an SDET to hand-navigate every section. A weekly `breadcrumb_verifier.py` job replaces that manual checkpoint:
+
+```bash
+# One isolated session per role; credentials from the auth vault (Rule 7)
+agent-browser --session verify-admin --allowed-domains "{app}.dev.fiserv.com" \
+  auth login {app}-admin
+agent-browser --session verify-admin open "$QA_BASE_URL/disputes"
+agent-browser --session verify-admin snapshot -i --json > snap.admin.disputes.json
+```
+
+The verifier walks every route in `qa-breadcrumbs.yaml` per role, captures interactive-element snapshots, and diffs them against the breadcrumb page/action inventory. Mismatches become new drift event types consumed by Layer 5: `page_unreachable`, `action_not_rendered`, `undocumented_action`, `role_access_mismatch` (a role reached a page its breadcrumb entry says it can't — an empirical RBAC check no static scan provides).
+
+### 19.2 Generated Locator Validation (Layer 3)
+
+Before the generator opens its draft PR, a validation pass executes every generated POM locator against the live dev environment — `find role button --name "Submit Resolution"`, `is visible <sel>`, `get count <sel>` — and attaches `screenshot --annotate` output as review evidence. The former "manual spot-check" becomes a full check; SDETs review only flagged failures.
+
+### 19.3 Healing Evidence & Intent Replay (Layer 5)
+
+- **Perceive:** the healer's "DOM scan" is `snapshot` (accessibility roles + names — exactly what confidence factor 1 measures) plus `diff snapshot` to isolate what changed.
+- **Triage:** before proposing any patch, replay the failing step's intent — Gherkin text is already a natural-language goal: `agent-browser -q chat "Submit the dispute resolution form"`. Agent succeeds → locator/script problem → heal candidate. Agent fails → likely real defect → Jira, never heal. (Full rules in Section 12, Drift Corroboration.)
+- **Verify:** the post-patch execution check (confidence factor 2) runs in an isolated `--session heal-verify`, with `console`, `errors`, and `network har` output attached to the heal PR for audit.
+
+### 19.4 Exploratory Gap Discovery (Coverage Audit)
+
+Dynatrace shows what users *do*; goal-driven exploration finds what users *could hit*. A monthly job gives the agent role-scoped exploration goals ("attempt every visible action on the disputes module as `user`; report errors and dead ends"), capturing `console`/`errors` and HAR along the way. Findings feed `coverage_audit.py` as journey candidates and bug reports — error states and abandoned-flow paths that neither static analysis nor telemetry surfaces.
+
+### 19.5 Guardrails
+
+| Control | Mechanism |
+|---|---|
+| Navigation fence | `--allowed-domains "{app}.dev.fiserv.com"` — the agent cannot leave the environment under test |
+| Action policy | `--action-policy qa-action-policy.json` + `--confirm-actions` — destructive/payment-shaped submissions are deny-by-default; agents have no `confirm` authority |
+| Credentials | Auth vault profiles per role (Rule 7), AES-256-GCM state encryption (`AGENT_BROWSER_ENCRYPTION_KEY`), auto-expiry (`AGENT_BROWSER_STATE_EXPIRE_DAYS=7`) |
+| Session isolation | `--session` per role per job; `agent-browser close --all` in every `after_script` |
+| Environment | dev/staging with synthetic data only (Rule 7) — never production |
+| Prompt injection | Page content is untrusted input to the agent; the agent's write surface is limited to artifacts (snapshots, reports) that downstream agents schema-validate — page text can never trigger a git or GitLab API action directly |
+| Evidence hygiene | HAR files scrubbed of `Authorization` headers before upload as artifacts |
+
+### 19.6 The Accessibility Dividend
+
+Agent-browser perceives through the accessibility tree — the same reason the POM rules prefer `getByRole`/`getByLabel`. UI that agents can verify is UI that screen readers can operate. The verification crawl therefore doubles as a lightweight a11y audit: elements reachable only by CSS class (no role, no accessible name) are reported as both *locator debt* and *accessibility debt* in the weekly report.
+
+---
+
 *Document maintained by QA Architect · Feedback via `platform/qa-toolkit` GitLab issues*
-*Version 1.0 · June 2025*
+*Version 1.1 · June 2026 — third-pass hardening: MR gate semantics, test data & accounts, drift-corroborated healing, data governance, agent-browser integration*

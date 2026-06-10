@@ -371,6 +371,12 @@ body{transition:background-color .3s,color .3s}
       <div class="rule-body">Admin, super user, user, and pilot/demo roles each get independently generated journey files. A test tagged <code style="font-family:monospace;font-size:.65em">@role-admin</code> only runs in contexts where admin access is provisioned. Role drift in the app automatically triggers journey regeneration.</div>
       <span class="rule-enforce" style="background:var(--amber2);color:var(--amber);border:1px solid rgba(138,98,0,.2)">enforced: role-scoped feature files</span>
     </div>
+    <div class="rule-card">
+      <div class="rule-num" style="color:var(--rust)">Rule 09 · Verification</div>
+      <div class="rule-title">Agents verify in a real browser — async lanes only</div>
+      <div class="rule-body">The <code style="font-family:monospace;font-size:.8em">agent-browser</code> CLI closes the gaps static analysis can't see: a per-role <strong style="color:var(--ink)">verification crawl</strong> (<code style="font-family:monospace;font-size:.8em">snapshot -i</code> a11y tree per route) empirically confirms the breadcrumb page/action/role inventory; <strong style="color:var(--ink)">intent replay</strong> (<code style="font-family:monospace;font-size:.8em">chat "&lt;gherkin step&gt;"</code>) triages locator-break vs real defect before any heal. Fenced with <code style="font-family:monospace;font-size:.8em">--allowed-domains</code> + <code style="font-family:monospace;font-size:.8em">--action-policy</code>, role creds from the encrypted auth vault. Cron lanes only — never the blocking MR path. Deterministic Playwright stays the test of record.</div>
+      <span class="rule-enforce" style="background:var(--rust2);color:var(--rust);border:1px solid rgba(201,74,26,.2)">enforced: cron verification jobs</span>
+    </div>
   </div>
 </div>
 </div>
@@ -473,7 +479,7 @@ body{transition:background-color .3s,color .3s}
     <div class="layer">
       <div class="layer-label" style="background:var(--rust2);color:var(--rust)">Breadcrumb<br><span style="font-size:.65rem;opacity:.7">Journey artifact emitter</span></div>
       <div class="layer-body">
-        <span class="li">qa-breadcrumbs.yaml</span><span class="li">page-inventory per role</span><span class="li">action-map per page</span><span class="li">journey-priority: high/medium/low</span><span class="li">api-surface per module</span><span class="li">telemetry-source: dynatrace|static</span>
+        <span class="li">qa-breadcrumbs.yaml</span><span class="li">page-inventory per role</span><span class="li">action-map per page</span><span class="li">journey-priority: high/medium/low</span><span class="li">api-surface per module</span><span class="li">telemetry-source: dynatrace|static</span><span class="li">agent-browser verify-crawl (weekly)</span>
       </div>
     </div>
     <div class="layer">
@@ -491,7 +497,7 @@ body{transition:background-color .3s,color .3s}
     <div class="layer">
       <div class="layer-label" style="background:var(--amber2);color:var(--amber)">Autonomy<br><span style="font-size:.65rem;opacity:.7">Self-maintaining agents</span></div>
       <div class="layer-body">
-        <span class="li">locator-healer agent</span><span class="li">journey-drift detector</span><span class="li">test-retire agent</span><span class="li">coverage-audit agent (weekly)</span><span class="li">AI code reviewer</span><span class="li">draft PR generator</span>
+        <span class="li">locator-healer agent</span><span class="li">intent-replay triage (agent-browser)</span><span class="li">journey-drift detector</span><span class="li">test-retire agent</span><span class="li">coverage-audit agent (weekly)</span><span class="li">AI code reviewer</span><span class="li">draft PR generator</span>
       </div>
     </div>
   </div>
@@ -893,7 +899,7 @@ body{transition:background-color .3s,color .3s}
 #
 # FEATURE FLAGS (set as GitLab CI/CD variables per repo):
 #   QA_ECOSYSTEM_ENABLED:     "true"    # master switch
-#   QA_BREADCRUMB_ENFORCE:    "true"    # hard-gate on missing breadcrumbs
+#   QA_TARGET_MODE:           "review" | "dev-canary"   # MR gate semantics
 #   QA_COVERAGE_GATE:         "50"      # minimum coverage % to pass
 #   QA_TELEMETRY_SOURCE:      "dynatrace" | "static"
 #   QA_BROWNFIELD_MODE:       "false"   # skip breadcrumb check during onboarding
@@ -954,11 +960,17 @@ body{transition:background-color .3s,color .3s}
     - <span class="ck">if:</span> <span class="cv">'$CI_PIPELINE_SOURCE == "merge_request_event" and $QA_ECOSYSTEM_ENABLED == "true"'</span>
   <span class="ck">before_script:</span>
     - <span class="cv">cd $QA_REPO_PATH && npm ci --prefer-offline</span>
-    - <span class="cv">python $QA_SCRIPTS/locator_healer.py --pre-run</span>
+    - <span class="cv">cp -r $CI_PROJECT_DIR/heal-patches/. . 2>/dev/null || true</span>
+      <span class="cc"># Heal patches come from a prior python-stage job's artifact —</span>
+      <span class="cc"># no Python inside the Playwright image (language boundary rule)</span>
   <span class="ck">script:</span>
     - <span class="cv">npx cucumber-js --tags "$TEST_TAGS"</span>
       <span class="cv">--format allure-cucumberjs/reporter</span>
+      <span class="cc"># Blocks merge ONLY in QA_TARGET_MODE=review (tests the MR's</span>
+      <span class="cc"># review app). In dev-canary mode this job is informational —</span>
+      <span class="cc"># shared dev does not contain the MR's code yet.</span>
   <span class="ck">retry:</span> {<span class="ck">max:</span> <span class="cv">1</span>, <span class="ck">when</span>: [<span class="cv">script_failure</span>]}
+      <span class="cc"># Retried-then-passed is still recorded as a flake signal</span>
 
 <span class="cc"># ── JOB 5: COVERAGE GATE ────────────────────────────────</span>
 <span class="ck">qa:coverage-gate:</span>
@@ -1033,7 +1045,7 @@ body{transition:background-color .3s,color .3s}
     <div style="padding:1.5rem 2rem">
       <div class="trust-row">
         <div><div class="trust-event">Locator breaks</div><div style="font-size:.6rem;font-family:monospace;color:var(--muted)">e.g. CSS selector stale</div></div>
-        <div class="trust-flow">AI healer detects failure at runtime. DOM scan finds new element. Patches <code style="font-family:monospace;font-size:.85em">*Page.ts</code>. Draft PR opened. AI posts confidence score (semantic equivalence + post-patch test pass + blast radius). ≥90% → auto-merge after 24h. <strong style="color:var(--ink)">Circuit breaker:</strong> same locator healed 3× in 30 days → Jira escalation, healing suspended. Set <code style="font-family:monospace;font-size:.85em">QA_AUTOHEALER_AUTOMERGE=false</code> for regulated repos.</div>
+        <div class="trust-flow">AI healer detects failure at runtime. <strong style="color:var(--ink)">Triage first:</strong> agent-browser replays the step's Gherkin intent (<code style="font-family:monospace;font-size:.85em">chat</code>) — if the intent also fails, it's a real defect → Jira, never heal. If intent succeeds: a11y-tree <code style="font-family:monospace;font-size:.85em">snapshot</code> finds the new element, patches <code style="font-family:monospace;font-size:.85em">*Page.ts</code>, draft PR opened. AI posts confidence score (semantic equivalence + post-patch test pass + blast radius). <strong style="color:var(--ink)">Auto-merge requires both</strong> ≥90% confidence <em>and</em> a matching <code style="font-family:monospace;font-size:.85em">action_renamed</code> drift event — an unexplained DOM change stays red (could be an accidental regression). ≥90% + corroborated → auto-merge after 24h. <strong style="color:var(--ink)">Circuit breaker:</strong> same locator healed 3× in 30 days → Jira escalation, healing suspended. Set <code style="font-family:monospace;font-size:.85em">QA_AUTOHEALER_AUTOMERGE=false</code> for regulated repos.</div>
         <span class="trust-badge" style="background:var(--sage2);color:var(--sage);border:1px solid rgba(45,90,61,.2)">Auto-merge 24h · ≥90% confidence</span>
       </div>
       <div class="trust-row">
@@ -1209,7 +1221,7 @@ body{transition:background-color .3s,color .3s}
 
 <footer>
   <p>QA Evergreen Ecosystem · System Design · Opinionated Architecture · Prepared with Claude</p>
-  <p style="margin-top:.5rem;font-size:.5rem;letter-spacing:.12em">workspace-analysis · breadcrumb-emitter · journey-deriver · generator-agent · qa-ecosystem.gitlab-ci · self-healing · coverage-gate</p>
+  <p style="margin-top:.5rem;font-size:.5rem;letter-spacing:.12em">workspace-analysis · breadcrumb-emitter · journey-deriver · generator-agent · qa-ecosystem.gitlab-ci · self-healing · agent-browser verify · coverage-gate</p>
 </footer>
 
 <script>
