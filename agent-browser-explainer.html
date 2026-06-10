@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Browser — Visual Explainer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --navy: #0A0E1A;
+    --slate: #1E2840;
+    --slate2: #263054;
+    --cyan: #00D4FF;
+    --cyan-dim: #00D4FF33;
+    --green: #39FF14;
+    --green-dim: #39FF1420;
+    --amber: #FFB800;
+    --amber-dim: #FFB80020;
+    --red: #FF4060;
+    --white: #E8F0FF;
+    --muted: #5A6A8A;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: var(--sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,212,255,0.015) 2px,
+      rgba(0,212,255,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    position: relative;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, #0D1E3A 0%, var(--navy) 70%);
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0.8;
+  }
+
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: var(--white);
+    text-align: center;
+    line-height: 1.1;
+  }
+
+  .hero h1 .accent { color: var(--cyan); }
+
+  .hero-sub {
+    max-width: 560px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 1.05rem;
+    margin-top: 20px;
+    font-weight: 400;
+  }
+
+  /* ── LIVE VIEWPORT ── */
+  .viewport-wrapper {
+    margin: 52px auto 0;
+    width: min(640px, 92vw);
+    position: relative;
+  }
+
+  .browser-chrome {
+    background: var(--slate);
+    border: 1px solid var(--slate2);
+    border-radius: 10px 10px 0 0;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: var(--red); }
+  .dot.y { background: var(--amber); }
+  .dot.g { background: var(--green); }
+
+  .url-bar {
+    flex: 1;
+    background: var(--navy);
+    border: 1px solid var(--slate2);
+    border-radius: 5px;
+    padding: 5px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--cyan);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+  }
+
+  .url-bar .lock { color: var(--green); font-size: 10px; }
+  #url-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .agent-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--amber);
+    background: var(--amber-dim);
+    border: 1px solid var(--amber);
+    border-radius: 3px;
+    padding: 2px 6px;
+    white-space: nowrap;
+  }
+
+  .browser-viewport {
+    background: #0F1626;
+    border: 1px solid var(--slate2);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    height: 340px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Fake webpage inside viewport */
+  .fake-page {
+    position: absolute;
+    inset: 0;
+    padding: 20px;
+    font-family: var(--sans);
+  }
+
+  .fp-header {
+    background: var(--slate);
+    height: 36px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .fp-logo {
+    width: 60px;
+    height: 10px;
+    background: var(--cyan-dim);
+    border-radius: 2px;
+  }
+
+  .fp-nav { display: flex; gap: 6px; margin-left: auto; }
+  .fp-nav-item {
+    width: 36px;
+    height: 8px;
+    background: var(--muted);
+    border-radius: 2px;
+    opacity: 0.4;
+  }
+
+  .fp-hero-block {
+    background: var(--slate2);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .fp-title {
+    width: 70%;
+    height: 12px;
+    background: var(--white);
+    border-radius: 2px;
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+
+  .fp-body-lines { display: flex; flex-direction: column; gap: 5px; }
+  .fp-line {
+    height: 7px;
+    background: var(--muted);
+    border-radius: 2px;
+    opacity: 0.3;
+  }
+
+  .fp-btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background: var(--cyan-dim);
+    border: 1px solid var(--cyan);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--cyan);
+    cursor: default;
+  }
+
+  .fp-form {
+    background: var(--slate);
+    border-radius: 6px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fp-input {
+    height: 22px;
+    background: var(--navy);
+    border: 1px solid var(--slate2);
+    border-radius: 3px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .fp-input.active-field {
+    border-color: var(--cyan);
+    color: var(--cyan);
+  }
+
+  /* ── AGENT EYE CURSOR ── */
+  .agent-cursor {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+
+  .cursor-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--cyan);
+    border-radius: 50%;
+    animation: cursor-pulse 1.2s ease-in-out infinite;
+  }
+
+  .cursor-dot {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 4px; height: 4px;
+    background: var(--cyan);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .cursor-scan {
+    position: absolute;
+    inset: -6px;
+    border: 1px solid var(--cyan-dim);
+    border-radius: 50%;
+    animation: cursor-scan 1.5s ease-in-out infinite 0.3s;
+  }
+
+  @keyframes cursor-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+  }
+
+  @keyframes cursor-scan {
+    0% { opacity: 0.6; transform: scale(1); }
+    100% { opacity: 0; transform: scale(2.5); }
+  }
+
+  /* Action flash */
+  .action-flash {
+    position: absolute;
+    border-radius: 4px;
+    border: 2px solid var(--green);
+    background: var(--green-dim);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 5;
+    transition: opacity 0.15s;
+  }
+
+  /* ── THOUGHT STREAM ── */
+  .thought-stream {
+    position: absolute;
+    right: -210px;
+    top: 0;
+    width: 196px;
+    background: var(--slate);
+    border: 1px solid var(--slate2);
+    border-radius: 8px;
+    padding: 10px;
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--muted);
+    max-height: 340px;
+    overflow: hidden;
+  }
+
+  .thought-header {
+    color: var(--amber);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .thought-header::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--amber);
+    border-radius: 50%;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .thought-line {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--slate2);
+    line-height: 1.4;
+    color: var(--muted);
+    transition: color 0.3s;
+  }
+
+  .thought-line.active {
+    color: var(--cyan);
+  }
+
+  .thought-line .thought-icon {
+    color: var(--green);
+    margin-right: 4px;
+  }
+
+  /* ── SECTION LAYOUT ── */
+  section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 14px;
+  }
+
+  h2 {
+    font-family: var(--mono);
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  p.lead {
+    color: #8899BB;
+    font-size: 1.05rem;
+    max-width: 600px;
+    margin-bottom: 48px;
+  }
+
+  /* ── ARCH DIAGRAM ── */
+  .arch-diagram {
+    position: relative;
+    width: 100%;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .arch-diagram svg {
+    width: 100%;
+    height: auto;
+  }
+
+  /* ── LOOP STEPS ── */
+  .loop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2px;
+    margin-top: 40px;
+  }
+
+  .loop-step {
+    background: var(--slate);
+    border: 1px solid var(--slate2);
+    padding: 24px 20px;
+    position: relative;
+    transition: border-color 0.25s, background 0.25s;
+    cursor: default;
+  }
+
+  .loop-step:hover {
+    border-color: var(--cyan);
+    background: #1A2640;
+  }
+
+  .loop-step:first-child { border-radius: 8px 0 0 8px; }
+  .loop-step:last-child { border-radius: 0 8px 8px 0; }
+
+  .step-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .step-icon {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .step-title {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .step-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── TOOLS GRID ── */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-top: 36px;
+  }
+
+  .tool-card {
+    background: var(--slate);
+    border: 1px solid var(--slate2);
+    border-radius: 8px;
+    padding: 18px 16px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .tool-card:hover {
+    border-color: var(--green);
+    transform: translateY(-2px);
+  }
+
+  .tool-name {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 5px;
+  }
+
+  .tool-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* ── PERCEPTION PIPELINE ── */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+
+  .pipe-stage {
+    flex: 1;
+    min-width: 120px;
+    background: var(--slate);
+    border: 1px solid var(--slate2);
+    border-radius: 6px;
+    padding: 16px 14px;
+    text-align: center;
+    position: relative;
+  }
+
+  .pipe-stage + .pipe-stage::before {
+    content: '→';
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 1rem;
+    margin: 0 -12px;
+    z-index: 1;
+    position: relative;
+  }
+
+  .pipe-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--cyan);
+    margin-bottom: 4px;
+  }
+
+  .pipe-detail {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .pipe-arrow {
+    color: var(--cyan);
+    font-family: var(--mono);
+    font-size: 1.2rem;
+    padding: 0 8px;
+    align-self: center;
+  }
+
+  /* ── USE CASES ── */
+  .use-cases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 36px;
+  }
+
+  .use-case {
+    background: var(--slate);
+    border: 1px solid var(--slate2);
+    border-radius: 8px;
+    padding: 22px 20px;
+    border-left: 3px solid var(--cyan);
+    transition: background 0.2s;
+  }
+
+  .use-case:hover { background: #1A2640; }
+  .use-case:nth-child(2) { border-left-color: var(--green); }
+  .use-case:nth-child(3) { border-left-color: var(--amber); }
+  .use-case:nth-child(4) { border-left-color: var(--red); }
+
+  .uc-title {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .uc-desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── LIMITATIONS ── */
+  .limits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 36px;
+  }
+
+  @media (max-width: 600px) {
+    .limits-grid { grid-template-columns: 1fr; }
+    .thought-stream { display: none; }
+    .loop-step:first-child, .loop-step:last-child { border-radius: 8px; }
+  }
+
+  .limit-item {
+    background: var(--slate);
+    border: 1px solid var(--slate2);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .limit-icon { font-size: 1.2rem; flex-shrink: 0; }
+  .limit-text { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .limit-title { font-family: var(--mono); font-size: 0.8rem; color: var(--white); margin-bottom: 4px; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--slate2);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--slate2);
+  }
+
+  /* ── CODE SNIPPET ── */
+  .code-block {
+    background: #07090F;
+    border: 1px solid var(--slate2);
+    border-radius: 8px;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.7;
+    margin-top: 32px;
+    overflow-x: auto;
+  }
+
+  .code-block .kw { color: var(--cyan); }
+  .code-block .fn { color: var(--green); }
+  .code-block .str { color: var(--amber); }
+  .code-block .cm { color: var(--muted); }
+  .code-block .num { color: #FF8C8C; }
+
+  /* ── SMOOTH THEME TRANSITIONS ── */
+  html { transition: background-color .3s; }
+  body { transition: background-color .3s, color .3s; }
+
+  /* ── LIGHT THEME ── */
+  [data-theme="light"] {
+    --navy: #f0f4fa;
+    --slate: #ffffff;
+    --slate2: #bfcce0;
+    --cyan: #0077aa;
+    --cyan-dim: rgba(0,119,170,0.12);
+    --green: #15803d;
+    --green-dim: rgba(21,128,61,0.12);
+    --amber: #b45309;
+    --amber-dim: rgba(180,83,9,0.1);
+    --red: #dc2626;
+    --white: #0d1117;
+    --muted: #4a5568;
+  }
+
+  [data-theme="light"] body::before {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,119,170,0.015) 2px,
+      rgba(0,119,170,0.015) 4px
+    );
+    opacity: 0.4;
+  }
+
+  [data-theme="light"] .hero {
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, #d6e8f7 0%, var(--navy) 70%);
+  }
+
+  [data-theme="light"] .browser-viewport {
+    background: #e4ecf5;
+  }
+
+  [data-theme="light"] .url-bar {
+    background: #ffffff;
+  }
+
+  [data-theme="light"] .fp-hero-block {
+    background: #d4e2f0;
+  }
+
+  [data-theme="light"] .fp-form {
+    background: var(--slate2);
+  }
+
+  [data-theme="light"] .fp-input {
+    background: #ffffff;
+    border-color: var(--slate2);
+  }
+
+  [data-theme="light"] .thought-stream {
+    background: #ffffff;
+  }
+
+  [data-theme="light"] .loop-step:hover {
+    background: #e6f0fa;
+  }
+
+  [data-theme="light"] .tool-card:hover {
+    background: #e6f0fa;
+  }
+
+  [data-theme="light"] .use-case:hover {
+    background: #e6f0fa;
+  }
+
+  [data-theme="light"] .code-block {
+    background: #eaf0f8;
+    border-color: var(--slate2);
+  }
+
+  [data-theme="light"] .code-block .num { color: #dc2626; }
+
+  /* ── THEME TOGGLE BUTTON ── */
+  #theme-toggle {
+    position: fixed; top: 1.25rem; right: 1.25rem; z-index: 1000;
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--slate);
+    border: 1px solid var(--slate2);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: .58rem; letter-spacing: .14em; text-transform: uppercase;
+    padding: .4rem .85rem .4rem .75rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .2s, color .2s, box-shadow .2s, background .3s;
+  }
+
+  #theme-toggle:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    box-shadow: 0 0 14px rgba(0,212,255,.2);
+  }
+
+  [data-theme="light"] #theme-toggle:hover {
+    box-shadow: 0 0 14px rgba(0,119,170,.2);
+  }
+
+  #theme-toggle .ti {
+    font-size: 1rem; line-height: 1; display: block;
+    transition: transform .4s cubic-bezier(.175,.885,.32,1.275);
+  }
+
+  #theme-toggle:hover .ti { transform: rotate(30deg); }
+
+  /* ── SCROLL REVEAL ── */
+  .anim-target {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+
+  .anim-target.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<button id="theme-toggle" aria-label="Toggle theme">
+  <span class="ti">◑</span>Theme
+</button>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <p class="hero-eyebrow">Agentic AI · Browser Automation · Autonomous Navigation</p>
+  <h1>Agent<span class="accent">Browser</span></h1>
+  <p class="hero-sub">An AI agent that sees, reasons over, and acts within a live web browser — no human at the keyboard.</p>
+
+  <!-- LIVE DEMO VIEWPORT -->
+  <div class="viewport-wrapper">
+    <div class="browser-chrome">
+      <div class="dots">
+        <div class="dot r"></div>
+        <div class="dot y"></div>
+        <div class="dot g"></div>
+      </div>
+      <div class="url-bar">
+        <span class="lock">🔒</span>
+        <span id="url-text">https://checkout.example.com/cart</span>
+      </div>
+      <div class="agent-badge">⚡ AGENT ACTIVE</div>
+    </div>
+
+    <div class="browser-viewport" id="bv">
+      <!-- Fake page content -->
+      <div class="fake-page" id="fake-page">
+        <div class="fp-header">
+          <div class="fp-logo"></div>
+          <div class="fp-nav">
+            <div class="fp-nav-item"></div>
+            <div class="fp-nav-item"></div>
+            <div class="fp-nav-item"></div>
+          </div>
+        </div>
+        <div class="fp-hero-block" id="fp-hero">
+          <div class="fp-title"></div>
+          <div class="fp-body-lines">
+            <div class="fp-line" style="width:90%"></div>
+            <div class="fp-line" style="width:75%"></div>
+            <div class="fp-line" style="width:60%"></div>
+          </div>
+          <div class="fp-btn" id="fp-cta-btn">Add to Cart →</div>
+        </div>
+        <div class="fp-form" id="fp-form">
+          <div class="fp-input" id="fp-field-name">Name...</div>
+          <div class="fp-input" id="fp-field-email">Email...</div>
+          <div class="fp-btn" id="fp-submit-btn">Submit Order →</div>
+        </div>
+      </div>
+
+      <!-- Agent cursor -->
+      <div class="agent-cursor" id="agent-cursor" style="left:50%;top:50%;">
+        <div class="cursor-scan"></div>
+        <div class="cursor-ring"></div>
+        <div class="cursor-dot"></div>
+      </div>
+
+      <!-- Action highlight box -->
+      <div class="action-flash" id="action-flash"></div>
+    </div>
+
+    <!-- Thought stream -->
+    <div class="thought-stream" id="thought-stream">
+      <div class="thought-header">Agent Thoughts</div>
+      <div id="thoughts-container"></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ── WHAT IS IT ── -->
+<section>
+  <p class="section-label anim-target">01 — Overview</p>
+  <h2 class="anim-target">What is an Agent Browser?</h2>
+  <p class="lead anim-target">A software agent that operates a real web browser — clicking, scrolling, typing, and navigating — driven by an LLM that perceives the page and decides the next action.</p>
+
+  <!-- Architecture SVG diagram -->
+  <div class="arch-diagram anim-target">
+    <svg viewBox="0 0 860 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Boxes -->
+      <!-- Goal box -->
+      <rect x="10" y="100" width="130" height="80" rx="6" fill="#1E2840" stroke="#263054"/>
+      <text x="75" y="130" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#00D4FF">GOAL</text>
+      <text x="75" y="148" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#5A6A8A">"Book a flight to</text>
+      <text x="75" y="162" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#5A6A8A">NYC next Friday"</text>
+
+      <!-- Arrow 1 -->
+      <line x1="140" y1="140" x2="175" y2="140" stroke="#00D4FF" stroke-width="1.5" marker-end="url(#ah)"/>
+
+      <!-- LLM Brain -->
+      <rect x="175" y="60" width="160" height="160" rx="6" fill="#0D1E3A" stroke="#00D4FF" stroke-width="1.5"/>
+      <text x="255" y="90" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#00D4FF">LLM BRAIN</text>
+      <text x="255" y="112" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#5A6A8A">Perceive → Reason</text>
+      <text x="255" y="128" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#5A6A8A">→ Plan → Act</text>
+      <!-- Memory icon -->
+      <rect x="195" y="140" width="50" height="16" rx="3" fill="#263054"/>
+      <text x="220" y="152" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#39FF14">MEMORY</text>
+      <!-- Tools icon -->
+      <rect x="265" y="140" width="50" height="16" rx="3" fill="#263054"/>
+      <text x="290" y="152" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#FFB800">TOOLS</text>
+      <text x="255" y="185" text-anchor="middle" font-family="Inter, sans-serif" font-size="8" fill="#5A6A8A">Tracks steps, history,</text>
+      <text x="255" y="198" text-anchor="middle" font-family="Inter, sans-serif" font-size="8" fill="#5A6A8A">and intermediate state</text>
+
+      <!-- Arrow 2 -->
+      <line x1="335" y1="140" x2="375" y2="140" stroke="#00D4FF" stroke-width="1.5" marker-end="url(#ah)"/>
+
+      <!-- Action Executor -->
+      <rect x="375" y="80" width="130" height="120" rx="6" fill="#1E2840" stroke="#263054"/>
+      <text x="440" y="107" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#39FF14">EXECUTOR</text>
+      <text x="440" y="125" text-anchor="middle" font-family="Inter, sans-serif" font-size="8.5" fill="#5A6A8A">click(element)</text>
+      <text x="440" y="140" text-anchor="middle" font-family="Inter, sans-serif" font-size="8.5" fill="#5A6A8A">type(text)</text>
+      <text x="440" y="155" text-anchor="middle" font-family="Inter, sans-serif" font-size="8.5" fill="#5A6A8A">navigate(url)</text>
+      <text x="440" y="170" text-anchor="middle" font-family="Inter, sans-serif" font-size="8.5" fill="#5A6A8A">scroll(dir)</text>
+      <text x="440" y="185" text-anchor="middle" font-family="Inter, sans-serif" font-size="8.5" fill="#5A6A8A">screenshot()</text>
+
+      <!-- Arrow 3 -->
+      <line x1="505" y1="140" x2="545" y2="140" stroke="#00D4FF" stroke-width="1.5" marker-end="url(#ah)"/>
+
+      <!-- Browser -->
+      <rect x="545" y="40" width="160" height="200" rx="6" fill="#1E2840" stroke="#263054"/>
+      <!-- browser chrome bar -->
+      <rect x="545" y="40" width="160" height="28" rx="6" fill="#263054"/>
+      <circle cx="563" cy="54" r="4" fill="#FF4060" opacity="0.7"/>
+      <circle cx="577" cy="54" r="4" fill="#FFB800" opacity="0.7"/>
+      <circle cx="591" cy="54" r="4" fill="#39FF14" opacity="0.7"/>
+      <rect x="600" y="48" width="90" height="12" rx="3" fill="#0A0E1A"/>
+      <text x="645" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" fill="#5A6A8A">example.com</text>
+
+      <!-- fake page lines inside browser -->
+      <rect x="555" y="80" width="140" height="10" rx="2" fill="#263054" opacity="0.6"/>
+      <rect x="555" y="96" width="100" height="7" rx="2" fill="#263054" opacity="0.4"/>
+      <rect x="555" y="108" width="120" height="7" rx="2" fill="#263054" opacity="0.4"/>
+      <rect x="555" y="120" width="80" height="7" rx="2" fill="#263054" opacity="0.4"/>
+      <rect x="555" y="140" width="140" height="22" rx="3" fill="#0D1E3A" stroke="#263054"/>
+      <text x="625" y="156" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#5A6A8A">input field</text>
+      <rect x="555" y="172" width="60" height="16" rx="3" fill="#00D4FF22" stroke="#00D4FF"/>
+      <text x="585" y="184" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#00D4FF">Search</text>
+
+      <!-- Agent eye in browser -->
+      <circle cx="640" cy="210" r="10" fill="none" stroke="#00D4FF" stroke-width="1.5" opacity="0.8"/>
+      <circle cx="640" cy="210" r="3" fill="#00D4FF"/>
+      <circle cx="640" cy="210" r="15" fill="none" stroke="#00D4FF22" stroke-width="1"/>
+
+      <text x="625" y="238" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#00D4FF">agent sees</text>
+
+      <!-- Observation feedback arrow (curved back) -->
+      <path d="M545 200 C460 270 320 270 255 210" stroke="#39FF14" stroke-width="1.2" stroke-dasharray="4 3" fill="none" marker-end="url(#ahg)"/>
+      <text x="400" y="262" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#39FF14">observation feedback</text>
+
+      <!-- Arrow markers -->
+      <defs>
+        <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0 0 L0 6 L8 3 z" fill="#00D4FF"/>
+        </marker>
+        <marker id="ahg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0 0 L0 6 L8 3 z" fill="#39FF14"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── THE LOOP ── -->
+<section>
+  <p class="section-label anim-target">02 — Core Loop</p>
+  <h2 class="anim-target">The Perceive–Reason–Act Loop</h2>
+  <p class="lead anim-target">Every agent browser turn follows the same tight loop — until the goal is satisfied or it hits a dead end.</p>
+
+  <div class="loop-grid anim-target">
+    <div class="loop-step">
+      <div class="step-num">STEP 01</div>
+      <span class="step-icon">👁️</span>
+      <div class="step-title">Observe</div>
+      <div class="step-desc">Agent receives a screenshot and/or accessibility tree (DOM) of the current page state. It sees what a human would see.</div>
+    </div>
+    <div class="loop-step">
+      <div class="step-num">STEP 02</div>
+      <span class="step-icon">🧠</span>
+      <div class="step-title">Reason</div>
+      <div class="step-desc">The LLM reads the observation, compares to the goal, recalls prior steps, and reasons about what action to take next.</div>
+    </div>
+    <div class="loop-step">
+      <div class="step-num">STEP 03</div>
+      <span class="step-icon">⚡</span>
+      <div class="step-title">Act</div>
+      <div class="step-desc">Issues a structured tool call: click, type, scroll, navigate, or extract. The browser executor carries it out.</div>
+    </div>
+    <div class="loop-step">
+      <div class="step-num">STEP 04</div>
+      <span class="step-icon">🔁</span>
+      <div class="step-title">Evaluate</div>
+      <div class="step-desc">The new page state is captured. The agent checks if the goal is reached, if an error occurred, or if replanning is needed.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── PERCEPTION ── -->
+<section>
+  <p class="section-label anim-target">03 — Perception</p>
+  <h2 class="anim-target">How the Agent Sees the Web</h2>
+  <p class="lead anim-target">Browsers don't hand agents clean data. Perception is a translation layer between raw HTML and LLM-readable meaning.</p>
+
+  <div class="anim-target" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:36px;align-items:center;">
+    <div class="pipe-stage">
+      <div class="pipe-label">Raw HTML / DOM</div>
+      <div class="pipe-detail">Full page source, deeply nested, noisy, verbose</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage">
+      <div class="pipe-label">Accessibility Tree</div>
+      <div class="pipe-detail">Roles, labels, interactive elements extracted</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage">
+      <div class="pipe-label">Screenshot</div>
+      <div class="pipe-detail">Visual context; vision-language model reads layout</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage">
+      <div class="pipe-label">State Summary</div>
+      <div class="pipe-detail">Compressed context passed to LLM with history</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage">
+      <div class="pipe-label">LLM Input</div>
+      <div class="pipe-detail">Goal + state + memory → next action token</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── TOOLS ── -->
+<section>
+  <p class="section-label anim-target">04 — Toolset</p>
+  <h2 class="anim-target">What the Agent Can Do</h2>
+  <p class="lead anim-target">The agent operates through a constrained set of browser primitives — the same actions a human hand and eye perform, expressed as tool calls.</p>
+
+  <div class="tools-grid anim-target">
+    <div class="tool-card">
+      <div class="tool-name">click(selector)</div>
+      <div class="tool-desc">Clicks any element — buttons, links, checkboxes, dropdowns. Can target by CSS selector or coordinate.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">type(text)</div>
+      <div class="tool-desc">Fills form fields, search boxes, text areas. Can clear existing value first.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">navigate(url)</div>
+      <div class="tool-desc">Goes directly to a URL, or uses back/forward in browser history.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">scroll(direction)</div>
+      <div class="tool-desc">Scrolls the viewport or a container up, down, left, right — reveals off-screen content.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">screenshot()</div>
+      <div class="tool-desc">Captures the current viewport as an image for visual reasoning and progress verification.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">extract(query)</div>
+      <div class="tool-desc">Reads and returns structured data from the page — tables, prices, text content.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">wait(condition)</div>
+      <div class="tool-desc">Pauses until an element appears, a URL changes, or a network request completes.</div>
+    </div>
+    <div class="tool-card">
+      <div class="tool-name">select(option)</div>
+      <div class="tool-desc">Picks from dropdown menus, radio groups, or multi-select lists by value or label.</div>
+    </div>
+  </div>
+
+  <!-- Code example -->
+  <div class="code-block anim-target">
+    <span class="cm">// Agent LLM output — structured tool call</span><br>
+    {<br>
+    &nbsp;&nbsp;<span class="kw">"thought"</span>: <span class="str">"I need to fill in the search box and click Search to find flights."</span>,<br>
+    &nbsp;&nbsp;<span class="kw">"action"</span>: <span class="str">"type"</span>,<br>
+    &nbsp;&nbsp;<span class="kw">"params"</span>: {<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">"selector"</span>: <span class="str">"input[name='origin']"</span>,<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">"value"</span>: <span class="str">"MIA"</span><br>
+    &nbsp;&nbsp;}<br>
+    }<br><br>
+    <span class="cm">// Followed by:</span><br>
+    { <span class="kw">"action"</span>: <span class="str">"click"</span>, <span class="kw">"params"</span>: { <span class="kw">"selector"</span>: <span class="str">"button.search-flights"</span> } }
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── USE CASES ── -->
+<section>
+  <p class="section-label anim-target">05 — Applications</p>
+  <h2 class="anim-target">Where Agent Browsers Operate</h2>
+  <p class="lead anim-target">Anywhere a browser is the interface — whether public web or internal enterprise tools — an agent browser can take over repetitive, multi-step workflows.</p>
+
+  <div class="use-cases anim-target">
+    <div class="use-case">
+      <div class="uc-title">🧪 QA Automation</div>
+      <div class="uc-desc">Executes end-to-end test scenarios against live apps, adapting to dynamic UI changes without brittle selectors.</div>
+    </div>
+    <div class="use-case">
+      <div class="uc-title">🔍 Web Research</div>
+      <div class="uc-desc">Navigates multiple sites, extracts structured data, synthesizes results — like a human analyst, but at scale.</div>
+    </div>
+    <div class="use-case">
+      <div class="uc-title">🛒 Workflow Automation</div>
+      <div class="uc-desc">Books travel, fills procurement forms, submits tickets — operating legacy enterprise UIs that have no API.</div>
+    </div>
+    <div class="use-case">
+      <div class="uc-title">🤖 Agentic Assistants</div>
+      <div class="uc-desc">Delegates sub-tasks to browser agents while a higher-level orchestrator coordinates toward a complex goal.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── LIMITATIONS ── -->
+<section>
+  <p class="section-label anim-target">06 — Challenges</p>
+  <h2 class="anim-target">Hard Problems</h2>
+  <p class="lead anim-target">Agent browsers are powerful but fragile. Understanding their failure modes is essential before production deployment.</p>
+
+  <div class="limits-grid anim-target">
+    <div class="limit-item">
+      <div class="limit-icon">🎯</div>
+      <div class="limit-text">
+        <div class="limit-title">Selector Brittleness</div>
+        Dynamic class names, shadow DOM, and framework-generated IDs break tool calls that rely on CSS selectors.
+      </div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-icon">🔄</div>
+      <div class="limit-text">
+        <div class="limit-title">Context Blowout</div>
+        Long browsing sessions eat the LLM's context window fast — screenshots and DOM trees are expensive tokens.
+      </div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-icon">🧩</div>
+      <div class="limit-text">
+        <div class="limit-title">CAPTCHAs & Auth Walls</div>
+        Human-verification challenges and SSO flows can block the agent entirely with no programmatic bypass.
+      </div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-icon">⚠️</div>
+      <div class="limit-text">
+        <div class="limit-title">Irreversible Actions</div>
+        Clicking "Submit Order" or "Delete Account" has real consequences. Agents need explicit checkpointing and human-in-the-loop gates for high-stakes actions.
+      </div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-icon">🌀</div>
+      <div class="limit-text">
+        <div class="limit-title">Infinite Loops</div>
+        Agents can get stuck in navigation cycles — paginated results, modal dialogs, or error states that look like progress.
+      </div>
+    </div>
+    <div class="limit-item">
+      <div class="limit-icon">🐢</div>
+      <div class="limit-text">
+        <div class="limit-title">Latency Cost</div>
+        Each action involves a screenshot + LLM inference + tool execution round-trip. Complex tasks can take minutes and significant token spend.
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<footer>
+  AGENT BROWSER — VISUAL EXPLAINER &nbsp;·&nbsp; AGENTIC AI SERIES &nbsp;·&nbsp; BUILT WITH CLAUDE
+</footer>
+
+<script>
+  // ── ANIMATED AGENT IN BROWSER VIEWPORT ──
+  const cursor = document.getElementById('agent-cursor');
+  const flash = document.getElementById('action-flash');
+  const bv = document.getElementById('bv');
+  const urlText = document.getElementById('url-text');
+  const fpFieldName = document.getElementById('fp-field-name');
+  const fpFieldEmail = document.getElementById('fp-field-email');
+  const fpCta = document.getElementById('fp-cta-btn');
+  const fpSubmit = document.getElementById('fp-submit-btn');
+
+  const thoughts = [
+    { icon: '👁', text: 'Reading DOM structure…' },
+    { icon: '🧠', text: 'Goal: complete checkout' },
+    { icon: '🎯', text: 'Located "Add to Cart" btn' },
+    { icon: '⚡', text: 'click(#fp-cta-btn)' },
+    { icon: '✓', text: 'Cart updated — navigating' },
+    { icon: '👁', text: 'New page: checkout form' },
+    { icon: '🎯', text: 'Found name input field' },
+    { icon: '⚡', text: 'type("Darwin Rodriguez")' },
+    { icon: '🎯', text: 'Found email field' },
+    { icon: '⚡', text: 'type("darwin@fiserv.com")' },
+    { icon: '🧠', text: 'Verifying fields filled' },
+    { icon: '⚡', text: 'click(#submit-btn)' },
+    { icon: '✅', text: 'Order submitted. Goal ✓' },
+  ];
+
+  const thoughtsContainer = document.getElementById('thoughts-container');
+  let thoughtLines = [];
+
+  // Seed thought display
+  thoughtLines = thoughts.slice(0, 5).map((t, i) => {
+    const div = document.createElement('div');
+    div.className = 'thought-line';
+    div.innerHTML = `<span class="thought-icon">${t.icon}</span>${t.text}`;
+    thoughtsContainer.appendChild(div);
+    return div;
+  });
+
+  let thoughtIdx = 0;
+
+  function updateThought(idx) {
+    thoughtLines.forEach(l => l.classList.remove('active'));
+    const t = thoughts[idx % thoughts.length];
+    const div = document.createElement('div');
+    div.className = 'thought-line active';
+    div.innerHTML = `<span class="thought-icon">${t.icon}</span>${t.text}`;
+    thoughtsContainer.insertBefore(div, thoughtsContainer.firstChild);
+    if (thoughtsContainer.children.length > 7) {
+      thoughtsContainer.removeChild(thoughtsContainer.lastChild);
+    }
+  }
+
+  // Target positions for cursor within viewport [left%, top%]
+  const sequence = [
+    { pos: [55, 25], target: 'scan', url: 'https://shop.example.com/catalog' },
+    { pos: [40, 72], target: 'btn', el: 'fp-cta-btn', url: 'https://shop.example.com/catalog' },
+    { pos: [40, 72], target: 'click', el: 'fp-cta-btn', url: 'https://shop.example.com/catalog' },
+    { pos: [50, 50], target: 'nav', url: 'https://checkout.example.com/cart' },
+    { pos: [40, 55], target: 'field', el: 'fp-field-name', url: 'https://checkout.example.com/cart' },
+    { pos: [40, 65], target: 'type', el: 'fp-field-name', url: 'https://checkout.example.com/cart' },
+    { pos: [40, 70], target: 'field', el: 'fp-field-email', url: 'https://checkout.example.com/cart' },
+    { pos: [40, 80], target: 'type', el: 'fp-field-email', url: 'https://checkout.example.com/cart' },
+    { pos: [25, 88], target: 'btn', el: 'fp-submit-btn', url: 'https://checkout.example.com/cart' },
+    { pos: [25, 88], target: 'click', el: 'fp-submit-btn', url: 'https://checkout.example.com/cart' },
+    { pos: [50, 40], target: 'scan', url: 'https://checkout.example.com/confirm' },
+  ];
+
+  let seqIdx = 0;
+
+  function getElPos(elId) {
+    const el = document.getElementById(elId);
+    if (!el) return null;
+    const bvRect = bv.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    return {
+      left: ((elRect.left + elRect.width / 2 - bvRect.left) / bvRect.width) * 100,
+      top: ((elRect.top + elRect.height / 2 - bvRect.top) / bvRect.height) * 100,
+      elRect, bvRect
+    };
+  }
+
+  function flashEl(elId) {
+    const result = getElPos(elId);
+    if (!result) return;
+    const { elRect, bvRect } = result;
+    flash.style.left = (elRect.left - bvRect.left) + 'px';
+    flash.style.top = (elRect.top - bvRect.top) + 'px';
+    flash.style.width = elRect.width + 'px';
+    flash.style.height = elRect.height + 'px';
+    flash.style.opacity = '1';
+    setTimeout(() => { flash.style.opacity = '0'; }, 500);
+  }
+
+  function moveCursor(leftPct, topPct, duration = 800) {
+    return new Promise(resolve => {
+      cursor.style.transition = `left ${duration}ms cubic-bezier(0.25,0.1,0.25,1), top ${duration}ms cubic-bezier(0.25,0.1,0.25,1)`;
+      cursor.style.left = leftPct + '%';
+      cursor.style.top = topPct + '%';
+      setTimeout(resolve, duration + 100);
+    });
+  }
+
+  async function runSequence() {
+    const step = sequence[seqIdx % sequence.length];
+    urlText.textContent = step.url;
+    updateThought(thoughtIdx++);
+
+    if (step.el) {
+      const pos = getElPos(step.el);
+      if (pos) {
+        await moveCursor(pos.left, pos.top, 900);
+      }
+    } else {
+      await moveCursor(step.pos[0], step.pos[1], 900);
+    }
+
+    if (step.target === 'click' || step.target === 'type') {
+      if (step.el) flashEl(step.el);
+      // type effect
+      if (step.target === 'type') {
+        if (step.el === 'fp-field-name') {
+          fpFieldName.classList.add('active-field');
+          fpFieldName.textContent = 'Darwin Rodriguez';
+        }
+        if (step.el === 'fp-field-email') {
+          fpFieldEmail.classList.add('active-field');
+          fpFieldEmail.textContent = 'darwin@fiserv.com';
+        }
+      }
+    }
+
+    seqIdx++;
+    setTimeout(runSequence, 1200);
+  }
+
+  // Start after a short delay
+  setTimeout(runSequence, 1000);
+
+  // ── THEME TOGGLE ──
+  (function() {
+    const root = document.documentElement;
+    const btn = document.getElementById('theme-toggle');
+    const ic = btn.querySelector('.ti');
+    function set(t) {
+      root.setAttribute('data-theme', t);
+      ic.textContent = t === 'light' ? '◐' : '◑';
+      localStorage.setItem('theme', t);
+    }
+    const saved = localStorage.getItem('theme');
+    set(saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+    btn.addEventListener('click', () => set(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light'));
+  })();
+
+  // ── SCROLL REVEAL ──
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.add('visible');
+      revealObserver.unobserve(e.target);
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.anim-target').forEach(el => revealObserver.observe(el));
+</script>
+</body>
+</html>

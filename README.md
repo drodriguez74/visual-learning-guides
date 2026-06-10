@@ -29,6 +29,7 @@ Or jump directly to any guide:
 | **Harness CD** | `https://drodriguez74.github.io/visual-learning-guides/harness-cd-explainer.html` |
 | **AI-Accelerated QA Roadmap** | `https://drodriguez74.github.io/visual-learning-guides/qa-automation-roadmap.html` |
 | **QA Evergreen Ecosystem** | `https://drodriguez74.github.io/visual-learning-guides/qa-evergreen-ecosystem.html` |
+| **Agent Browser** | `https://drodriguez74.github.io/visual-learning-guides/agent-browser-explainer.html` |
 
 ## Guides
 
@@ -282,6 +283,21 @@ Or jump directly to any guide:
 | **Autonomy Trust Model** | Locator heal, component rename, new/removed pages, flaky quarantine, coverage drops — per-event trust level and exit condition |
 | **Brownfield Onboarding** | 6-step flow: prerequisites → breadcrumb → generate → include → coverage climb → full enforcement |
 | **Onboarding Checklist** | Complete per-repo DoD checklist — shareable with app teams |
+
+---
+
+### 18 · Agent Browser
+`agent-browser-explainer.html` — Dark Cyber (JetBrains Mono + Inter) · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **What is an Agent Browser?** | Architecture SVG: Goal → LLM Brain (Memory + Tools) → Executor → Browser with observation feedback loop |
+| **The Perceive–Reason–Act Loop** | 4-step grid: Observe (DOM + screenshot) → Reason (LLM) → Act (tool call) → Evaluate (goal check / replan) |
+| **How the Agent Sees the Web** | 5-stage perception pipeline: Raw HTML → Accessibility Tree → Screenshot → State Summary → LLM Input |
+| **Toolset** | 8 browser primitives: click, type, navigate, scroll, screenshot, extract, wait, select — with annotated JSON tool call example |
+| **Applications** | 4 use-case cards: QA Automation, Web Research, Workflow Automation, Agentic Assistants |
+| **Hard Problems** | 6 failure modes: Selector Brittleness, Context Blowout, CAPTCHAs, Irreversible Actions, Infinite Loops, Latency Cost |
+| **Live Hero Demo** | Animated browser viewport — agent cursor moves, fills form fields, and submits — with a streaming thought panel |
 
 ---
 
