@@ -2,8 +2,10 @@
 
 **Organization:** Fortune 100 financial services company
 **Approach:** One repo at a time · 50% coverage floor · AI-accelerated · Self-healing
-**Stack:** TypeScript · Playwright · Cucumber-JS · Python (AI agents) · GitLab CI
+**Stack:** TypeScript · Playwright · Cucumber-JS · Python (AI agents) · Azure OpenAI (GPT-5.2) · GitLab CI
 **Prepared:** June 2025
+
+> **⚠️ Status — target-state vision, not a deployed system.** Sections 1–20 describe the destination. As of this version **nothing is built**: there is no `.gitlab-ci.yml`, no shared template, no pipelines, no cron jobs, no cleanup, and none of the AI agents exist. The near-term work is building the agents and proving the loop on one app. **Read [Section 21](#21-reality-check-provider-decision--pre-implementation-backlog) first** — it states what exists today, the LLM provider decision, and the proof-of-concept scope. Operational controls described in §11–§19 become real risks only when the layer that needs them is actually built.
 
 ---
 
@@ -29,6 +31,7 @@
 18. [Open Questions & Decisions Log](#18-open-questions--decisions-log)
 19. [Agent Browser Integration](#19-agent-browser-integration)
 20. [Journey Discovery & Trace Compilation](#20-journey-discovery--trace-compilation)
+21. [Reality Check, Provider Decision & Pre-Implementation Backlog](#21-reality-check-provider-decision--pre-implementation-backlog)
 
 ---
 
@@ -191,7 +194,7 @@ All tokens and API keys used by the ecosystem must be:
 - Named with the `QA_` prefix for namespace isolation
 - Rotated every 90 days (a scheduled audit job in `platform/qa-ecosystem` alerts when tokens are approaching expiry)
 - Never echoed to pipeline logs (GitLab's `masked` flag enforces this; the CI template explicitly uses `--no-verbose` flags on any command that could print token values)
-- **The Anthropic key is never exposed directly to consumer repo pipelines.** Masking is not exfiltration-proof (base64 trivially defeats it), and a group-level key readable by every included pipeline is a company-wide blast radius. Agents call a thin gateway in `platform/qa-toolkit` that holds the real key and enforces per-repo quotas — which also provides the per-repo cost attribution the KPI dashboard needs.
+- **The LLM credential is never exposed directly to consumer repo pipelines.** Masking is not exfiltration-proof (base64 trivially defeats it), and a group-level key readable by every included pipeline is a company-wide blast radius. The platform uses **Azure OpenAI** (§21.2) — agents authenticate to the model gateway in `platform/qa-toolkit` via Azure AD / managed identity, and any API key lives in **Azure Key Vault**, never as a group-level GitLab variable. The gateway enforces per-repo quotas and provides the per-repo cost attribution the KPI dashboard needs.
 
 The `qa-toolkit` service account uses purpose-scoped tokens:
 
@@ -258,7 +261,7 @@ Every role in the breadcrumb role model (`admin`, `super-user`, `user`, `pilot`)
 - [ ] Configure shared GitLab runners with Playwright and Python images
 - [ ] Set up `platform/` GitLab group with shared CI/CD variables:
   - `QA_SCRIPTS` — path to shared Python scripts
-  - `QA_ANTHROPIC_KEY` — Anthropic API key, held by the `platform/qa-toolkit` gateway only (Rule 6 — consumer repo pipelines call the gateway, never the key)
+  - `QA_AZURE_OPENAI_ENDPOINT` — Azure OpenAI endpoint; auth via Azure AD / managed identity, any key in Azure Key Vault. Held by the `platform/qa-toolkit` gateway only (Rule 6 — consumer repo pipelines call the gateway, never the credential)
   - `QA_DEFAULT_COVERAGE_GATE` — `50`
 
 **SDET Team:**
@@ -296,7 +299,7 @@ qa-toolkit/
 │   └── email_sender.py            # jinja2 HTML + smtplib
 ├── schemas/
 │   └── qa-breadcrumbs.schema.json # JSON Schema for breadcrumb validation
-├── requirements.txt               # anthropic gitpython bs4 jinja2 pyyaml
+├── requirements.txt               # openai[azure] gitpython bs4 jinja2 pyyaml
 └── tests/                         # Unit tests for the agents themselves
 ```
 
@@ -317,7 +320,7 @@ qa-toolkit/
   Cross-references Redux auth slice (`authSlice.ts`) for UI-side role guards to confirm role names match frontend and backend
 - [ ] `dynatrace_prioritizer.py` — queries Dynatrace Sessions API for page-level session counts over last 90 days. Returns priority map: `{route: "high"|"medium"|"low"}`
 - [ ] `openapi_mapper.py` — reads OpenAPI YAML/JSON spec, extracts all endpoints grouped by tag/module with HTTP method and path
-- [ ] `journey_deriver.py` — uses Anthropic Claude API to propose candidate journeys (exploration goals) from page graph + role permission map. **Proposals do not enter the breadcrumb directly** — they are handed to `journey_discoverer.py`, which attempts each one via agent-browser; only demonstrated journeys (with recorded traces) become `journeys[]` entries (Section 20)
+- [ ] `journey_deriver.py` — calls the model (via the gateway) to propose candidate journeys (exploration goals) from page graph + role permission map. **Proposals do not enter the breadcrumb directly** — they are handed to `journey_discoverer.py`, which attempts each one via agent-browser; only demonstrated journeys (with recorded traces) become `journeys[]` entries (Section 20)
 - [ ] `breadcrumb_emitter.py` — orchestrates all parsers, writes `qa-breadcrumbs.yaml`, diffs against previous version and emits drift events
 
 **Breadcrumb schema validation:** All generated breadcrumb files must validate against `qa-breadcrumbs.schema.json` before being committed. Invalid schema = pipeline fails.
@@ -330,7 +333,7 @@ qa-toolkit/
 - [ ] `steps.jinja2` template — produces TypeScript step definitions with `async function(this: World)` pattern, correct `@cucumber/cucumber` imports, and TODO markers for SDET to complete
 - [ ] `page_object.jinja2` template — produces Playwright `Page` class extending `BasePage`, with typed `Locator` properties using `getByRole`/`getByLabel`/`getByTestId`, and action methods
 - [ ] `postman.jinja2` template — produces v2.1 Postman collection from OpenAPI spec with environment variables for base URL and auth token
-- [ ] `generator_agent.py` — reads breadcrumbs, calls templates, calls Claude API for scenario wording and edge case suggestions, writes all artifacts to a staging directory, opens draft PR in target QA repo
+- [ ] `generator_agent.py` — reads breadcrumbs, calls templates, calls the model (via the gateway) for scenario wording and edge case suggestions, writes all artifacts to a staging directory, opens draft PR in target QA repo
 
 ### Week 4 — Shared CI Template (Layer 4)
 
@@ -408,7 +411,9 @@ npx playwright install chromium firefox webkit
 ```yaml
 include:
   - project: 'platform/qa-ecosystem'
-    ref: main
+    ref: v1.0.0   # ALWAYS pin to a release tag — never `main`. A floating
+                  # `main` ref means one bad template change is an instant
+                  # company-wide merge freeze across every consuming repo.
     file: 'qa-ecosystem.gitlab-ci.yml'
 ```
 
@@ -578,7 +583,7 @@ Valid event types: `page_added` | `page_removed` | `action_added` | `action_rena
 
 "50% coverage" is used throughout this document. It means exactly:
 
-- **UI Coverage %** = `(journeys with ≥1 passing automated scenario) ÷ (total journeys in breadcrumbs)`. This is journey coverage, not line coverage. A journey with 5 scenarios counts once — covered or not.
+- **UI Coverage %** = `(journeys with ≥1 passing automated scenario) ÷ (total demonstrated journeys in breadcrumbs)`. This is journey coverage, not line coverage. A journey with 5 scenarios counts once — covered or not. **The denominator is demonstrated journeys only** — entries flagged `undemonstrated: true` (proposed but not yet proven achievable by a recorded trace, §20.2) are excluded from both numerator and denominator until demonstrated. This is the single authoritative denominator definition; §20 conforms to it.
 - **API Coverage %** = `(OpenAPI endpoints with ≥1 test that validates status code AND response schema via zod) ÷ (total endpoints in spec)`. A test that only checks `status 200` without schema validation is not counted. Pact consumer contracts only count once the provider runs `pact:verify` and the result is published to the Pact Broker — consumer-only contracts are flagged as `partial` in `coverage-manifest.json`.
 
 These numbers come from `coverage_gate.py` reading `coverage-manifest.json` and `allure-results/`. They are the only numbers that count toward the 50% gate.
@@ -651,7 +656,7 @@ Until provider verification passes, endpoints are listed as `consumer-only: true
 
 **Context Window Management**
 
-When a brownfield application has more than 150 journeys, the generator agent splits processing by module. Each Claude API call receives: (1) one module's breadcrumb entries, (2) the relevant OpenAPI endpoints for that module only, and (3) up to 3 existing feature files from that module as style examples. No single prompt exceeds 80k tokens. Module completion state is tracked in `coverage-manifest.json` so interrupted generation runs resume from the correct module rather than starting over.
+When a brownfield application has more than 150 journeys, the generator agent splits processing by module. Each model call receives: (1) one module's breadcrumb entries, (2) the relevant OpenAPI endpoints for that module only, and (3) up to 3 existing feature files from that module as style examples. No single prompt exceeds 80k tokens. Module completion state is tracked in `coverage-manifest.json` so interrupted generation runs resume from the correct module rather than starting over.
 
 **6. Coverage Manifest Update** (`.ai-sdlc/coverage-manifest.json`)
 
@@ -733,7 +738,7 @@ All behavior is controlled by per-repo CI/CD variables. No changes to the shared
 
 > **Empty `TEST_TAGS` guard:** If `scope_detector.py` finds no relevant changed modules (e.g., a docs-only commit or a new config file), `$TEST_TAGS` is set to `@smoke` rather than left empty. An empty `--tags` flag in Cucumber runs the entire suite, which is never the intent on an MR pipeline. The `scope_detector.py` script enforces this fallback explicitly.
 
-> **Claude API outage guard:** `qa:scope-detect` sits on the MR critical path and calls the Claude API. An Anthropic outage or rate-limit must never become a company-wide merge freeze: on any API error (timeout, 429, 5xx), `scope_detector.py` falls back to `TEST_TAGS=@smoke`, exits 0, and emits a `DEGRADED MODE: static scope fallback` warning in the job log and MR comment. The same fail-open-to-smoke rule applies to any agent on a blocking path; agents on non-blocking paths (healer, narrator) fail closed and retry on the next run.
+> **Model outage guard:** `qa:scope-detect` sits on the MR critical path and calls the model. An Azure OpenAI outage or rate-limit must never become a company-wide merge freeze: on any API error (timeout, 429, 5xx) **within a hard 30s timeout + 1 retry**, `scope_detector.py` falls back to `TEST_TAGS=@smoke`, exits 0, and emits a `DEGRADED MODE: static scope fallback` warning in the job log and MR comment. The same fail-open-to-smoke rule applies to any agent on a blocking path; agents on non-blocking paths (healer, narrator) fail closed and retry on the next run.
 
 ### Branch Protection Integration
 
@@ -940,7 +945,7 @@ Annual manual testing cost:                  $115,200
 
 Ecosystem investment (one-time setup):       ~$60,000 (SDET time + tooling)
 Ongoing cost (maintenance + scaling):        ~$2,000/month
-  ├─ Claude API (with prompt caching):       ~$300–600/month per active repo wave
+  ├─ Azure OpenAI (with prompt caching):     ~$300–600/month per active repo wave (estimate — unvalidated, see §21.5)
   ├─ Runner compute (Playwright + agents):   ~$400/month
   └─ SDET review time (heal/gen PRs):        remainder, amortized
 
@@ -973,7 +978,7 @@ Year 2+ net savings per repo:                ~$115,000/year
 | MR gate tests an environment that does not contain the MR's code | High | High | `QA_TARGET_MODE` is mandatory (§11). `review` mode deploys a review app per MR and the gate blocks; `dev-canary` mode demotes the UI run to informational and relies on post-merge auto-revert. The template rejects a blocking UI job against shared dev. |
 | Shared dev environment state collisions across parallel pipelines | High | Medium | Rule 7: synthetic-only data, `qa-{CI_PIPELINE_ID}-` entity namespacing, nightly cleanup TTL. Role accounts are per-role, not per-runner — runners never mutate shared fixtures. |
 | Prompt injection via source comments, page content, or Jira text steers agents that hold GitLab write tokens | Medium | High | Generation/healer agents run with no tool access during LLM calls; outputs are schema-validated before any git or API action. Agent-browser jobs run fenced with `--allowed-domains` and `--action-policy`. The AI reviewer is never the sole gate on AI-generated output. |
-| Anthropic API outage blocks all merges via `qa:scope-detect` | Medium | High | Blocking-path agents fail open to `@smoke` with a DEGRADED MODE warning (§11). Non-blocking agents fail closed and retry next run. |
+| Azure OpenAI outage blocks all merges via `qa:scope-detect` | Medium | High | Blocking-path agents fail open to `@smoke` within a 30s timeout + 1 retry, with a DEGRADED MODE warning (§11). Non-blocking agents fail closed and retry next run. Gateway distributes rate-limit budget fairly across repos so one repo can't starve others. |
 | Agent-browser verification jobs are slow, token-expensive, and nondeterministic | Medium | Low | Agent-browser lanes are cron/async only — never on the blocking MR path (§19). Deterministic Playwright remains the test of record; agents verify, heal, triage, and discover. |
 | Enterprise CMS UI semantics resist agent perception (iframes, div-soup, generated IDs) | High | Medium | Perception failures are filed as locator debt + a11y defects (§19.6, §20.5); discoverer falls back to DOM-level interaction and flags the element; testability fixes feed the app team's DoD. |
 | Autonomous discovery mutates workflow state in financial apps | High | High | Lanes A/B run only in Rule 7 synthetic environments with seeded cases; `--action-policy` denies money-moving/final-submit categories during exploration — permitted solely in QA-approved Lane A journeys (§20.5). |
@@ -1013,7 +1018,7 @@ A repo is considered fully onboarded into the QA Evergreen Ecosystem when **all*
 | Step Definitions | TypeScript | `@cucumber/cucumber`, `ts-node` | Existing team codebase. Strong typing catches POM errors at compile time. |
 | POM Classes | TypeScript | `@playwright/test`, Locator API | Playwright is TypeScript-native. Semantic locators are more resilient than XPath. |
 | API Test Clients | TypeScript | `axios`, `zod`, `faker-js` | Typed requests + schema validation in one ecosystem. |
-| AI Agents | Python 3.12 | `anthropic`, `gitpython`, `bs4`, `jinja2` | Best AI/ML library ecosystem. All agent work is Python. |
+| AI Agents | Python 3.12 | `openai[azure]`, `gitpython`, `bs4`, `jinja2` | Best AI/ML library ecosystem. All agent work is Python. Azure OpenAI via the gateway. |
 | Reporting / Email | Python 3.12 | `jinja2`, `smtplib`, `allure-python` | 20-line email sender with HTML template. Simple and debuggable. |
 | CI Glue | bash (minimal) | `echo`, `cp`, `if/else` only | Max 10 lines per job. Anything complex goes into Python. |
 | ❌ Java / Selenium | Not used | — | Team is JS/TS. Playwright supersedes Selenium for new UI tests. |
@@ -1027,25 +1032,26 @@ A repo is considered fully onboarded into the QA Evergreen Ecosystem when **all*
 | Allure report generation | `python:3.12-slim` with `allure-commandline` | Installed via npm in the job |
 | Agent-browser verification | Playwright image + `npm install -g agent-browser` + `agent-browser install` | Cron lanes only (Section 19). Pinned version in the template. Sessions closed in `after_script` via `agent-browser close --all`. |
 
-### Claude Model Selection
+### Model Selection (Azure OpenAI)
 
-Different tasks have different cost/quality tradeoffs. All agents using the same model inflates cost 3–5×.
+The platform uses **Azure-hosted OpenAI (GPT-5.2)** — see §21.2 for the provider decision and what it changes. The architecture is provider-agnostic: every agent calls the model through the `platform/qa-toolkit` gateway, never an SDK directly, so the deployment behind each tier can change without touching agent code. Different tasks have different cost/quality tradeoffs; using one tier for everything inflates cost.
 
-| Agent | Task | Model | Rationale |
+| Agent | Task | Model tier | Rationale |
 |---|---|---|---|
-| `journey_deriver.py` | Synthesize journey sequences from page graph | `claude-sonnet-4-6` | Complex reasoning over large context — quality matters |
-| `generator_agent.py` | Generate Gherkin + TypeScript + POM | `claude-sonnet-4-6` | Code generation requires strong reasoning |
-| `locator_healer.py` | Classify locator equivalence + confidence score | `claude-haiku-4-5` | High-frequency, simple classification — cost-sensitive |
-| `report_narrator.py` | Narrate test failures in plain English | `claude-haiku-4-5` | Fast generation from structured input |
-| `coverage_audit.py` | Identify gaps + generate feature stubs | `claude-haiku-4-5` | Template-driven generation — Haiku is sufficient |
-| AI code reviewer | Review generated PRs for correctness | `claude-sonnet-4-6` | Review quality directly affects auto-merge safety |
+| `journey_deriver.py` | Propose candidate journeys from page graph | `QA_MODEL_REASONING` (GPT-5.2) | Complex reasoning over large context — quality matters |
+| `generator_agent.py` | Generate Gherkin + TypeScript + POM | `QA_MODEL_REASONING` (GPT-5.2) | Code generation requires strong reasoning |
+| `trace_compiler.py` | Compile recorded trace → `.feature`/steps/POM | `QA_MODEL_REASONING` (GPT-5.2) | Naming + assertion quality is the keystone (§20.3) |
+| `locator_healer.py` | Classify locator equivalence + confidence score | `QA_MODEL_FAST` (smaller Azure deployment) | High-frequency, simple classification — cost-sensitive |
+| `report_narrator.py` | Narrate test failures in plain English | `QA_MODEL_FAST` | Fast generation from structured input |
+| `coverage_audit.py` | Identify gaps + generate feature stubs | `QA_MODEL_FAST` | Template-driven generation |
+| AI code reviewer | Review generated PRs for correctness | `QA_MODEL_REASONING` (GPT-5.2) | Review quality directly affects auto-merge safety |
 
-Model IDs are environment variables in `platform/qa-toolkit` (`QA_MODEL_REASONING`, `QA_MODEL_FAST`) and can be overridden per-repo. **Prompt caching** is mandatory for all agents that repeatedly read the same breadcrumb file, OpenAPI spec, or template files — use `cache_control: {"type": "ephemeral"}` on large static blocks. For a 15-repo ecosystem running breadcrumb checks twice weekly, caching reduces API cost by an estimated 60–70%. Requires `anthropic>=0.25.0`.
+The two tiers are environment variables in `platform/qa-toolkit` (`QA_MODEL_REASONING`, `QA_MODEL_FAST`) bound to Azure OpenAI deployment names, and can be overridden per-repo. **Prompt caching** is used for agents that repeatedly read the same breadcrumb file, OpenAPI spec, or template files — via Azure OpenAI's prompt-caching support. The 60–70% cost-reduction figure is an estimate to be validated in the POC (§21.5), not a measured number.
 
-**Data governance (decide before Week 1, not after legal asks):** Every agent sends proprietary source code, DOM snapshots, and screenshots to the Claude API. Three controls make that defensible at a Fortune 100 financial:
+**Data governance — substantially simplified by the Azure decision (§21.2):** Because Azure OpenAI runs inside the company's own Azure tenancy, the "proprietary source / DOM / screenshots leave the building" concern the security review led with is largely resolved — traffic stays in-tenant. Three controls make it defensible at a Fortune 100 financial:
 
-1. A signed **zero-data-retention agreement** with Anthropic covers all direct API usage, or regulated repos route through **AWS Bedrock / GCP Vertex** private endpoints (same models, traffic stays inside the cloud tenancy — the model ID env vars support either).
-2. Rule 7 guarantees test environments contain **synthetic data only**, so DOM snapshots and screenshots are free of PII/cardholder data by construction.
+1. Confirm the Azure OpenAI resource is configured for **no data retention** (abuse-monitoring opt-out where eligible) and that the tenancy/network boundary keeps all calls inside the company's Azure environment. This replaces the signed-zero-retention-with-an-external-vendor requirement.
+2. Rule 7 guarantees test environments contain **synthetic data only**, so DOM snapshots and screenshots are free of PII/cardholder data by construction. A DLP scan on outbound payloads (and on the test environment) enforces this rather than assuming it.
 3. The gateway in `platform/qa-toolkit` logs every outbound payload type (source / DOM / screenshot) per repo for audit.
 
 ### External Integrations
@@ -1054,7 +1060,7 @@ Model IDs are environment variables in `platform/qa-toolkit` (`QA_MODEL_REASONIN
 |---|---|---|
 | Dynatrace | Session-based journey prioritization | REST API — `DYNATRACE_TOKEN` CI variable |
 | Splunk | Log-based failure correlation in AI reports | REST API — `SPLUNK_TOKEN` CI variable |
-| Anthropic Claude API | AI agent intelligence (journey derivation, generation, review, narration) | `QA_ANTHROPIC_KEY` CI variable (group-level) |
+| Azure OpenAI (GPT-5.2) | AI agent intelligence (journey derivation, generation, review, narration) | Azure AD / managed identity to the gateway; endpoint in `QA_AZURE_OPENAI_ENDPOINT`, any key in Azure Key Vault — never a group-level GitLab variable |
 | Jira | Auto-filing tickets for coverage gaps and flaky tests | REST API — `JIRA_TOKEN` CI variable |
 | GitLab API | Opening draft PRs from autonomous agents | `CI_JOB_TOKEN` (built-in, scoped via CI job token allowlist — source repos must explicitly allow `platform/qa-toolkit` in their token allowlist settings) |
 | Pact Broker | Publishing consumer contracts + provider verification results | `PACT_BROKER_TOKEN` CI variable. Broker hosted at `platform/pact-broker` (internal GitLab Pages). Access restricted to `platform/` group members only — consumer contracts describe API topology and must not be publicly accessible. |
@@ -1080,12 +1086,14 @@ Model IDs are environment variables in `platform/qa-toolkit` (`QA_MODEL_REASONIN
 | MR gate environment | `QA_TARGET_MODE` review / dev-canary | A merge gate must test the MR's build. Review apps where possible; informational canary + post-merge revert where not (Section 11). |
 | Journey authoring | Demonstrated, never imagined | `journey_deriver.py` demoted to exploration-goal proposer; journeys enter breadcrumbs only with a recorded agent-browser trace; trace compiler freezes demonstrations into deterministic artifacts (Section 20). |
 | CMS app inventory source | `cms_config` parser strategy | For CMS-built workflow apps the config export is the spec — more authoritative than parsing generated frontend code (Section 20.4). |
+| LLM provider | Azure OpenAI (GPT-5.2) | In-tenant hosting resolves most data-egress concerns; auth via Azure AD, key in Key Vault. Provider-agnostic via the gateway (Section 21.2). |
+| Coverage denominator | Demonstrated journeys only | Single authoritative definition in §9; undemonstrated entries excluded until proven achievable (Section 20.2). Resolves the §9/§20 ambiguity the review board flagged. |
 
 ### Open Questions
 
 | Question | Owner | Target Date |
 |---|---|---|
-| What is the Anthropic API rate limit for the volume of generation calls expected during a large brownfield scan? | QA Architect | Before Pilot Week 7 |
+| What Azure OpenAI quota (TPM/RPM) is provisioned for the volume of generation calls expected during a large brownfield scan? | QA Architect | Before Pilot Week 7 |
 | Should the Postman collection be committed to the QA repo or the source repo? | QA Architect + Dev Lead | Before Pilot Week 7 |
 | What Jira project should coverage gap tickets be filed against — the app's board or a central QA board? | QA Architect + PM | Before Pilot Week 9 |
 | Should `qa-breadcrumbs.yaml` live in the source repo or the QA repo for greenfield projects? | QA Architect | Before Phase 3 |
@@ -1185,7 +1193,7 @@ journeys:
 
 `trace_compiler.py` converts a recorded trace into deterministic artifacts:
 
-- **`.feature`** — Claude names the Given/When/Then from the scenario intent + trace. Content nondeterminism is abstracted: assert the *intent* ("a result list is shown"), never the rendered *instance* (personalized rows, dynamic counts).
+- **`.feature`** — the model names the Given/When/Then from the scenario intent + trace. Content nondeterminism is abstracted: assert the *intent* ("a result list is shown"), never the rendered *instance* (personalized rows, dynamic counts).
 - **`steps.ts` + POM** — semantic locators lifted directly from the snapshot's role + accessible name (`getByRole('button', { name: 'Submit Resolution' })`). Never raw `@e`-refs — refs are session-scoped noise that change between snapshots (validated empirically).
 - **Breadcrumb journey entry** with the evidence block from 20.2.
 
@@ -1214,5 +1222,82 @@ Most target applications (money movement, fraud, disputes, chargebacks) are CMS-
 
 ---
 
+## 21. Reality Check, Provider Decision & Pre-Implementation Backlog
+
+This section exists because Sections 1–20 read like a description of a system that runs. It does not run. This section states what is true today, records the LLM provider decision, fixes two internal contradictions a hostile review board caught, triages that review into a backlog tagged by *when each item actually bites*, and defines the proof of concept that is the real next step.
+
+### 21.1 Current State vs Target State
+
+As of this version, the following do **not** exist:
+
+- **No CI/CD.** There is no `.gitlab-ci.yml` in any repo, no shared `platform/qa-ecosystem` template, no pipeline jobs, no coverage gate, no cron schedules, no nightly cleanup. The entire **Enforcement layer (Layer 4)** and the **autonomous cron lanes (Layer 5)** are unbuilt.
+- **No AI agents.** `breadcrumb_emitter.py`, `journey_deriver.py`, `journey_discoverer.py`, `generator_agent.py`, `trace_compiler.py`, `cms_config_parser.py`, `locator_healer.py`, and every other agent in the §5 toolkit tree is unwritten.
+- **No artifacts.** No QA repos, no `qa-breadcrumbs.yaml`, no generated feature files, POM classes, coverage manifests, or audit tables.
+
+**Consequence for the review board's findings:** most operational blockers (shared-env cleanup races, runner capacity, `ref:main` blast radius, cron contention, template versioning) describe failure modes of a *running platform*. They are real, but they are **not yet risks** — each becomes one only when the layer that needs it is built. The backlog in 21.4 tags every item with the milestone at which it must be resolved, so the POC is not blocked by Phase-4 concerns.
+
+### 21.2 Provider Decision — Azure OpenAI (GPT-5.2)
+
+The platform will use **Azure-hosted OpenAI (GPT-5.2)**, not the Anthropic Claude API. Earlier model names in this document were illustrative; the architecture is provider-agnostic because all agents call the model through the `platform/qa-toolkit` gateway, never an SDK directly. This decision changes:
+
+| Area | Was (illustrative) | Now (decided) |
+|---|---|---|
+| Provider | Anthropic Claude API | Azure OpenAI, GPT-5.2 (reasoning) + a smaller Azure deployment (fast) |
+| Hosting | External API | **In the company's own Azure tenancy** |
+| Auth | `QA_ANTHROPIC_KEY` group var | Azure AD / managed identity; any key in **Azure Key Vault** |
+| SDK | `anthropic` | `openai[azure]` |
+| Caching | `cache_control: ephemeral` | Azure OpenAI prompt caching |
+| Data egress | Required signed zero-retention contract | **Largely resolved** — traffic stays in-tenant; confirm the resource's no-retention setting |
+
+The biggest effect is on security: the AppSec review's lead blocker ("proprietary source code, DOM, screenshots leave the building") is substantially neutralized because nothing leaves the Azure tenant. The remaining controls are configuration (no-retention setting, network boundary, DLP on payloads) rather than vendor contracts.
+
+### 21.3 Two Corrected Contradictions
+
+The review board found two genuine internal contradictions (now fixed in-text, not just logged):
+
+1. **Coverage denominator (§9 vs §20).** §9 said `÷ total journeys in breadcrumbs`; §20 said undemonstrated journeys are excluded. Since the gate is a merge blocker, an ambiguous denominator is gameable. **Resolved:** §9 is now the single authoritative definition — the denominator is *demonstrated journeys only*; §20 conforms.
+2. **`ref: main` vs version pinning (§6 sample vs §15 risk row).** The adoption sample showed `ref: main` while the risk register said "pin to a version tag." **Resolved:** the §6 sample now pins to `v1.0.0` with an inline warning. (Moot until CI exists, but corrected so the doc can't mislead.)
+
+### 21.4 Hostile Review Board — Triaged Backlog
+
+A four-lens internal review (GitLab platform engineer, AppSec/Security architect, skeptical app dev lead, SRE/DevOps) was run against this plan. **No reviewer found an architectural flaw.** The convergent finding was *claims-as-controls*: the document repeatedly says a mechanism "handles it automatically" or "is enforced" where the enforcement is not yet built. Items below are tagged **[POC]** (decide/measure during the proof of concept), **[PILOT]** (before the first real repo's gate goes live), **[SCALE]** (before onboarding >3 repos).
+
+| When | Item | Owner | Source |
+|---|---|---|---|
+| **[POC]** | Build the model gateway as a real service (Azure-auth broker, per-repo quota, payload-type audit log) — it is the lynchpin of secret-isolation, cost caps, and rate-limiting | SDET + Platform | GitLab, Security, SRE |
+| **[POC]** | Measure the three unvalidated numbers: AI-draft false-positive rate, healer false-positive rate, scope-detect p99 latency (see 21.5) | QA Architect | App-lead, SRE |
+| **[POC]** | Pin the coverage denominator definition in `coverage_gate.py` to demonstrated-only and assert it in a test | SDET | App-lead, SRE |
+| **[POC]** | Define the trace compiler's **assertion bar**: every compiled scenario must assert ≥1 state change the action *caused* (from the post-action snapshot diff), not just "intent reached" — else compiled tests are coverage theater | QA Architect | (new, from oracle-quality gap) |
+| **[POC]** | Confirm Azure OpenAI resource no-retention setting + tenancy/network boundary; DLP scan on outbound payloads | Security | Security |
+| **[PILOT]** | Agent-browser hygiene: assert `--session` on every call; prove `close --all` runs on job timeout/cancel; orphan-daemon reaper on the runner | SRE | SRE |
+| **[PILOT]** | `QA_TARGET_MODE` enforcement: template validates that `review` mode has a real `deploy:review` job and that `dev-canary` demotes the UI job to `allow_failure`; **assign review-app ownership to the app team** | GitLab + App-lead | GitLab, App-lead |
+| **[PILOT]** | Cross-repo coverage-gate SLA: written backfill SLA from QA, or `QA_BROWNFIELD_MODE` stays until QA explicitly removes it; new-journey grace window so adding a page can't block the author's merge | QA Architect + App-lead | App-lead |
+| **[PILOT]** | Healer: drift-corroboration must be *fresh* (breadcrumb freshness passed in the same run); failure reports get an owner + SLA; auto-merge stays **off** until false-positive rate is measured | SDET | Security, SRE |
+| **[PILOT]** | OpenAPI prerequisite is real app-team work — negotiate scope (top-N endpoints) and a reciprocal deliverable (client SDK from the spec); don't hand it over unbudgeted | QA Architect + App-lead | App-lead |
+| **[PILOT]** | Tamper-evident audit log: real implementation (append-only + signed/hashed, or external immutable store), not a table by assertion; SOX/PCI control mapping; named accountable human for any auto-merge | Security | Security, SRE |
+| **[PILOT]** | Prompt-injection defense beyond schema validation: untrusted inputs (source comments, Jira, DOM) are fenced; agents hold no write tokens during model calls; AI reviewer is never the sole gate | Security | Security |
+| **[SCALE]** | Shared-env contention: concurrency semaphore + per-prefix entity cap + seeded-case quota + "dev is wedged" runbook and on-call; not TTL-hope | SRE | SRE |
+| **[SCALE]** | Template versioning: canary rollout to 1–2 repos, tested rollback, template↔toolkit version matrix, registry of which repo pins which version | GitLab + SRE | GitLab, SRE |
+| **[SCALE]** | Flakiness quarantine self-cleaning: per-repo flakiness cap, stale-flake escalation SLA, a deprecate-unfixable-test path so quarantine can't grow unbounded | SDET + SRE | SRE |
+| **[SCALE]** | Ecosystem health: SLOs, dashboard, on-call rotation, incident severities, and a "tests are all red" runbook — distinct from the §14 QA KPIs | SRE | SRE |
+| **[SCALE]** | Per-repo Azure OpenAI spend cap with alerting + kill switch for a runaway agent loop | Platform | GitLab, SRE |
+
+### 21.5 The Proof of Concept (the actual next step)
+
+Do **not** start Phase 1 wholesale. Build a two-week **steel thread** that exercises the riskiest links for a fraction of the Phase-1 cost — and, critically, works in today's reality (no CI, no agents). Scope:
+
+- **One app** (a real CMS workflow app if a synthetic-data env is available; otherwise a workflow-shaped practice app — saucedemo / OrangeHRM — to de-risk the mechanics first).
+- **Agents run locally / manually**, invoked from a developer machine or a single ad-hoc job — no shared template, no cron, no enforcement. The point is to prove the *loop*, not the platform.
+- **Build the minimum chain, behind the gateway from day one:** `cms_config`-or-static breadcrumb skeleton → one QA-authored journey demonstrated via agent-browser → a prototype `trace_compiler.py` that emits one `.feature` + steps + POM with the 21.4 assertion bar → run it as deterministic Playwright → produce a one-app coverage manifest.
+- **Keep autonomy off:** no auto-merge, no auto-filed Jira, agent-browser in a fenced `--session` against synthetic data only.
+- **Measure and report** the three numbers that every reviewer said are unvalidated:
+  1. **AI-draft false-positive rate** — of N generated/compiled feature files, what fraction needed substantial human rework? (Tests the "AI drafts it, you just review" claim.)
+  2. **Healer false-positive rate** — seed M broken locators; how many heals were correct vs plausible-but-wrong? (Tests the 90% confidence threshold.)
+  3. **Scope-detect / model p99 latency** against the real Azure OpenAI deployment on representative inputs. (Tests the <15-min and outage-fallback claims.)
+
+If the steel thread works, Phase 1 builds out from something proven and the 21.4 backlog becomes the gating checklist for each layer. If it doesn't, you learned it in two weeks instead of ten — and the numbers recalibrate every estimate in this document that is currently a hypothesis.
+
+---
+
 *Document maintained by QA Architect · Feedback via `platform/qa-toolkit` GitLab issues*
-*Version 1.2 · June 2026 — adds Section 20: journey discovery lanes, trace compilation, `cms_config` parser strategy for CMS-built workflow apps, financial-domain discovery rules, and empirical agent-browser validation*
+*Version 1.3 · June 2026 — adds Section 21: current-state honesty (nothing is built yet), Azure OpenAI (GPT-5.2) provider decision, two corrected contradictions (coverage denominator; `ref:main`), four-lens hostile review backlog triaged by milestone, and a proof-of-concept definition. Provider references updated from Anthropic/Claude to Azure OpenAI throughout.*
