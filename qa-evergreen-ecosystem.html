@@ -653,7 +653,9 @@ body{transition:background-color .3s,color .3s}
       roles=roles,
       priority=priority,
       api=api,
-      ai_client=AnthropicClient()
+      ai_client=ModelGateway()
+      <span class="cc"># calls the LLM via the platform gateway</span>
+      <span class="cc"># (provider-agnostic — see plan §21.2)</span>
       <span class="cc"># AI synthesizes step sequences</span>
       <span class="cc"># from page graph + action map</span>
     )
@@ -820,7 +822,7 @@ body{transition:background-color .3s,color .3s}
         <rect x="120" y="40" width="100" height="100" rx="3" class="bI"/>
         <text x="170" y="58" class="tI" style="font-size:6.5px">GENERATOR</text>
         <text x="170" y="70" class="tI" style="font-size:6.5px">AGENT (Python)</text>
-        <rect x="128" y="78" width="84" height="13" rx="2" style="fill:rgba(248,246,241,.07)"/><text x="170" y="84.5" class="tI ts">anthropic SDK</text>
+        <rect x="128" y="78" width="84" height="13" rx="2" style="fill:rgba(248,246,241,.07)"/><text x="170" y="84.5" class="tI ts">model gateway</text>
         <rect x="128" y="95" width="84" height="13" rx="2" style="fill:rgba(248,246,241,.07)"/><text x="170" y="101.5" class="tI ts">jinja2 templates</text>
         <rect x="128" y="112" width="84" height="13" rx="2" style="fill:rgba(248,246,241,.07)"/><text x="170" y="118.5" class="tI ts">openapi-parser</text>
 

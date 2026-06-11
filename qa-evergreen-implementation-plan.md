@@ -2,7 +2,7 @@
 
 **Organization:** Fortune 100 financial services company
 **Approach:** One repo at a time · 50% coverage floor · AI-accelerated · Self-healing
-**Stack:** TypeScript · Playwright · Cucumber-JS · Python (AI agents) · Azure OpenAI (GPT-5.2) · GitLab CI
+**Stack:** TypeScript · Playwright · Cucumber-JS · Python (AI agents) · LLM via gateway (provider-agnostic — GPT-5.2 / Sonnet 4.6 bake-off pending) · GitLab CI
 **Prepared:** June 2025
 
 > **⚠️ Status — target-state vision, not a deployed system.** Sections 1–20 describe the destination. As of this version **nothing is built**: there is no `.gitlab-ci.yml`, no shared template, no pipelines, no cron jobs, no cleanup, and none of the AI agents exist. The near-term work is building the agents and proving the loop on one app. **Read [Section 21](#21-reality-check-provider-decision--pre-implementation-backlog) first** — it states what exists today, the LLM provider decision, and the proof-of-concept scope. Operational controls described in §11–§19 become real risks only when the layer that needs them is actually built.
@@ -1086,7 +1086,7 @@ The two tiers are environment variables in `platform/qa-toolkit` (`QA_MODEL_REAS
 | MR gate environment | `QA_TARGET_MODE` review / dev-canary | A merge gate must test the MR's build. Review apps where possible; informational canary + post-merge revert where not (Section 11). |
 | Journey authoring | Demonstrated, never imagined | `journey_deriver.py` demoted to exploration-goal proposer; journeys enter breadcrumbs only with a recorded agent-browser trace; trace compiler freezes demonstrations into deterministic artifacts (Section 20). |
 | CMS app inventory source | `cms_config` parser strategy | For CMS-built workflow apps the config export is the spec — more authoritative than parsing generated frontend code (Section 20.4). |
-| LLM provider | Azure OpenAI (GPT-5.2) | In-tenant hosting resolves most data-egress concerns; auth via Azure AD, key in Key Vault. Provider-agnostic via the gateway (Section 21.2). |
+| LLM provider | Provider-agnostic; in-tenant; bake-off pending | Two candidates — Azure OpenAI GPT-5.2 (Azure tenant) and Claude Sonnet 4.6 on Bedrock (AWS account). Both keep traffic in-cloud, so governance is equivalent; decided by POC false-positive rate + cost, not benchmarks (Section 21.2). |
 | Coverage denominator | Demonstrated journeys only | Single authoritative definition in §9; undemonstrated entries excluded until proven achievable (Section 20.2). Resolves the §9/§20 ambiguity the review board flagged. |
 
 ### Open Questions
@@ -1236,20 +1236,27 @@ As of this version, the following do **not** exist:
 
 **Consequence for the review board's findings:** most operational blockers (shared-env cleanup races, runner capacity, `ref:main` blast radius, cron contention, template versioning) describe failure modes of a *running platform*. They are real, but they are **not yet risks** — each becomes one only when the layer that needs it is built. The backlog in 21.4 tags every item with the milestone at which it must be resolved, so the POC is not blocked by Phase-4 concerns.
 
-### 21.2 Provider Decision — Azure OpenAI (GPT-5.2)
+### 21.2 Provider Decision — Provider-Agnostic, In-Tenant, Bake-Off Pending
 
-The platform will use **Azure-hosted OpenAI (GPT-5.2)**, not the Anthropic Claude API. Earlier model names in this document were illustrative; the architecture is provider-agnostic because all agents call the model through the `platform/qa-toolkit` gateway, never an SDK directly. This decision changes:
+The architecture is **provider-agnostic**: all agents call the model through the `platform/qa-toolkit` gateway, never a vendor SDK directly, so the deployment behind each tier can change without touching agent code. Earlier Claude model names in this document were illustrative. **Two candidate providers are in evaluation, both in-tenant:**
 
-| Area | Was (illustrative) | Now (decided) |
+| | Azure OpenAI (GPT-5.2) | Claude Sonnet 4.6 (AWS Bedrock) |
 |---|---|---|
-| Provider | Anthropic Claude API | Azure OpenAI, GPT-5.2 (reasoning) + a smaller Azure deployment (fast) |
-| Hosting | External API | **In the company's own Azure tenancy** |
-| Auth | `QA_ANTHROPIC_KEY` group var | Azure AD / managed identity; any key in **Azure Key Vault** |
-| SDK | `anthropic` | `openai[azure]` |
-| Caching | `cache_control: ephemeral` | Azure OpenAI prompt caching |
-| Data egress | Required signed zero-retention contract | **Largely resolved** — traffic stays in-tenant; confirm the resource's no-retention setting |
+| Hosting | Company's **Azure tenant** | Company's **AWS account** |
+| Auth | Azure AD / managed identity; key in Azure Key Vault | AWS IAM / SigV4 |
+| SDK behind gateway | `openai[azure]` | `anthropic[bedrock]` (`anthropic.claude-sonnet-4-6`) |
+| Pricing | confirm with Azure rep | $3 / $15 per 1M in/out |
+| Structured/strict output | JSON-schema structured outputs | `output_config.format` + `strict` tool use |
+| Batch (bulk brownfield gen) | Azure batch deployments | Batch API, –50%, ≤24h |
+| Data egress | stays in Azure tenant | stays in AWS account |
 
-The biggest effect is on security: the AppSec review's lead blocker ("proprietary source code, DOM, screenshots leave the building") is substantially neutralized because nothing leaves the Azure tenant. The remaining controls are configuration (no-retention setting, network boundary, DLP on payloads) rather than vendor contracts.
+**Governance is a wash** — both keep all traffic (source, DOM, screenshots) inside a company cloud boundary, which is what neutralizes the AppSec review's lead blocker. So this is a **quality-and-cost decision, not a security one**, and it is settled by the POC, not by benchmarks:
+
+- **Determinism is not a selection criterion.** No frontier LLM is deterministic, even at temperature 0 (vendor guidance is explicit on this). Production consistency comes from the trace compiler freezing a demonstration into deterministic Playwright (§20.3) and from **schema-constrained generation** (structured outputs / strict tool use — both providers support it), *not* from the model choice. Pick on generation quality, not reproducibility.
+- **Decide on measured numbers** from the POC (§21.5): the **AI-draft false-positive rate** on this org's CMS traces, and **cost per generated artifact**. Whichever provider produces fewer plausible-but-wrong `.feature`/POM outputs on the real screens wins.
+- **It is a tiered workload.** `QA_MODEL_REASONING` (generation, trace compiler, AI reviewer) is low-volume and quality-critical — pay for the best. `QA_MODEL_FAST` (healer classification, narration, stubs) dominates call volume — optimize cost there with batch + prompt caching. The gateway can even route the two tiers to different providers if the bake-off favors a split.
+
+The provider-specific instances in §17 (Azure key/SDK/caching) describe the Azure option; substitute the Bedrock column above if that provider wins the bake-off.
 
 ### 21.3 Two Corrected Contradictions
 
@@ -1293,11 +1300,13 @@ Do **not** start Phase 1 wholesale. Build a two-week **steel thread** that exerc
 - **Measure and report** the three numbers that every reviewer said are unvalidated:
   1. **AI-draft false-positive rate** — of N generated/compiled feature files, what fraction needed substantial human rework? (Tests the "AI drafts it, you just review" claim.)
   2. **Healer false-positive rate** — seed M broken locators; how many heals were correct vs plausible-but-wrong? (Tests the 90% confidence threshold.)
-  3. **Scope-detect / model p99 latency** against the real Azure OpenAI deployment on representative inputs. (Tests the <15-min and outage-fallback claims.)
+  3. **Scope-detect / model p99 latency** against the real deployment(s) on representative inputs. (Tests the <15-min and outage-fallback claims.)
+
+  Run metrics 1–2 against **both** candidate providers (§21.2) on the same traces — this *is* the provider bake-off; the winner is whichever gives the lower false-positive rate at acceptable cost, not whichever benchmarks higher.
 
 If the steel thread works, Phase 1 builds out from something proven and the 21.4 backlog becomes the gating checklist for each layer. If it doesn't, you learned it in two weeks instead of ten — and the numbers recalibrate every estimate in this document that is currently a hypothesis.
 
 ---
 
 *Document maintained by QA Architect · Feedback via `platform/qa-toolkit` GitLab issues*
-*Version 1.3 · June 2026 — adds Section 21: current-state honesty (nothing is built yet), Azure OpenAI (GPT-5.2) provider decision, two corrected contradictions (coverage denominator; `ref:main`), four-lens hostile review backlog triaged by milestone, and a proof-of-concept definition. Provider references updated from Anthropic/Claude to Azure OpenAI throughout.*
+*Version 1.4 · June 2026 — §21.2 reframed as a provider-agnostic, in-tenant bake-off (Azure OpenAI GPT-5.2 vs Claude Sonnet 4.6 on Bedrock) decided by POC false-positive rate + cost, with the determinism caveat made explicit; HTML explainers synced to vendor-neutral "model gateway" language. (v1.3 added Section 21: current-state honesty, two corrected contradictions, the four-lens hostile-review backlog, and the POC definition.)*

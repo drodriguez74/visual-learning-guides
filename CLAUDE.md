@@ -7,11 +7,11 @@ Single-file HTML visual explainers (self-contained CSS/JS, dark/light theme togg
 Four related documents describe an AI-accelerated QA platform for enterprise CMS-style financial workflow apps (money movement, fraud, disputes, chargebacks). Keep the public docs unbranded — no employer names, internal URLs, or internal system identifiers; use `example.com` in samples:
 
 - `qa-evergreen-implementation-plan.md` — **source of truth** (v1.3). §21 is the reality check: nothing is built yet (no CI, no agents), Azure OpenAI provider decision, hostile-review backlog, and the POC scope. §18–20 hold the decisions log, agent-browser integration, and journey discovery design.
-- `qa-evergreen-ecosystem.html` — system-design explainer (10 rules, 5 layers). Mirrors the plan; keep them in sync when editing either. **Still references Claude/Anthropic — pending a provider-sync pass to Azure OpenAI.**
-- `qa-automation-roadmap.html` — single-repo 18-month view; defers to the ecosystem doc for enforcement. **Still references Claude/Anthropic — pending provider sync.**
+- `qa-evergreen-ecosystem.html` — system-design explainer (10 rules, 5 layers). Mirrors the plan; keep them in sync when editing either. Provider-neutral ("model gateway").
+- `qa-automation-roadmap.html` — single-repo 18-month view; defers to the ecosystem doc for enforcement. Provider-neutral.
 - `qa-automation-gherkin-ai.html` — generic BDD teaching page; lightly references discovery.
 
-**Current state (critical context):** this is target-state vision. As of v1.3 nothing is implemented — no `.gitlab-ci.yml`, no shared template, no cron/cleanup, and none of the AI agents exist. LLM provider is **Azure OpenAI (GPT-5.2)**, in-tenant (resolves most data-egress concerns). The real next step is the §21.5 proof-of-concept steel thread, with agents run locally/manually. Operational controls in §11–§19 only become risks once the layer that needs them is built.
+**Current state (critical context):** this is target-state vision. As of v1.4 nothing is implemented — no `.gitlab-ci.yml`, no shared template, no cron/cleanup, and none of the AI agents exist. LLM is **provider-agnostic via the gateway**; provider is an open **bake-off** between Azure OpenAI GPT-5.2 (Azure tenant) and Claude Sonnet 4.6 on Bedrock (AWS account) — both in-tenant, so governance is equivalent; decided by POC false-positive rate + cost, not benchmarks. Determinism is NOT a selection axis (no LLM is deterministic; consistency comes from trace→Playwright compile + schema-constrained output). The real next step is the §21.5 proof-of-concept steel thread, with agents run locally/manually. Operational controls in §11–§19 only become risks once the layer that needs them is built.
 
 The set has had **three multi-discipline hardening passes** (commits `ea7b8cb`, `5cf76a2`, `f67f796`), a discovery/CMS update, and a four-lens hostile review (GitLab/Security/app-lead/SRE) captured in §21.4. When asked to critique again, find NEW gaps — don't re-litigate settled invariants:
 
@@ -21,7 +21,7 @@ The set has had **three multi-discipline hardening passes** (commits `ea7b8cb`, 
 4. **Drift-corroborated healing** — locator heals auto-merge only with a matching breadcrumb drift event AND a successful agent-browser intent replay; unexplained DOM changes stay red.
 5. **Agent-browser runs in cron/async lanes only** — never the blocking MR path. Deterministic Playwright is the test of record; agents verify, heal, triage, discover.
 6. **CMS apps: the config export is the spec** (`cms_config` parser strategy), with per-role crawls verifying the configured surface actually renders.
-7. **Azure OpenAI (GPT-5.2)** behind the platform gateway (Azure AD auth, key in Key Vault, never a group GitLab var); in-tenant hosting resolves most data-egress concerns. Provider-agnostic via the gateway.
+7. **Provider-agnostic via the platform gateway** (agents never call a vendor SDK directly); credential never a group GitLab var. Provider is an open bake-off (Azure GPT-5.2 vs Bedrock Sonnet 4.6), both in-tenant → governance equivalent.
 8. **Coverage denominator = demonstrated journeys only** (§9 authoritative; §20 conforms). Undemonstrated entries excluded until proven by a trace.
 
 ## agent-browser CLI notes

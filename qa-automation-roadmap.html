@@ -1045,8 +1045,8 @@ Then(<span class="cv">'response matches schema'</span>,
           <tr>
             <td class="tdh">AI Agents</td>
             <td><span style="font-family:'Fira Code',monospace;font-size:.65rem;color:var(--green)">Python 3.12</span></td>
-            <td style="font-family:'Fira Code',monospace;font-size:.6rem">anthropic · gitpython · bs4</td>
-            <td>Best AI/ML library ecosystem. LangChain, Anthropic SDK, DOM parsing all first-class.</td>
+            <td style="font-family:'Fira Code',monospace;font-size:.6rem">gateway-client · gitpython · bs4</td>
+            <td>Best AI/ML library ecosystem. The model is called through the platform gateway (provider-agnostic — GPT-5.2 / Sonnet 4.6 bake-off pending); DOM parsing first-class.</td>
           </tr>
           <tr>
             <td class="tdh">Reporting / Email</td>
@@ -1095,7 +1095,7 @@ Then(<span class="cv">'response matches schema'</span>,
 #
 # Language split (each job uses its own image):
 #   Tests (UI + API): TypeScript · Playwright · Cucumber-JS
-#   AI Agents:        Python 3.12 (anthropic · gitpython)
+#   AI Agents:        Python 3.12 (gateway-client · gitpython)
 #   Reporting:        Python 3.12 (jinja2 · smtplib)
 #   Glue / env:       bash (5-line wrappers only)
 #
@@ -1134,7 +1134,7 @@ Then(<span class="cv">'response matches schema'</span>,
   <span class="ck">image:</span> <span class="cv">python:3.12-slim</span>
   <span class="ck">before_script:</span>
     - <span class="cv">pip install -r ai-agents/requirements.txt -q</span>
-    <span class="cc"># anthropic gitpython jinja2 requests</span>
+    <span class="cc"># gitpython jinja2 requests (model via gateway)</span>
 
 <span class="cc"># ── AI ANALYSIS ────────────────────────────────────────</span>
 <span class="cc"># Python reads git diff → maps changed files to @tags
@@ -1145,10 +1145,10 @@ Then(<span class="cv">'response matches schema'</span>,
   <span class="ck">script:</span>
     - <span class="cv">python ai-agents/scope_detector.py</span>
       <span class="cc"># reads $CI_MERGE_REQUEST_DIFF_BASE_SHA</span>
-      <span class="cc"># calls Claude API to map files → cucumber @tags</span>
+      <span class="cc"># calls the model (via gateway) to map files → @tags</span>
       <span class="cc"># writes: TEST_TAGS="@disputes or @auth"</span>
       <span class="cc"># on API error: TEST_TAGS="@smoke" + DEGRADED MODE warning</span>
-      <span class="cc"># — an Anthropic outage must never freeze merges</span>
+      <span class="cc"># — a model-provider outage must never freeze merges</span>
     - <span class="cv">echo "TEST_TAGS=$TEST_TAGS" &gt;&gt; build.env</span>
   <span class="ck">artifacts:</span>
     <span class="ck">reports:</span>
@@ -1215,7 +1215,7 @@ Then(<span class="cv">'response matches schema'</span>,
     - <span class="cv">python reporting/coverage_delta.py</span>
       <span class="cc"># reads allure JSON → computes Δ vs last run</span>
     - <span class="cv">python ai-agents/report_narrator.py</span>
-      <span class="cc"># calls Claude API: plain-English failure summary</span>
+      <span class="cc"># calls the model (via gateway): plain-English summary</span>
       <span class="cc"># output: report-summary.txt used by email job</span>
   <span class="ck">artifacts:</span>
     <span class="ck">paths:</span> [<span class="cv">allure-report/</span>, <span class="cv">coverage-delta.json</span>,
