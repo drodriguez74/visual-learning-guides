@@ -1046,6 +1046,14 @@ footer {
                 <div class="ai-step-desc">When a new feature lands on an existing app, AI generates new scenarios in the same style as existing ones. Consistency is automatic.</div>
               </div>
             </div>
+            <div class="ai-step">
+              <div class="ai-step-num">6</div>
+              <div class="ai-step-content">
+                <div class="ai-step-title">Discover journeys with an agent browser</div>
+                <div class="ai-step-desc">Describe the user goal in plain English. A browser agent (e.g. the agent-browser CLI) executes it against the live app, recording every action — accessibility role + name, URL, API calls. The recorded trace compiles into a .feature file, step definitions, and POM locators. The journey is demonstrated before it ever becomes a test, and replay stays deterministic.</div>
+                <div class="ai-prompt-example"><span class="cm"># Agent-browser discovery:</span><br>agent-browser open $APP_URL<br>agent-browser snapshot -i<br>agent-browser fill @e4 "analyst1"<br><span class="cm"># ...record trace → compile to</span><br><span class="cm"># .feature + steps + POM</span></div>
+              </div>
+            </div>
           </div>
           <div class="ai-gain">
             <div class="gain-pct">~50%</div>

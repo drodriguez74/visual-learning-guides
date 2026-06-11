@@ -1590,6 +1590,10 @@ Then(<span class="cv">'response matches schema'</span>,
       <div class="pitch-head"><span class="pitch-icon">🌐</span><div class="pitch-title">Agent-Browser Verification Crawl</div></div>
       <div class="pitch-body">Weekly cron: the agent-browser CLI logs in as each role (encrypted auth vault), walks every route, and diffs the live accessibility tree against the breadcrumb inventory — catching feature-flagged pages, role-access mismatches, and unrendered actions that static analysis can't see. Fenced by --allowed-domains and --action-policy; never on the blocking MR path.</div>
     </div>
+    <div class="pitch-card" style="border-color:var(--gold)">
+      <div class="pitch-head"><span class="pitch-icon">🧭</span><div class="pitch-title">Journey Discoverer &amp; Trace Compiler</div></div>
+      <div class="pitch-body">Journeys are demonstrated, not imagined. QA writes a plain-English scenario (or the explorer proposes one), the agent executes it in a real browser, and every action is recorded — accessibility role + name, URL, API calls observed in the HAR. The trace compiles into a deterministic .feature + step definitions + POM with semantic locators (never session refs). Discovery is expensive once; replay is deterministic Playwright forever. For CMS-built workflow apps (disputes, chargebacks, money movement), the config export seeds the inventory the agent then verifies.</div>
+    </div>
   </div>
 </div>
 </div>

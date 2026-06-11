@@ -356,7 +356,7 @@ body{transition:background-color .3s,color .3s}
     <div class="rule-card s">
       <div class="rule-num" style="color:var(--slate)">Rule 06 · Brownfield</div>
       <div class="rule-title">Source code access replaces instrumentation</div>
-      <div class="rule-body">Brownfield repos are scanned from source — React component tree, Spring controllers, Redux slices, OpenAPI spec. No runtime agent required. No changes to the application. The scanner runs externally and writes only to the QA repo.</div>
+      <div class="rule-body">Brownfield repos are scanned from source — React component tree, Spring controllers, Redux slices, OpenAPI spec. No runtime agent required. No changes to the application. The scanner runs externally and writes only to the QA repo. <strong style="color:var(--ink)">CMS-built workflow apps (disputes, chargebacks, money movement): the config export is the spec</strong> — a <code style="font-family:monospace;font-size:.8em">cms_config</code> parser strategy reads screens, fields, roles, and workflow states from configuration, more authoritative than parsing generated frontend code.</div>
       <span class="rule-enforce" style="background:var(--slate2);color:var(--slate);border:1px solid rgba(42,63,95,.2)">enforced: scanner design</span>
     </div>
     <div class="rule-card g">
@@ -376,6 +376,12 @@ body{transition:background-color .3s,color .3s}
       <div class="rule-title">Agents verify in a real browser — async lanes only</div>
       <div class="rule-body">The <code style="font-family:monospace;font-size:.8em">agent-browser</code> CLI closes the gaps static analysis can't see: a per-role <strong style="color:var(--ink)">verification crawl</strong> (<code style="font-family:monospace;font-size:.8em">snapshot -i</code> a11y tree per route) empirically confirms the breadcrumb page/action/role inventory; <strong style="color:var(--ink)">intent replay</strong> (<code style="font-family:monospace;font-size:.8em">chat "&lt;gherkin step&gt;"</code>) triages locator-break vs real defect before any heal. Fenced with <code style="font-family:monospace;font-size:.8em">--allowed-domains</code> + <code style="font-family:monospace;font-size:.8em">--action-policy</code>, role creds from the encrypted auth vault. Cron lanes only — never the blocking MR path. Deterministic Playwright stays the test of record.</div>
       <span class="rule-enforce" style="background:var(--rust2);color:var(--rust);border:1px solid rgba(201,74,26,.2)">enforced: cron verification jobs</span>
+    </div>
+    <div class="rule-card s">
+      <div class="rule-num" style="color:var(--slate)">Rule 10 · Discovery</div>
+      <div class="rule-title">Journeys are demonstrated, not imagined</div>
+      <div class="rule-body">A journey enters the breadcrumbs only with a <strong style="color:var(--ink)">recorded execution trace</strong> proving it's achievable. Three intake lanes: QA-authored plain-English scenarios executed by the agent; autonomous per-role exploration; and the static skeleton that bounds the crawl. A <strong style="color:var(--ink)">trace compiler</strong> freezes each demonstration into a deterministic <code style="font-family:monospace;font-size:.8em">.feature</code> + steps + POM (locators from a11y role + name — never session refs). <code style="font-family:monospace;font-size:.8em">api_calls[]</code> is recorded empirically from the HAR. Provenance tracked as <code style="font-family:monospace;font-size:.8em">discovered_by: static|dynamic|both</code> — undemonstrated journeys don't count toward the coverage denominator. Discovery is expensive once; replay is deterministic Playwright forever.</div>
+      <span class="rule-enforce" style="background:var(--slate2);color:var(--slate);border:1px solid rgba(42,63,95,.2)">enforced: trace evidence required in breadcrumb schema</span>
     </div>
   </div>
 </div>
@@ -479,13 +485,13 @@ body{transition:background-color .3s,color .3s}
     <div class="layer">
       <div class="layer-label" style="background:var(--rust2);color:var(--rust)">Breadcrumb<br><span style="font-size:.65rem;opacity:.7">Journey artifact emitter</span></div>
       <div class="layer-body">
-        <span class="li">qa-breadcrumbs.yaml</span><span class="li">page-inventory per role</span><span class="li">action-map per page</span><span class="li">journey-priority: high/medium/low</span><span class="li">api-surface per module</span><span class="li">telemetry-source: dynatrace|static</span><span class="li">agent-browser verify-crawl (weekly)</span>
+        <span class="li">qa-breadcrumbs.yaml</span><span class="li">page-inventory per role</span><span class="li">action-map per page</span><span class="li">journey-priority: high/medium/low</span><span class="li">api-surface per module</span><span class="li">telemetry-source: dynatrace|static</span><span class="li">agent-browser verify-crawl (weekly)</span><span class="li">cms_config strategy</span><span class="li">discovered_by: static|dynamic|both</span>
       </div>
     </div>
     <div class="layer">
       <div class="layer-label" style="background:var(--slate2);color:var(--slate)">Generation<br><span style="font-size:.65rem;opacity:.7">Test artifact factory</span></div>
       <div class="layer-body">
-        <span class="li">*.feature files</span><span class="li">*.steps.ts scaffolds</span><span class="li">*Page.ts POM classes</span><span class="li">postman-collection.json</span><span class="li">pact contracts</span><span class="li">coverage-manifest.json</span>
+        <span class="li">*.feature files</span><span class="li">*.steps.ts scaffolds</span><span class="li">*Page.ts POM classes</span><span class="li">trace-compiler (demonstrated journeys → artifacts)</span><span class="li">postman-collection.json</span><span class="li">pact contracts</span><span class="li">coverage-manifest.json</span>
       </div>
     </div>
     <div class="layer">
@@ -694,7 +700,7 @@ body{transition:background-color .3s,color .3s}
   <div class="sh"><div class="sn">04</div><div>
     <p class="sl">Role-Scoped User Journeys</p>
     <h2 class="st">Journey Derivation</h2>
-    <p class="sd">A journey is a named, role-scoped sequence of pages and actions that represents a meaningful unit of business value. Not every permutation — just the ones that matter. Telemetry tells us which ones matter most.</p>
+    <p class="sd">A journey is a named, role-scoped sequence of pages and actions that represents a meaningful unit of business value. Not every permutation — just the ones that matter. Telemetry tells us which ones matter most. The AI deriver <em>proposes</em> candidate journeys; each one must then be <strong style="color:var(--ink)">demonstrated by the agent-browser discovery lane</strong> (Rule 10) before it enters the breadcrumbs — imagined sequences that can't actually be executed never become tests.</p>
   </div></div>
 
   <div class="card">

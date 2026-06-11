@@ -28,6 +28,7 @@
 17. [Tooling & Infrastructure](#17-tooling--infrastructure)
 18. [Open Questions & Decisions Log](#18-open-questions--decisions-log)
 19. [Agent Browser Integration](#19-agent-browser-integration)
+20. [Journey Discovery & Trace Compilation](#20-journey-discovery--trace-compilation)
 
 ---
 
@@ -162,6 +163,8 @@ The `qa-toolkit` service account must have `read_repository` access to:
 
 This is provisioned once per application, not per developer.
 
+**CMS-configured applications:** most target apps (money movement, fraud, disputes, chargebacks) are CMS-style workflow tools where screens, fields, role assignments, and workflow states live in *configuration*, not hand-written frontend code. For these, an exportable configuration dump replaces or supplements source access — it is the more authoritative inventory (Section 20.4). Provision read access to the config export API or a scheduled config dump alongside (or instead of) repository access.
+
 ### Rule 3 — Dynatrace API Token
 
 A read-only Dynatrace API token with `DataExport` and `ReadSyntheticData` scopes must be provisioned and stored as a GitLab CI/CD variable (`DYNATRACE_TOKEN`) in the application's GitLab group. If unavailable, set `QA_TELEMETRY_SOURCE=static` — the system falls back to static analysis, but journey prioritization will be less accurate.
@@ -265,8 +268,10 @@ Every role in the breadcrumb role model (`admin`, `super-user`, `user`, `pilot`)
 ```
 qa-toolkit/
 ├── agents/
-│   ├── breadcrumb_emitter.py      # Layer 2 — source → breadcrumbs
-│   ├── journey_deriver.py         # Layer 2 — breadcrumbs → journeys
+│   ├── breadcrumb_emitter.py      # Layer 2 — source/config → breadcrumb skeleton (Lane C)
+│   ├── journey_discoverer.py      # Layer 2 — agent-browser discovery, Lanes A+B (§20)
+│   ├── journey_deriver.py         # Layer 2 — proposes exploration goals for Lane B (§20)
+│   ├── trace_compiler.py          # Layer 3 — recorded trace → .feature/steps/POM (§20.3)
 │   ├── generator_agent.py         # Layer 3 — breadcrumbs → test artifacts
 │   ├── scope_detector.py          # Layer 4 — git diff → TEST_TAGS
 │   ├── locator_healer.py          # Layer 5 — broken locator → patch PR
@@ -276,6 +281,7 @@ qa-toolkit/
 │   └── report_narrator.py         # Layer 4 — AI failure summary
 ├── parsers/
 │   ├── react_route_parser.py      # Handles central / file-based / modular
+│   ├── cms_config_parser.py       # Reads CMS config export → pages/roles/workflow (§20.4)
 │   ├── spring_role_extractor.py   # Reads @PreAuthorize + Redux auth slices
 │   ├── openapi_mapper.py          # Maps OpenAPI → api_surface schema
 │   └── dynatrace_prioritizer.py   # Fetches session data → priority scores
@@ -298,10 +304,11 @@ qa-toolkit/
 
 **Deliverables:**
 
-- [ ] `react_route_parser.py` — detects routing strategy from `qa-profile.yaml` and parses accordingly. Supports three strategies:
+- [ ] `react_route_parser.py` — detects routing strategy from `qa-profile.yaml` and parses accordingly. Supports four strategies:
   - `central_routes` — reads `src/routes.tsx` or `src/App.tsx`
   - `file_based` — traverses `src/pages/` directory structure (Next.js style)
   - `modular` — reads each feature module's route registration file
+  - `cms_config` — delegates to `cms_config_parser.py`: reads the CMS configuration export (screens, fields, role assignments, workflow states) as the authoritative inventory for CMS-built apps (Section 20.4)
 - [ ] `spring_role_extractor.py` — extracts role model using a priority-ordered fallback chain:
   1. `@PreAuthorize` annotations on controllers (most common)
   2. `@RolesAllowed` and `@Secured` annotations (older Spring Security)
@@ -310,7 +317,7 @@ qa-toolkit/
   Cross-references Redux auth slice (`authSlice.ts`) for UI-side role guards to confirm role names match frontend and backend
 - [ ] `dynatrace_prioritizer.py` — queries Dynatrace Sessions API for page-level session counts over last 90 days. Returns priority map: `{route: "high"|"medium"|"low"}`
 - [ ] `openapi_mapper.py` — reads OpenAPI YAML/JSON spec, extracts all endpoints grouped by tag/module with HTTP method and path
-- [ ] `journey_deriver.py` — uses Anthropic Claude API to synthesize journey sequences from page graph + role permission map. Produces `journeys[]` entries in breadcrumb schema
+- [ ] `journey_deriver.py` — uses Anthropic Claude API to propose candidate journeys (exploration goals) from page graph + role permission map. **Proposals do not enter the breadcrumb directly** — they are handed to `journey_discoverer.py`, which attempts each one via agent-browser; only demonstrated journeys (with recorded traces) become `journeys[]` entries (Section 20)
 - [ ] `breadcrumb_emitter.py` — orchestrates all parsers, writes `qa-breadcrumbs.yaml`, diffs against previous version and emits drift events
 
 **Breadcrumb schema validation:** All generated breadcrumb files must validate against `qa-breadcrumbs.schema.json` before being committed. Invalid schema = pipeline fails.
@@ -524,6 +531,7 @@ For every application module, the breadcrumb YAML records:
 - **Journeys** — named sequences of pages and actions that represent a coherent user goal, with role scope and priority level
 - **API Surface** — every endpoint from the OpenAPI spec, grouped by module, with coverage status
 - **Priority** — derived from Dynatrace session counts (or static heuristics as fallback)
+- **Provenance** — every page, action, and journey carries `discovered_by: static | dynamic | both` plus an `evidence:` block (trace, HAR, screenshot) when demonstrated by the discovery agent (Section 20.2)
 - **Metadata** — generator version, generation timestamp, OpenAPI hash (for freshness detection)
 
 ### Freshness Enforcement
@@ -967,6 +975,9 @@ Year 2+ net savings per repo:                ~$115,000/year
 | Prompt injection via source comments, page content, or Jira text steers agents that hold GitLab write tokens | Medium | High | Generation/healer agents run with no tool access during LLM calls; outputs are schema-validated before any git or API action. Agent-browser jobs run fenced with `--allowed-domains` and `--action-policy`. The AI reviewer is never the sole gate on AI-generated output. |
 | Anthropic API outage blocks all merges via `qa:scope-detect` | Medium | High | Blocking-path agents fail open to `@smoke` with a DEGRADED MODE warning (§11). Non-blocking agents fail closed and retry next run. |
 | Agent-browser verification jobs are slow, token-expensive, and nondeterministic | Medium | Low | Agent-browser lanes are cron/async only — never on the blocking MR path (§19). Deterministic Playwright remains the test of record; agents verify, heal, triage, and discover. |
+| Enterprise CMS UI semantics resist agent perception (iframes, div-soup, generated IDs) | High | Medium | Perception failures are filed as locator debt + a11y defects (§19.6, §20.5); discoverer falls back to DOM-level interaction and flags the element; testability fixes feed the app team's DoD. |
+| Autonomous discovery mutates workflow state in financial apps | High | High | Lanes A/B run only in Rule 7 synthetic environments with seeded cases; `--action-policy` denies money-moving/final-submit categories during exploration — permitted solely in QA-approved Lane A journeys (§20.5). |
+| Discovered-journey churn destabilizes the coverage denominator | Medium | Medium | Raw discovery output never enters the denominator directly: journeys are reconciled, reviewed, and only `discovered_by: both` (or SDET-approved) entries count (§20.2). Undemonstrated entries are excluded until proven. |
 
 ---
 
@@ -1067,6 +1078,8 @@ Model IDs are environment variables in `platform/qa-toolkit` (`QA_MODEL_REASONIN
 | Coverage floor | 50% API + 50% UI | Proven PoC threshold. Undeniable enough to drive adoption. Path to 100% is automated. |
 | Browser verification tooling | `agent-browser` CLI, cron lanes only | Accessibility-tree perception matches the semantic locator strategy. Built-in guardrails (`--allowed-domains`, `--action-policy`, auth vault). Deterministic Playwright remains the test of record (Section 19). |
 | MR gate environment | `QA_TARGET_MODE` review / dev-canary | A merge gate must test the MR's build. Review apps where possible; informational canary + post-merge revert where not (Section 11). |
+| Journey authoring | Demonstrated, never imagined | `journey_deriver.py` demoted to exploration-goal proposer; journeys enter breadcrumbs only with a recorded agent-browser trace; trace compiler freezes demonstrations into deterministic artifacts (Section 20). |
+| CMS app inventory source | `cms_config` parser strategy | For CMS-built workflow apps the config export is the spec — more authoritative than parsing generated frontend code (Section 20.4). |
 
 ### Open Questions
 
@@ -1133,5 +1146,73 @@ Agent-browser perceives through the accessibility tree — the same reason the P
 
 ---
 
+## 20. Journey Discovery & Trace Compilation
+
+Validated hands-on (June 2026) with `agent-browser` v0.27: accessibility-tree snapshots are breadcrumb-grade inventories obtainable with zero source access, and a recorded action trace compiles directly into a feature file, step definitions, and POM locators. This section makes discovery a first-class producer of breadcrumb journeys — replacing the weakest link in the original design: `journey_deriver.py` *imagining* step sequences from a static page graph, with SDETs told to "correct any illogical sequences."
+
+**Principle: journeys are demonstrated, not imagined.** A journey enters `qa-breadcrumbs.yaml` only with a recorded execution trace proving it is achievable. Undemonstrated entries are allowed but flagged `undemonstrated: true` and excluded from the coverage denominator until demonstrated — the gate math only counts journeys that are provably executable.
+
+### 20.1 Three Intake Lanes
+
+| Lane | Producer | How |
+|---|---|---|
+| **A — QA-authored** | QA Champion / SDET | Plain-English scenarios ("as an analyst, resolve an open dispute") submitted via `journey-requests.yaml`. The discovery agent executes the intent stepwise via agent-browser; every action is recorded: a11y role + accessible name, URL, API calls observed (HAR), screenshot. |
+| **B — Autonomous exploration** | `journey_discoverer.py` | Per-role systematic crawl (the agent-browser `dogfood` pattern: orient → visit each nav section → exercise interactive elements → evidence per finding). Builds a navigation state graph; candidate journeys are coherent paths through it. `journey_deriver.py` proposes exploration goals for this lane — it no longer authors journeys. |
+| **C — Static skeleton** | `breadcrumb_emitter.py` (existing) | Routes, roles, API surface from source + OpenAPI + CMS config. This is the *checklist that bounds exploration* — it knows what should exist, including pages unreachable without data preconditions — and the only lane that works pre-deployment. |
+
+### 20.2 Reconciliation & Provenance
+
+Every breadcrumb page, action, and journey carries provenance:
+
+```yaml
+journeys:
+  - id: analyst-dispute-resolution
+    role: super-user
+    discovered_by: both          # static | dynamic | both
+    evidence:
+      trace: .ai-sdlc/traces/analyst-dispute-resolution.json
+      har: .ai-sdlc/traces/analyst-dispute-resolution.har
+      screenshot: .ai-sdlc/traces/analyst-dispute-resolution.png
+```
+
+- `both` — solid: counts toward the coverage denominator.
+- `static` only — suspicious: dead code, or reachable only with data preconditions. Flagged for seeded-case discovery (20.5).
+- `dynamic` only — suspicious: undocumented or feature-flag-only surface. Flagged for source/config review.
+- The `api_calls[]` field — the hardest thing to infer statically — is recorded **empirically** from the HAR during demonstration.
+- **Retirement symmetry:** *agent-cannot-reach* retires nothing until the static/config scan confirms `page_removed` — the mirror of healing's drift corroboration (Section 12).
+
+### 20.3 Trace Compiler
+
+`trace_compiler.py` converts a recorded trace into deterministic artifacts:
+
+- **`.feature`** — Claude names the Given/When/Then from the scenario intent + trace. Content nondeterminism is abstracted: assert the *intent* ("a result list is shown"), never the rendered *instance* (personalized rows, dynamic counts).
+- **`steps.ts` + POM** — semantic locators lifted directly from the snapshot's role + accessible name (`getByRole('button', { name: 'Submit Resolution' })`). Never raw `@e`-refs — refs are session-scoped noise that change between snapshots (validated empirically).
+- **Breadcrumb journey entry** with the evidence block from 20.2.
+
+**Discovery is expensive once; replay is deterministic Playwright forever.** The agent re-enters only for healing triage (19.3) and the weekly verification crawl (19.1) — never as the test runner of record.
+
+### 20.4 CMS-Configured Applications — Config Is the Spec
+
+Most target applications (money movement, fraud, disputes, chargebacks) are CMS-style workflow apps: screens, fields, role assignments, and workflow states live in exportable *configuration*, not hand-written React routes. For these:
+
+- The emitter's fourth parser strategy, `cms_config`, reads the configuration export as the authoritative page/action/role inventory — more accurate and cheaper than parsing generated frontend code.
+- Lane B keeps the same job: per-role crawls verify the *configured* surface actually renders and operates, and discover what config can't express — conditional rendering, integration glue, broken states.
+- This is the favorable case for discovery: *work queue → case detail → action → confirmation* compiles naturally to Gherkin, and repeated grid/filter/detail components mean discovered POM patterns generalize across modules instead of being one-offs.
+
+### 20.5 Domain Rules for Financial Workflow Apps
+
+1. **Seeded synthetic cases.** Discovery *acts* — "resolve dispute" is reachable only if an OPEN dispute exists. Lane A/B runs seed the queue first via the Rule 7 data factories.
+2. **Money-moving actions are deny-by-default during exploration.** The `--action-policy` fence blocks final-submit / funds-movement categories in autonomous exploration; they are permitted only in QA-approved Lane A scripted journeys against synthetic data.
+3. **Per-role crawls are empirical RBAC verification.** Analyst vs supervisor vs admin approval boundaries *are the product* in this domain. `role_access_mismatch` drift events from the crawl are triaged as potential security findings, not test debt.
+4. **Expect perception friction.** Enterprise CMS UIs (iframes, div-soup buttons, generated IDs) resist a11y-tree perception. Validated live: a demo app's menu was invisible to the accessibility tree and swallowed physical clicks until a DOM-level fallback. Every such element is filed as both *locator debt* and an *accessibility defect* (19.6) — fixing it improves users and automation simultaneously.
+
+### 20.6 Empirical Validation Notes (June 2026)
+
+- **Demo workflow app (saucedemo.com):** login happy path, menu→logout multi-step journey, and negative login executed via snapshot-refs. Error states surface in the a11y tree as assertable nodes. Found a real testability/a11y defect (hidden menu, swallowed clicks) within minutes of starting.
+- **Public production sites (logged-out, read-only):** a complete search→product-detail journey was discovered and is directly compilable to `.feature` + POM with zero source access. Refs proved session-unstable (same element, different ref per snapshot) — confirming compile-to-role+name. Personalized content confirmed intent-vs-instance abstraction.
+- **Session isolation is non-optional:** the daemon's `default` session is machine-shared; a concurrent user collided with a test mid-run. One `--session` per job, `agent-browser close --all` in `after_script` (19.5).
+
+---
+
 *Document maintained by QA Architect · Feedback via `platform/qa-toolkit` GitLab issues*
-*Version 1.1 · June 2026 — third-pass hardening: MR gate semantics, test data & accounts, drift-corroborated healing, data governance, agent-browser integration*
+*Version 1.2 · June 2026 — adds Section 20: journey discovery lanes, trace compilation, `cms_config` parser strategy for CMS-built workflow apps, financial-domain discovery rules, and empirical agent-browser validation*
