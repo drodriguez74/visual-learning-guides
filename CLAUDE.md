@@ -4,7 +4,7 @@ Single-file HTML visual explainers (self-contained CSS/JS, dark/light theme togg
 
 ## QA Evergreen ecosystem (the active workstream)
 
-Four related documents describe an AI-accelerated QA platform for Fiserv-style CMS workflow apps (money movement, fraud, disputes, chargebacks):
+Four related documents describe an AI-accelerated QA platform for enterprise CMS-style financial workflow apps (money movement, fraud, disputes, chargebacks). Keep the public docs unbranded — no employer names, internal URLs, or internal system identifiers; use `example.com` in samples:
 
 - `qa-evergreen-implementation-plan.md` — **source of truth** (v1.2). Sections 18–20 hold the decisions log, agent-browser integration, and journey discovery design.
 - `qa-evergreen-ecosystem.html` — system-design explainer (10 rules, 5 layers). Mirrors the plan; keep them in sync when editing either.

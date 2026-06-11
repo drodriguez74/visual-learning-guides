@@ -1,6 +1,6 @@
 # QA Evergreen Ecosystem — Implementation Plan
 
-**Organization:** Fiserv (Fortune 100)
+**Organization:** Fortune 100 financial services company
 **Approach:** One repo at a time · 50% coverage floor · AI-accelerated · Self-healing
 **Stack:** TypeScript · Playwright · Cucumber-JS · Python (AI agents) · GitLab CI
 **Prepared:** June 2025
@@ -420,15 +420,15 @@ QA_BROWNFIELD_MODE      = true      # soft mode during onboarding
 QA_COVERAGE_GATE        = 50
 QA_TELEMETRY_SOURCE     = dynatrace
 QA_REPO_PATH            = $CI_BUILDS_DIR/{pilot-app}-qa   # see checkout note below
-QA_BASE_URL             = https://{pilot-app}.dev.fiserv.com
-QA_REPORT_EMAIL         = qa-team@fiserv.com,dev-lead@fiserv.com
+QA_BASE_URL             = https://{pilot-app}.dev.example.com
+QA_REPORT_EMAIL         = qa-team@example.com,dev-lead@example.com
 DYNATRACE_TOKEN         = [provisioned token]
 ```
 
 > **QA repo checkout mechanism:** The `qa:run-feature-tests` and `qa:regression` jobs run in the *source* repo's pipeline — the QA repo is not automatically checked out. The shared template's `before_script` for these jobs clones it using a git credential helper — never a token embedded in the URL (tokens in URLs leak into process listings, error messages, and verbose git output):
 > ```bash
 > git -c credential.helper='!f(){ echo "username=qa-toolkit-token"; echo "password=${QA_TOOLKIT_TOKEN}"; };f' \
->   clone --depth 1 "https://gitlab.fiserv.com/{app}-qa.git" "$QA_REPO_PATH"
+>   clone --depth 1 "https://gitlab.example.com/{app}-qa.git" "$QA_REPO_PATH"
 > ```
 > `QA_TOOLKIT_TOKEN` is a read-only Deploy Token scoped to the QA repo, stored as a masked CI/CD variable at `platform/` group level. Adds ~15–20 seconds per job. `QA_REPO_PATH` should use `$CI_BUILDS_DIR` as the base to ensure it lands on the runner's fast disk.
 
@@ -726,7 +726,7 @@ All behavior is controlled by per-repo CI/CD variables. No changes to the shared
 | `QA_REPORT_EMAIL` | — | Comma-separated email list for regression reports |
 | `QA_REPO_PATH` | — | Path to the application's QA repo on the runner |
 | `QA_AUTOHEALER_AUTOMERGE` | `true` | Set to `false` to disable all auto-merging for regulated environments (SOX, PCI-DSS, HIPAA). All healer PRs then require explicit SDET approval regardless of confidence score. |
-| `QA_BASE_URL` | — | Base URL of the application under test (e.g., `https://app.dev.fiserv.com`). Required — all Playwright and API tests use this. Set at group level for dev, override at project level for staging/prod pipeline runs. |
+| `QA_BASE_URL` | — | Base URL of the application under test (e.g., `https://app.dev.example.com`). Required — all Playwright and API tests use this. Set at group level for dev, override at project level for staging/prod pipeline runs. |
 | `QA_HEAL_CONFIDENCE_THRESHOLD` | `90` | Minimum confidence score for locator healer auto-merge eligibility. Raise to `95` or `100` for high-risk repos. |
 | `QA_TOOLKIT_TOKEN` | — | Read-only Deploy Token for cloning the QA repo onto the runner. Scoped to the specific QA repo only. Set at project level. |
 | `QA_TARGET_MODE` | — | `review` or `dev-canary` (see MR Pipeline Semantics above). Required when `QA_ECOSYSTEM_ENABLED=true` — determines whether `qa:run-feature-tests` blocks merge. |
@@ -1106,7 +1106,7 @@ Static parsing cannot see feature-flagged routes, role-conditional rendering, or
 
 ```bash
 # One isolated session per role; credentials from the auth vault (Rule 7)
-agent-browser --session verify-admin --allowed-domains "{app}.dev.fiserv.com" \
+agent-browser --session verify-admin --allowed-domains "{app}.dev.example.com" \
   auth login {app}-admin
 agent-browser --session verify-admin open "$QA_BASE_URL/disputes"
 agent-browser --session verify-admin snapshot -i --json > snap.admin.disputes.json
@@ -1132,7 +1132,7 @@ Dynatrace shows what users *do*; goal-driven exploration finds what users *could
 
 | Control | Mechanism |
 |---|---|
-| Navigation fence | `--allowed-domains "{app}.dev.fiserv.com"` — the agent cannot leave the environment under test |
+| Navigation fence | `--allowed-domains "{app}.dev.example.com"` — the agent cannot leave the environment under test |
 | Action policy | `--action-policy qa-action-policy.json` + `--confirm-actions` — destructive/payment-shaped submissions are deny-by-default; agents have no `confirm` authority |
 | Credentials | Auth vault profiles per role (Rule 7), AES-256-GCM state encryption (`AGENT_BROWSER_ENCRYPTION_KEY`), auto-expiry (`AGENT_BROWSER_STATE_EXPIRE_DAYS=7`) |
 | Session isolation | `--session` per role per job; `agent-browser close --all` in every `after_script` |
