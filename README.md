@@ -30,6 +30,8 @@ Or jump directly to any guide:
 | **AI-Accelerated QA Roadmap** | `https://drodriguez74.github.io/visual-learning-guides/qa-automation-roadmap.html` |
 | **QA Evergreen Ecosystem** | `https://drodriguez74.github.io/visual-learning-guides/qa-evergreen-ecosystem.html` |
 | **Agent Browser** | `https://drodriguez74.github.io/visual-learning-guides/agent-browser-explainer.html` |
+| **AI System Design Patterns** | `https://drodriguez74.github.io/visual-learning-guides/ai-system-design-patterns.html` |
+| **Devin AI in Fintech** | `https://drodriguez74.github.io/visual-learning-guides/devin-fintech-explainer.html` |
 
 ## Guides
 
@@ -298,6 +300,39 @@ Or jump directly to any guide:
 | **Applications** | 4 use-case cards: QA Automation, Web Research, Workflow Automation, Agentic Assistants |
 | **Hard Problems** | 6 failure modes: Selector Brittleness, Context Blowout, CAPTCHAs, Irreversible Actions, Infinite Loops, Latency Cost |
 | **Live Hero Demo** | Animated browser viewport — agent cursor moves, fills form fields, and submits — with a streaming thought panel |
+
+---
+
+### 19 · AI System Design Patterns
+`ai-system-design-patterns.html` — Dark (Space Grotesk + JetBrains Mono) · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Pattern Catalog** | 8 core patterns for reliable, observable, composable AI systems — single-agent loops through multi-model pipelines |
+| **Chain-of-Thought Pipeline** | Live flow diagram, what-it-does, when-to-use, strengths vs. trade-offs |
+| **Orchestrator / Sub-Agent** | Coordinator delegating bounded tasks to specialized sub-agents |
+| **Retrieval-Augmented Generation (RAG)** | Retrieve → ground → generate flow with strengths and trade-offs |
+| **Semantic Router** | Intent classification to route requests to the right handler or model |
+| **LLM-as-Evaluator** | Model-graded scoring and quality gates on generated output |
+| **Layered Memory Architecture** | Short-term, working, and long-term memory tiers |
+| **Input / Output Guardrails** | Pre- and post-inference validation and policy enforcement |
+| **Parallel Exploration + Voting** | Fan-out generation with consensus selection |
+
+---
+
+### 20 · Devin AI in Fintech
+`devin-fintech-explainer.html` — Dark (Space Grotesk + JetBrains Mono) · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Beyond Autocomplete** | Devin completes projects — planning, coding, debugging, testing, deploying across multi-hour sessions with minimal human intervention |
+| **Fintech Compliance** | How Devin operates inside compliance, risk, and audit structure rather than around it |
+| **Sandbox Security Model** | Isolated compute sandbox, scoped per-task API access, no held credentials |
+| **Intake → Canary Pipeline** | 6 stages: Intake & Spec → Code + Tests → Policy Checks → PR + Human Gate → Pipeline Run → Canary Deploy |
+| **Six Fintech Use Cases** | Core Banking API Migration, PCI-DSS Patching, Dispute Resolution Agents, Real-Time Fraud Pipeline, QA Test Generation, Regulatory Report Automation |
+| **Devin vs. Claude Code** | Honest assessment of where each leads and where both need a human in the loop |
+| **Risks & Failure Modes** | Data residency / PII leakage, prompt injection, over-automation of review gates, SOX change-management gaps, non-deterministic output, audit advantage |
+| **Orchestrated Sub-Agent** | How Devin maps into a larger system as a node rather than a standalone tool |
 
 ---
 

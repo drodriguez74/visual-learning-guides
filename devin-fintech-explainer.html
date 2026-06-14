@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devin AI in Fintech — Visual Explainer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:        #0D0F14;
+  --bg2:       #13161D;
+  --bg3:       #1A1E28;
+  --border:    #252A38;
+  --gold:      #C9A84C;
+  --gold-dim:  #C9A84C22;
+  --gold-mid:  #C9A84C55;
+  --blue:      #1E90FF;
+  --blue-dim:  #1E90FF18;
+  --blue-mid:  #1E90FF44;
+  --red:       #D64045;
+  --red-dim:   #D6404518;
+  --green:     #2ECC71;
+  --green-dim: #2ECC7118;
+  --white:     #E8EAF0;
+  --muted:     #4A5270;
+  --muted2:    #6B7599;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'DM Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--sans);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── AUDIT TRAIL SIDEBAR ── */
+#audit-rail {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.audit-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.audit-live-dot {
+  width: 6px; height: 6px;
+  background: var(--red);
+  border-radius: 50%;
+  animation: live-blink 1s step-end infinite;
+}
+
+@keyframes live-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+#audit-entries {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  gap: 0;
+}
+
+.audit-entry {
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 8.5px;
+  line-height: 1.5;
+  border-bottom: 1px solid #1A1D25;
+  opacity: 0;
+  transform: translateY(-4px);
+  animation: audit-in 0.3s ease forwards;
+}
+
+@keyframes audit-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.audit-entry .ae-time { color: var(--muted2); display: block; margin-bottom: 1px; }
+.audit-entry .ae-msg { color: var(--white); opacity: 0.8; }
+.audit-entry.ok .ae-msg { color: var(--green); }
+.audit-entry.warn .ae-msg { color: var(--gold); }
+.audit-entry.err .ae-msg { color: var(--red); }
+.audit-entry.info .ae-msg { color: var(--blue); }
+
+/* ── MAIN CONTENT ── */
+#main {
+  margin-right: 220px;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 80px 64px;
+  gap: 60px;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 50% 70% at 20% 50%, #1E90FF08 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 80% 30%, #C9A84C06 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-left { position: relative; z-index: 1; }
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  display: block;
+  width: 24px; height: 1px;
+  background: var(--gold);
+}
+
+.hero h1 {
+  font-family: var(--mono);
+  font-size: clamp(2.4rem, 4vw, 3.8rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -1px;
+  margin-bottom: 24px;
+}
+
+.hero h1 .hl { color: var(--gold); }
+.hero h1 .hl2 { color: var(--blue); }
+
+.hero-desc {
+  font-size: 1rem;
+  color: var(--muted2);
+  max-width: 440px;
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stat-val {
+  font-family: var(--mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+}
+
+.stat-val .unit { color: var(--gold); font-size: 0.9rem; }
+.stat-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── TERMINAL ── */
+.terminal-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+.terminal {
+  background: #07090E;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.terminal-bar {
+  background: var(--bg3);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.t-dot { width: 10px; height: 10px; border-radius: 50%; }
+.t-dot.r { background: #FF5F57; }
+.t-dot.y { background: #FEBC2E; }
+.t-dot.g { background: #28C840; }
+
+.t-title {
+  margin-left: 8px;
+  font-size: 10px;
+  color: var(--muted2);
+  letter-spacing: 1px;
+}
+
+.t-session {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--gold);
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-mid);
+  border-radius: 3px;
+  padding: 2px 7px;
+}
+
+.terminal-body {
+  padding: 16px;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.t-line {
+  line-height: 1.7;
+  white-space: pre;
+  opacity: 0;
+  animation: t-appear 0.1s ease forwards;
+}
+
+@keyframes t-appear { to { opacity: 1; } }
+
+.t-prompt { color: var(--gold); }
+.t-cmd    { color: var(--white); }
+.t-out    { color: var(--muted2); }
+.t-ok     { color: var(--green); }
+.t-warn   { color: var(--gold); }
+.t-err    { color: var(--red); }
+.t-info   { color: var(--blue); }
+.t-cursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--gold);
+  vertical-align: middle;
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@keyframes cursor-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── SECTION WRAPPER ── */
+.section {
+  padding: 80px 64px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-tag::before {
+  content: '';
+  display: block;
+  width: 20px; height: 1px;
+  background: var(--gold);
+}
+
+h2 {
+  font-family: var(--mono);
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+
+.lead {
+  color: var(--muted2);
+  font-size: 0.95rem;
+  max-width: 580px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+}
+
+/* ── PIPELINE ── */
+.pipeline {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-top: 40px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.pipe-node {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 20px 16px;
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+  cursor: default;
+}
+
+.pipe-node:hover { background: var(--bg3); border-color: var(--gold-mid); }
+.pipe-node:not(:last-child)::after {
+  content: '→';
+  position: absolute;
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gold);
+  font-family: var(--mono);
+  font-size: 1rem;
+  z-index: 2;
+  background: var(--bg);
+  padding: 0 2px;
+}
+
+.pipe-node:first-child { border-radius: 6px 0 0 6px; }
+.pipe-node:last-child  { border-radius: 0 6px 6px 0; }
+
+.pn-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 2px;
+  margin-bottom: 10px;
+}
+
+.pn-badge.compliance { background: var(--red-dim); color: var(--red); border: 1px solid var(--red); }
+.pn-badge.dev        { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue); }
+.pn-badge.review     { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold); }
+.pn-badge.deploy     { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
+
+.pn-title {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.pn-detail {
+  font-size: 0.76rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ── USE CASES GRID ── */
+.uc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 40px;
+}
+
+.uc-card {
+  background: var(--bg2);
+  padding: 28px 24px;
+  transition: background 0.2s;
+}
+
+.uc-card:hover { background: var(--bg3); }
+
+.uc-icon {
+  font-size: 1.6rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.uc-title {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.uc-body {
+  font-size: 0.8rem;
+  color: var(--muted2);
+  line-height: 1.6;
+}
+
+.uc-tag {
+  display: inline-block;
+  margin-top: 10px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: var(--gold);
+  text-transform: uppercase;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-mid);
+  border-radius: 2px;
+  padding: 2px 6px;
+}
+
+/* ── COMPARISON TABLE ── */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 36px;
+  font-size: 0.83rem;
+}
+
+.compare-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted2);
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.compare-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted2);
+  vertical-align: top;
+  line-height: 1.5;
+}
+
+.compare-table tr:hover td { background: var(--bg2); }
+.compare-table td:first-child { font-family: var(--mono); font-size: 0.78rem; color: var(--white); font-weight: 500; }
+.compare-table .pos { color: var(--green); }
+.compare-table .neg { color: var(--red); }
+.compare-table .neu { color: var(--gold); }
+
+/* ── RISK MATRIX ── */
+.risk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 36px;
+}
+
+.risk-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px;
+  border-left: 3px solid var(--border);
+  transition: background 0.2s;
+}
+
+.risk-card:hover { background: var(--bg3); }
+.risk-card.high   { border-left-color: var(--red); }
+.risk-card.medium { border-left-color: var(--gold); }
+.risk-card.low    { border-left-color: var(--green); }
+.risk-card.info   { border-left-color: var(--blue); }
+
+.risk-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.risk-card.high   .risk-label { color: var(--red); }
+.risk-card.medium .risk-label { color: var(--gold); }
+.risk-card.low    .risk-label { color: var(--green); }
+.risk-card.info   .risk-label { color: var(--blue); }
+
+.risk-title {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.risk-body {
+  font-size: 0.78rem;
+  color: var(--muted2);
+  line-height: 1.5;
+}
+
+/* ── ARCHITECTURE DIAGRAM ── */
+.arch-svg-wrap {
+  margin-top: 40px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 32px;
+  overflow-x: auto;
+}
+
+/* ── FISERV CALLOUT ── */
+.callout {
+  background: var(--bg2);
+  border: 1px solid var(--gold-mid);
+  border-radius: 8px;
+  padding: 28px 32px;
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.callout-icon { font-size: 2rem; }
+.callout-title {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.callout-body {
+  font-size: 0.85rem;
+  color: var(--muted2);
+  line-height: 1.7;
+}
+
+.callout-body strong { color: var(--white); font-weight: 500; }
+
+/* ── FOOTER ── */
+footer {
+  padding: 32px 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  #audit-rail { display: none; }
+  #main { margin-right: 0; }
+  .hero { grid-template-columns: 1fr; padding: 48px 24px; }
+  .section { padding: 48px 24px; }
+  footer { padding: 24px; flex-direction: column; gap: 8px; }
+  .risk-grid { grid-template-columns: 1fr; }
+  .pipeline { flex-wrap: wrap; }
+  .pipe-node { flex: 1 1 140px; }
+  .pipe-node:not(:last-child)::after { display: none; }
+  .pipe-node:first-child, .pipe-node:last-child { border-radius: 6px; }
+}
+
+/* ── LIGHT THEME ── */
+[data-theme="light"] {
+  --bg:        #F5F3EC;
+  --bg2:       #FFFFFF;
+  --bg3:       #ECEAE1;
+  --border:    #DAD6C9;
+  --gold:      #9A7B1E;
+  --gold-dim:  #9A7B1E18;
+  --gold-mid:  #9A7B1E55;
+  --blue:      #1668C7;
+  --blue-dim:  #1668C712;
+  --blue-mid:  #1668C744;
+  --red:       #B62F34;
+  --red-dim:   #B62F3412;
+  --green:     #1B9E58;
+  --green-dim: #1B9E5812;
+  --white:     #14171F;
+  --muted:     #8A8472;
+  --muted2:    #5C6478;
+}
+
+[data-theme="light"] .hero::before {
+  background:
+    radial-gradient(ellipse 50% 70% at 20% 50%, #1668C70A 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 80% 30%, #9A7B1E0A 0%, transparent 70%);
+}
+
+/* Audit-entry inner divider (hard-coded dark) */
+[data-theme="light"] .audit-entry { border-bottom: 1px solid var(--border); }
+
+/* Terminal + architecture SVG are intentional "screen" surfaces — stay dark in both modes */
+[data-theme="light"] .arch-svg-wrap {
+  background: #0D0F14;
+  border-color: #252A38;
+}
+[data-theme="light"] .terminal { border-color: #252A38; }
+[data-theme="light"] .terminal-bar { background: #14171F; border-bottom-color: #252A38; }
+[data-theme="light"] .t-title { color: #6B7599; }
+[data-theme="light"] .t-cmd { color: #E8EAF0; }
+[data-theme="light"] .t-out { color: #6B7599; }
+[data-theme="light"] .t-session { color: #C9A84C; background: #C9A84C22; border-color: #C9A84C55; }
+[data-theme="light"] .t-prompt, [data-theme="light"] .t-warn { color: #C9A84C; }
+[data-theme="light"] .t-ok { color: #2ECC71; }
+[data-theme="light"] .t-err { color: #D64045; }
+[data-theme="light"] .t-info { color: #1E90FF; }
+[data-theme="light"] .t-cursor { background: #C9A84C; }
+
+/* ── THEME TOGGLE ── */
+html { transition: background-color .3s; }
+body { transition: background-color .3s, color .3s; }
+
+#theme-toggle {
+  position: fixed; top: 1.25rem; left: 1.25rem; z-index: 1000;
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--muted2);
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 6px 14px 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color .2s, color .2s, box-shadow .2s, background .3s;
+}
+#theme-toggle:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 14px var(--gold-dim);
+}
+#theme-toggle .ti {
+  font-size: 1rem; line-height: 1; display: block;
+  transition: transform .4s cubic-bezier(.175,.885,.32,1.275);
+}
+#theme-toggle:hover .ti { transform: rotate(30deg); }
+</style>
+</head>
+<body>
+
+<button id="theme-toggle" aria-label="Toggle theme">
+  <span class="ti">◑</span>Theme
+</button>
+
+<!-- ── AUDIT TRAIL SIDEBAR ── -->
+<div id="audit-rail">
+  <div class="audit-header">
+    <div class="audit-live-dot"></div>
+    Audit Log
+  </div>
+  <div id="audit-entries"></div>
+</div>
+
+<!-- ── MAIN ── -->
+<div id="main">
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow">Agentic AI · Software Engineering · Financial Services</p>
+    <h1>
+      <span class="hl">Devin</span> AI<br>
+      in <span class="hl2">Fintech</span>
+    </h1>
+    <p class="hero-desc">
+      An autonomous AI software engineer that writes code, runs tests, deploys services,
+      and navigates compliance gates — inside the regulated constraints of financial systems.
+    </p>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-val">13.86<span class="unit">%</span></span>
+        <span class="stat-label">SWE-bench score</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">~4<span class="unit">h</span></span>
+        <span class="stat-label">Avg task runtime</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">SOC2</span>
+        <span class="stat-label">Compliant runtime</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="terminal-wrap">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="t-dot r"></div>
+        <div class="t-dot y"></div>
+        <div class="t-dot g"></div>
+        <span class="t-title">devin · session-fiserv-issuer-4821</span>
+        <span class="t-session">ACTIVE</span>
+      </div>
+      <div class="terminal-body" id="terminal-body">
+        <span class="t-cursor" id="t-cursor"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHAT IS DEVIN ── -->
+<section class="section">
+  <p class="section-tag">Overview</p>
+  <h2>Not a Copilot. An Autonomous Engineer.</h2>
+  <p class="lead">GitHub Copilot completes lines. Devin completes projects — planning, coding, debugging, testing, and deploying across a multi-hour session with minimal human intervention.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:36px;">
+    <div style="background:var(--bg2);padding:24px 20px;">
+      <div style="font-family:var(--mono);font-size:0.75rem;color:var(--gold);margin-bottom:8px;">COPILOT / CURSOR</div>
+      <div style="font-size:0.82rem;color:var(--muted2);line-height:1.6;">Suggests next line or function. You write, review, accept. Loop is human-driven. Session is seconds to minutes.</div>
+    </div>
+    <div style="background:var(--bg2);padding:24px 20px;">
+      <div style="font-family:var(--mono);font-size:0.75rem;color:var(--blue);margin-bottom:8px;">CLAUDE CODE / CODEX</div>
+      <div style="font-size:0.82rem;color:var(--muted2);line-height:1.6;">Executes multi-step tasks in terminal. Writes, runs, fixes. You supervise the loop. Session is minutes to an hour.</div>
+    </div>
+    <div style="background:var(--bg3);border-left:2px solid var(--gold);padding:24px 20px;">
+      <div style="font-family:var(--mono);font-size:0.75rem;color:var(--gold);margin-bottom:8px;">DEVIN ← YOU ARE HERE</div>
+      <div style="font-size:0.82rem;color:var(--white);line-height:1.6;">Fully autonomous. Opens browser, reads docs, writes code, runs CI, opens PRs. Session is hours. Human reviews output, not process.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FINTECH PIPELINE ── -->
+<section class="section">
+  <p class="section-tag">Fintech Workflow</p>
+  <h2>Where Devin Fits the SDLC</h2>
+  <p class="lead">In financial services, every code change touches compliance, risk, and audit requirements. Devin operates inside that structure — not around it.</p>
+
+  <div class="pipeline">
+    <div class="pipe-node">
+      <div class="pn-badge compliance">Requirement</div>
+      <div class="pn-title">Intake &amp; Spec</div>
+      <div class="pn-detail">Jira ticket, OpenAPI spec, compliance brief. Devin reads, plans, confirms scope.</div>
+    </div>
+    <div class="pipe-node">
+      <div class="pn-badge dev">Dev</div>
+      <div class="pn-title">Code + Tests</div>
+      <div class="pn-detail">Writes implementation and unit tests. Follows existing patterns, lints, formats.</div>
+    </div>
+    <div class="pipe-node">
+      <div class="pn-badge compliance">Compliance</div>
+      <div class="pn-title">Policy Checks</div>
+      <div class="pn-detail">Runs SAST, dependency scan, PCI-DSS rule checks before committing.</div>
+    </div>
+    <div class="pipe-node">
+      <div class="pn-badge review">Review</div>
+      <div class="pn-title">PR + Human Gate</div>
+      <div class="pn-detail">Opens PR with change summary and test results. Two-human approval required.</div>
+    </div>
+    <div class="pipe-node">
+      <div class="pn-badge dev">CI/CD</div>
+      <div class="pn-title">Pipeline Run</div>
+      <div class="pn-detail">GitLab CI executes full suite. Devin monitors, re-runs on failure.</div>
+    </div>
+    <div class="pipe-node">
+      <div class="pn-badge deploy">Deploy</div>
+      <div class="pn-title">Canary Deploy</div>
+      <div class="pn-detail">Observability gates in Dynatrace/Splunk confirm before full rollout.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ARCHITECTURE ── -->
+<section class="section">
+  <p class="section-tag">Architecture</p>
+  <h2>How Devin Operates Inside a Fintech Org</h2>
+  <p class="lead">Devin runs in an isolated compute sandbox. It connects to your systems via authenticated APIs — it doesn't hold credentials, it requests scoped access for each task.</p>
+
+  <div class="arch-svg-wrap">
+    <svg viewBox="0 0 780 320" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+      <!-- Devin Core -->
+      <rect x="290" y="20" width="200" height="90" rx="6" fill="#1A1E28" stroke="#C9A84C" stroke-width="1.5"/>
+      <text x="390" y="50" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#C9A84C">DEVIN AGENT</text>
+      <text x="390" y="68" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8.5" fill="#6B7599">Plan → Code → Test → PR</text>
+      <rect x="310" y="78" width="60" height="14" rx="2" fill="#1E90FF18"/>
+      <text x="340" y="89" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#1E90FF">LLM BRAIN</text>
+      <rect x="380" y="78" width="90" height="14" rx="2" fill="#2ECC7118"/>
+      <text x="425" y="89" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#2ECC71">SANDBOX ENV</text>
+
+      <!-- Task Manager -->
+      <rect x="10" y="30" width="150" height="70" rx="4" fill="#13161D" stroke="#252A38"/>
+      <text x="85" y="57" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#E8EAF0">TASK INPUT</text>
+      <text x="85" y="74" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" fill="#4A5270">Jira / OpenAPI</text>
+      <text x="85" y="88" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" fill="#4A5270">Spec / Ticket</text>
+
+      <!-- Arrow: Task → Devin -->
+      <line x1="160" y1="65" x2="288" y2="65" stroke="#C9A84C" stroke-width="1.2" marker-end="url(#gold-arrow)"/>
+
+      <!-- Output: PR -->
+      <rect x="620" y="30" width="150" height="70" rx="4" fill="#13161D" stroke="#252A38"/>
+      <text x="695" y="57" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#E8EAF0">PULL REQUEST</text>
+      <text x="695" y="74" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" fill="#4A5270">GitLab MR</text>
+      <text x="695" y="88" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" fill="#4A5270">2-Approval Gate</text>
+
+      <!-- Arrow: Devin → PR -->
+      <line x1="490" y1="65" x2="618" y2="65" stroke="#2ECC71" stroke-width="1.2" marker-end="url(#green-arrow)"/>
+
+      <!-- Row 2: Tools -->
+      <rect x="30" y="170" width="120" height="60" rx="4" fill="#13161D" stroke="#252A38"/>
+      <text x="90" y="196" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="#1E90FF">CODE REPO</text>
+      <text x="90" y="212" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#4A5270">GitLab · GitHub</text>
+
+      <rect x="170" y="170" width="120" height="60" rx="4" fill="#13161D" stroke="#252A38"/>
+      <text x="230" y="196" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="#D64045">SAST / SCAN</text>
+      <text x="230" y="212" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#4A5270">Checkmarx · Snyk</text>
+
+      <rect x="310" y="170" width="120" height="60" rx="4" fill="#13161D" stroke="#C9A84C55"/>
+      <text x="370" y="196" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="#C9A84C">CI PIPELINE</text>
+      <text x="370" y="212" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#4A5270">GitLab CI · Tests</text>
+
+      <rect x="450" y="170" width="120" height="60" rx="4" fill="#13161D" stroke="#252A38"/>
+      <text x="510" y="196" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="#2ECC71">OBSERVABILITY</text>
+      <text x="510" y="212" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#4A5270">Dynatrace · Splunk</text>
+
+      <rect x="590" y="170" width="130" height="60" rx="4" fill="#13161D" stroke="#252A38"/>
+      <text x="655" y="196" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="#E8EAF0">COMPLIANCE</text>
+      <text x="655" y="212" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7.5" fill="#4A5270">PCI · SOX · GDPR</text>
+
+      <!-- Devin → tools (dashed) -->
+      <line x1="350" y1="110" x2="90" y2="168" stroke="#1E90FF44" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="360" y1="110" x2="230" y2="168" stroke="#D6404544" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="390" y1="110" x2="370" y2="168" stroke="#C9A84C44" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="420" y1="110" x2="510" y2="168" stroke="#2ECC7144" stroke-width="1" stroke-dasharray="4 3"/>
+      <line x1="440" y1="110" x2="655" y2="168" stroke="#C9A84C33" stroke-width="1" stroke-dasharray="4 3"/>
+
+      <!-- Audit log line -->
+      <rect x="10" y="270" width="760" height="32" rx="4" fill="#13161D" stroke="#252A38"/>
+      <text x="30" y="291" font-family="IBM Plex Mono,monospace" font-size="8" fill="#C9A84C">IMMUTABLE AUDIT LOG</text>
+      <text x="180" y="291" font-family="IBM Plex Mono,monospace" font-size="8" fill="#4A5270">Every action, commit, and decision recorded · SOX / PCI compliant · Non-repudiable trail</text>
+
+      <!-- Lines to audit log -->
+      <line x1="390" y1="232" x2="390" y2="268" stroke="#C9A84C33" stroke-width="1" stroke-dasharray="3 3"/>
+
+      <defs>
+        <marker id="gold-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0 0 L0 6 L8 3 z" fill="#C9A84C"/>
+        </marker>
+        <marker id="green-arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0 0 L0 6 L8 3 z" fill="#2ECC71"/>
+        </marker>
+      </defs>
+    </svg>
+  </div>
+</section>
+
+<!-- ── USE CASES ── -->
+<section class="section">
+  <p class="section-tag">Applications</p>
+  <h2>What Devin Builds in Financial Services</h2>
+  <p class="lead">Devin performs best on well-specified, bounded engineering tasks — the kind that dominate fintech backlogs.</p>
+
+  <div class="uc-grid">
+    <div class="uc-card">
+      <span class="uc-icon">🏦</span>
+      <div class="uc-title">Core Banking API Migration</div>
+      <div class="uc-body">Refactors legacy REST endpoints to OpenAPI 3.1 spec, writes contract tests, updates Swagger docs. Handles 200+ endpoints without drift.</div>
+      <span class="uc-tag">Issuer Solutions fit</span>
+    </div>
+    <div class="uc-card">
+      <span class="uc-icon">🔒</span>
+      <div class="uc-title">PCI-DSS Compliance Patching</div>
+      <div class="uc-body">Scans codebase for compliance violations, generates remediation PRs with before/after diffs, links to PCI control references in PR body.</div>
+      <span class="uc-tag">Compliance automation</span>
+    </div>
+    <div class="uc-card">
+      <span class="uc-icon">🤖</span>
+      <div class="uc-title">Dispute Resolution Agents</div>
+      <div class="uc-body">Builds Spring AI agent scaffolding, tool bindings, and Playwright E2E tests for dispute workflow automation — from ticket to deployed service.</div>
+      <span class="uc-tag">DisputesGPT parallel</span>
+    </div>
+    <div class="uc-card">
+      <span class="uc-icon">📊</span>
+      <div class="uc-title">Real-Time Fraud Pipeline</div>
+      <div class="uc-body">Implements streaming consumers, feature engineering services, and model inference endpoints with full observability instrumentation.</div>
+      <span class="uc-tag">Risk engineering</span>
+    </div>
+    <div class="uc-card">
+      <span class="uc-icon">🧪</span>
+      <div class="uc-title">QA Test Generation</div>
+      <div class="uc-body">Reads OpenAPI spec, generates Cucumber feature files + Playwright TypeScript steps, runs them, and opens a PR with coverage report attached.</div>
+      <span class="uc-tag">QA Evergreen fit</span>
+    </div>
+    <div class="uc-card">
+      <span class="uc-icon">📋</span>
+      <div class="uc-title">Regulatory Report Automation</div>
+      <div class="uc-body">Builds data pipelines and templated report generators for Basel III, CECL, and FR Y-9C — validated against published schema specs.</div>
+      <span class="uc-tag">Reporting / Risk</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMPARISON TABLE ── -->
+<section class="section">
+  <p class="section-tag">Evaluation</p>
+  <h2>Devin vs. Your Current AI Stack</h2>
+  <p class="lead">Honest assessment — where Devin leads, where Claude Code leads, and where both need a human in the loop.</p>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Dimension</th>
+        <th>Devin AI</th>
+        <th>Claude Code</th>
+        <th>GitHub Copilot</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Task Autonomy</td>
+        <td class="pos">Full session — opens browser, reads docs, deploys</td>
+        <td class="neu">Multi-step in terminal; you supervise</td>
+        <td class="neg">Single-turn suggestion only</td>
+      </tr>
+      <tr>
+        <td>Fintech Compliance</td>
+        <td class="neu">SOC2 runtime; data isolation per session</td>
+        <td class="neu">Runs locally; you control data boundary</td>
+        <td class="neu">Inline; code leaves IDE only via telemetry</td>
+      </tr>
+      <tr>
+        <td>Audit Trail</td>
+        <td class="pos">Full session replay, every action logged</td>
+        <td class="neu">Git history + terminal log; no replay</td>
+        <td class="neg">No session audit; suggestion-level only</td>
+      </tr>
+      <tr>
+        <td>OpenAPI → Tests</td>
+        <td class="pos">Reads spec, writes Cucumber + Playwright, runs CI</td>
+        <td class="pos">Excellent; use with ai-sdlc-toolkit personas</td>
+        <td class="neg">Line-by-line assist only</td>
+      </tr>
+      <tr>
+        <td>Human-in-Loop Control</td>
+        <td class="neu">PR gate + Slack check-ins; limited mid-task</td>
+        <td class="pos">You interrupt any turn; full control</td>
+        <td class="pos">Accept/reject per suggestion</td>
+      </tr>
+      <tr>
+        <td>Cost Model</td>
+        <td class="neg">~$500/mo enterprise; per-session for API</td>
+        <td class="pos">API token cost; cheap per task</td>
+        <td class="neu">$19–39/mo seat</td>
+      </tr>
+      <tr>
+        <td>Existing Stack Integration</td>
+        <td class="neu">GitLab, Jira, Slack via integrations</td>
+        <td class="pos">Native CLI; hooks into any toolchain</td>
+        <td class="pos">IDE-native</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ── RISK MATRIX ── -->
+<section class="section">
+  <p class="section-tag">Risk Assessment</p>
+  <h2>Fintech-Specific Concerns</h2>
+  <p class="lead">Autonomous AI engineers in regulated environments require deliberate guardrails. These are the failure modes that matter at Fiserv scale.</p>
+
+  <div class="risk-grid">
+    <div class="risk-card high">
+      <div class="risk-label">High Risk</div>
+      <div class="risk-title">Data Residency &amp; PII Leakage</div>
+      <div class="risk-body">Devin sessions may process production-like data. Ensure all task inputs are sanitized. Never pass live cardholder data or PII to the agent context — synthetic data only during development tasks.</div>
+    </div>
+    <div class="risk-card high">
+      <div class="risk-label">High Risk</div>
+      <div class="risk-title">Prompt Injection via Codebase</div>
+      <div class="risk-body">Malicious instructions embedded in code comments, README files, or Jira descriptions can redirect the agent. All task inputs should be validated before reaching the agent.</div>
+    </div>
+    <div class="risk-card medium">
+      <div class="risk-label">Medium Risk</div>
+      <div class="risk-title">Over-Automation of Review Gates</div>
+      <div class="risk-body">Devin can open PRs that look thorough but contain subtle logic errors in financial calculations. Your two-approval MR policy is the right control — never auto-merge Devin PRs.</div>
+    </div>
+    <div class="risk-card medium">
+      <div class="risk-label">Medium Risk</div>
+      <div class="risk-title">SOX Change Management Gaps</div>
+      <div class="risk-body">Any Devin-generated change touching financial reporting systems must go through your standard change management process. Devin does not replace ITSM ticketing for regulated systems.</div>
+    </div>
+    <div class="risk-card low">
+      <div class="risk-label">Managed Risk</div>
+      <div class="risk-title">Non-Deterministic Output</div>
+      <div class="risk-body">Devin may produce different implementations on repeated runs. For critical paths, enforce output determinism via strict spec and snapshot tests — not just functional tests.</div>
+    </div>
+    <div class="risk-card info">
+      <div class="risk-label">Opportunity</div>
+      <div class="risk-title">Audit Completeness Advantage</div>
+      <div class="risk-body">Devin's session replay log is actually a compliance asset — every decision is attributable and replayable. This exceeds what a human developer's git history provides for SOX audit purposes.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FISERV CALLOUT ── -->
+<section class="section" style="border-bottom:none;">
+  <p class="section-tag">Strategic Fit</p>
+  <h2>Integrating Devin with Your AI Toolkit</h2>
+  <p class="lead">Devin is most powerful when it's a node in a larger system — not a standalone tool. Here's how it maps to your existing architecture.</p>
+
+  <div class="callout">
+    <div class="callout-icon">⚙️</div>
+    <div>
+      <div class="callout-title">Devin as an Orchestrated Sub-Agent</div>
+      <div class="callout-body">
+        In your <strong>ai-sdlc-toolkit</strong> multi-agent model, Devin fits as a <strong>long-horizon execution agent</strong> — given a well-scoped task by your orchestrator, it runs for hours and returns a PR artifact. Your Python AI agents handle planning and QA verification; Devin handles the sustained coding session. The OpenAPI-first constraint you set for your <strong>QA Evergreen Ecosystem</strong> is exactly right — Devin performs best when the spec is the source of truth and the task boundary is clear.<br><br>
+        For <strong>DisputesGPT and Disputes Workstation</strong>, Devin could own the scaffolding tasks — building Spring AI tool bindings, writing boilerplate agent personas, generating integration tests from your OpenAPI specs — while your human engineers own the domain logic and approval gates. This maps directly to your 50% coverage POC floor: Devin gets you to coverage faster, your team elevates it to production quality.
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Devin AI in Fintech — Visual Explainer</span>
+  <span>Agentic AI Series · Built with Claude</span>
+  <span id="footer-ts"></span>
+</footer>
+
+</div><!-- /#main -->
+
+<script>
+// ── THEME TOGGLE ──
+const themeToggle = document.getElementById('theme-toggle');
+const themeIcon = themeToggle.querySelector('.ti');
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  themeIcon.textContent = theme === 'light' ? '☀' : '🌙';
+}
+
+(function initTheme() {
+  const saved = localStorage.getItem('devin-fintech-theme');
+  applyTheme(saved === 'light' || saved === 'dark' ? saved : 'dark');
+})();
+
+themeToggle.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  applyTheme(next);
+  localStorage.setItem('devin-fintech-theme', next);
+});
+
+// ── AUDIT LOG ──
+const auditEvents = [
+  { type:'info', msg:'Session devin-fiserv-4821 initialized' },
+  { type:'ok',   msg:'Auth: GitLab token scoped' },
+  { type:'info', msg:'Task: Generate QA suite from OpenAPI spec' },
+  { type:'ok',   msg:'Repo cloned: issuer-api.git' },
+  { type:'info', msg:'Reading openapi.yaml — 47 endpoints' },
+  { type:'warn', msg:'PII detected in test fixture — sanitizing' },
+  { type:'ok',   msg:'Fixtures sanitized' },
+  { type:'info', msg:'Writing Cucumber feature files...' },
+  { type:'ok',   msg:'14 features generated' },
+  { type:'info', msg:'Writing Playwright step defs...' },
+  { type:'ok',   msg:'TypeScript compiled — 0 errors' },
+  { type:'info', msg:'Running CI pipeline...' },
+  { type:'warn', msg:'Test flakiness detected in auth flow' },
+  { type:'info', msg:'Retrying with wait(networkidle)' },
+  { type:'ok',   msg:'All 47 tests passing' },
+  { type:'info', msg:'SAST scan: Checkmarx running' },
+  { type:'ok',   msg:'0 critical findings' },
+  { type:'info', msg:'Opening MR: feat/qa-evergreen-v1' },
+  { type:'ok',   msg:'PR opened — awaiting 2 approvals' },
+  { type:'info', msg:'Coverage: 67% (+17% from baseline)' },
+  { type:'ok',   msg:'Audit log sealed. Session complete.' },
+];
+
+let auditIdx = 0;
+const auditContainer = document.getElementById('audit-entries');
+
+function getTime() {
+  const d = new Date();
+  return d.toTimeString().slice(0,8);
+}
+
+function addAuditEntry() {
+  if (auditIdx >= auditEvents.length) { auditIdx = 0; auditContainer.innerHTML = ''; }
+  const e = auditEvents[auditIdx++];
+  const div = document.createElement('div');
+  div.className = `audit-entry ${e.type}`;
+  div.innerHTML = `<span class="ae-time">${getTime()}</span><span class="ae-msg">${e.msg}</span>`;
+  auditContainer.insertBefore(div, auditContainer.firstChild);
+  // Keep max 14 entries
+  while (auditContainer.children.length > 14) {
+    auditContainer.removeChild(auditContainer.lastChild);
+  }
+  const delay = e.type === 'info' ? 1400 : e.type === 'warn' ? 1800 : 900;
+  setTimeout(addAuditEntry, delay);
+}
+
+setTimeout(addAuditEntry, 600);
+
+// ── HERO TERMINAL ──
+const terminalLines = [
+  { cls:'t-prompt t-cmd', text:'$ devin init --task "QA suite from OpenAPI spec"' , delay:0 },
+  { cls:'t-out',           text:'  ┌ Reading spec: issuer-api/openapi.yaml', delay:700 },
+  { cls:'t-out',           text:'  │ 47 endpoints · 12 schemas · 3 security scopes', delay:1100 },
+  { cls:'t-ok',            text:'  └ Spec loaded ✓', delay:1500 },
+  { cls:'t-prompt t-cmd', text:'$ devin plan', delay:2200 },
+  { cls:'t-info',          text:'  Planning 14 feature files · Playwright TypeScript', delay:2800 },
+  { cls:'t-info',          text:'  Compliance: PCI-DSS scope check enabled', delay:3200 },
+  { cls:'t-ok',            text:'  Plan confirmed — starting execution', delay:3600 },
+  { cls:'t-prompt t-cmd', text:'$ devin run --session fiserv-issuer-4821', delay:4400 },
+  { cls:'t-out',           text:'  [01/14] POST /disputes → dispute_create.feature', delay:5000 },
+  { cls:'t-out',           text:'  [07/14] GET  /disputes/{id} → dispute_get.feature', delay:5600 },
+  { cls:'t-warn',          text:'  [09/14] Auth flow flaky — adding wait condition', delay:6200 },
+  { cls:'t-out',           text:'  [14/14] POST /disputes/{id}/resolve → resolved', delay:6800 },
+  { cls:'t-ok',            text:'  ✓ All 47 tests passing · Coverage: 67%', delay:7400 },
+  { cls:'t-ok',            text:'  ✓ MR opened: feat/qa-evergreen-v1 · Awaiting review', delay:8000 },
+];
+
+const termBody = document.getElementById('terminal-body');
+const cursor   = document.getElementById('t-cursor');
+
+terminalLines.forEach(({ cls, text, delay }) => {
+  setTimeout(() => {
+    const span = document.createElement('span');
+    span.className = `t-line ${cls}`;
+    span.textContent = text;
+    termBody.insertBefore(span, cursor);
+    // auto-scroll
+    termBody.scrollTop = termBody.scrollHeight;
+  }, delay);
+});
+
+// Restart loop
+setTimeout(() => {
+  setInterval(() => {
+    termBody.querySelectorAll('.t-line').forEach(el => el.remove());
+    terminalLines.forEach(({ cls, text, delay }) => {
+      setTimeout(() => {
+        const span = document.createElement('span');
+        span.className = `t-line ${cls}`;
+        span.textContent = text;
+        termBody.insertBefore(span, cursor);
+        termBody.scrollTop = termBody.scrollHeight;
+      }, delay);
+    });
+  }, 12000);
+}, 10000);
+
+// Footer timestamp
+document.getElementById('footer-ts').textContent = new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+</script>
+</body>
+</html>

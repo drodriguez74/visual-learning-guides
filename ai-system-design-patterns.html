@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI System Design Patterns</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg:       #1C1C1E;
+  --bg2:      #242428;
+  --bg3:      #2C2C32;
+  --border:   #38383F;
+  --border2:  #4A4A56;
+  --violet:   #7C5CFC;
+  --violet-d: #7C5CFC28;
+  --violet-m: #7C5CFC55;
+  --ember:    #F4622A;
+  --ember-d:  #F4622A22;
+  --teal:     #00C9A7;
+  --teal-d:   #00C9A722;
+  --amber:    #F5A623;
+  --amber-d:  #F5A62322;
+  --chalk:    #F2F0EB;
+  --muted:    #5A5A6E;
+  --muted2:   #8888A0;
+  --grotesk:  'Space Grotesk', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--chalk);
+  font-family: var(--grotesk);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 100px 64px 80px;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* Grid paper background */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.25;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 80% at 50% 0%, #7C5CFC12 0%, transparent 70%);
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1000px;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--violet);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.eyebrow-tag {
+  background: var(--violet-d);
+  border: 1px solid var(--violet-m);
+  border-radius: 3px;
+  padding: 3px 9px;
+}
+
+.hero h1 {
+  font-family: var(--grotesk);
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -2px;
+  margin-bottom: 28px;
+  color: var(--chalk);
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--violet);
+  position: relative;
+}
+
+.hero-sub {
+  font-size: 1.1rem;
+  color: var(--muted2);
+  max-width: 560px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+}
+
+.pattern-count-row {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.pcount {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pcount-val {
+  font-family: var(--mono);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--chalk);
+  line-height: 1;
+}
+
+.pcount-val sup { font-size: 0.9rem; color: var(--violet); }
+.pcount-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+
+/* ── NAV PILLS ── */
+.pattern-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 24px 64px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.nav-pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--muted2);
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.nav-pill:hover { border-color: var(--violet); color: var(--violet); }
+.nav-pill.active { background: var(--violet); border-color: var(--violet); color: #fff; }
+
+/* ── PATTERN CARDS ── */
+.patterns-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pattern-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+  margin-bottom: 24px;
+}
+
+.pattern-card:hover { border-color: var(--border2); }
+.pattern-card.active { border-color: var(--violet); }
+
+.pc-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 28px 32px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pc-header:hover .pc-toggle { color: var(--violet); }
+
+.pc-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 3px;
+  white-space: nowrap;
+  border: 1px solid;
+}
+
+.badge-orchestration { color: var(--violet); background: var(--violet-d); border-color: var(--violet-m); }
+.badge-reliability   { color: var(--teal);   background: var(--teal-d);   border-color: var(--teal); }
+.badge-retrieval     { color: var(--amber);  background: var(--amber-d);  border-color: var(--amber); }
+.badge-routing       { color: var(--ember);  background: var(--ember-d);  border-color: var(--ember); }
+.badge-evaluation    { color: #C084FC;       background: #C084FC18;       border-color: #C084FC55; }
+.badge-memory        { color: var(--teal);   background: var(--teal-d);   border-color: var(--teal); }
+.badge-generation    { color: var(--amber);  background: var(--amber-d);  border-color: var(--amber); }
+.badge-safety        { color: var(--ember);  background: var(--ember-d);  border-color: var(--ember); }
+
+.pc-title-group { flex: 1; }
+
+.pc-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--chalk);
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.pc-tagline {
+  font-size: 0.85rem;
+  color: var(--muted2);
+}
+
+.pc-toggle {
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  color: var(--muted);
+  transition: transform 0.25s, color 0.15s;
+}
+
+.pattern-card.active .pc-toggle { transform: rotate(45deg); color: var(--violet); }
+
+/* ── EXPANDABLE BODY ── */
+.pc-body {
+  display: none;
+  border-top: 1px solid var(--border);
+}
+
+.pattern-card.active .pc-body { display: grid; grid-template-columns: 1fr 1fr; }
+
+@media (max-width: 800px) {
+  .pattern-card.active .pc-body { grid-template-columns: 1fr; }
+}
+
+.pc-diagram {
+  padding: 32px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #181820;
+}
+
+.pc-diagram canvas {
+  width: 100%;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.pc-info {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-section-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.info-desc {
+  font-size: 0.88rem;
+  color: var(--muted2);
+  line-height: 1.7;
+}
+
+.when-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.when-list li {
+  font-size: 0.82rem;
+  color: var(--muted2);
+  padding-left: 18px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.when-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--violet);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+.tradeoff-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.tradeoff-box {
+  background: var(--bg3);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.tradeoff-box .tb-label {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.tradeoff-box.pros .tb-label { color: var(--teal); }
+.tradeoff-box.cons .tb-label { color: var(--ember); }
+
+.tradeoff-box .tb-items {
+  font-size: 0.78rem;
+  color: var(--muted2);
+  line-height: 1.6;
+}
+
+.code-hint {
+  background: #0D0D12;
+  border-radius: 6px;
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted2);
+  overflow-x: auto;
+}
+
+.code-hint .kw  { color: var(--violet); }
+.code-hint .fn  { color: var(--teal); }
+.code-hint .str { color: var(--amber); }
+.code-hint .cm  { color: var(--muted); }
+
+/* ── FOOTER ── */
+.page-footer {
+  text-align: center;
+  padding: 40px 64px;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 2px;
+}
+
+@media (max-width: 768px) {
+  .hero { padding: 60px 24px 48px; }
+  .pattern-nav { padding: 16px 24px; }
+  .patterns-wrap { padding: 32px 16px; }
+  .pc-header { padding: 20px; gap: 12px; }
+  .pc-diagram, .pc-info { padding: 20px; }
+  .pc-diagram { border-right: none; border-bottom: 1px solid var(--border); }
+  .hero h1 { letter-spacing: -1px; }
+  .page-footer { padding: 24px; }
+}
+
+/* ── LIGHT THEME ── */
+[data-theme="light"] {
+  --bg:       #F4F2EC;
+  --bg2:      #FFFFFF;
+  --bg3:      #ECEAE2;
+  --border:   #D6D2C7;
+  --border2:  #B9B4A6;
+  --violet:   #5B3FD6;
+  --violet-d: #5B3FD615;
+  --violet-m: #5B3FD644;
+  --ember:    #C9461A;
+  --ember-d:  #C9461A12;
+  --teal:     #008871;
+  --teal-d:   #00887112;
+  --amber:    #B57710;
+  --amber-d:  #B5771012;
+  --chalk:    #1C1C1E;
+  --muted:    #9A958A;
+  --muted2:   #6A6658;
+}
+[data-theme="light"] .hero::after {
+  background: radial-gradient(ellipse 80% 80% at 50% 0%, #5B3FD610 0%, transparent 70%);
+}
+[data-theme="light"] .nav-pill.active { color: #fff; }
+[data-theme="light"] .badge-evaluation {
+  color: #7C3FCF; background: #7C3FCF12; border-color: #7C3FCF55;
+}
+/* Diagram panel + code block stay dark in both modes (intentional "screen" surfaces) */
+[data-theme="light"] .pc-diagram {
+  background: #181820;
+  border-right-color: #2A2A33;
+}
+@media (max-width: 768px) {
+  [data-theme="light"] .pc-diagram { border-bottom-color: #2A2A33; }
+}
+[data-theme="light"] .info-section-title { color: var(--muted); }
+[data-theme="light"] .code-hint { background: #0D0D12; color: #8888A0; }
+
+/* ── THEME TOGGLE ── */
+html { transition: background-color .3s; }
+body { transition: background-color .3s, color .3s; }
+
+#theme-toggle {
+  position: fixed; top: 1.25rem; right: 1.25rem; z-index: 1000;
+  display: flex; align-items: center; gap: .5rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--muted2);
+  font-family: var(--mono);
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 6px 14px 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color .2s, color .2s, box-shadow .2s, background .3s;
+}
+#theme-toggle:hover {
+  border-color: var(--violet);
+  color: var(--violet);
+  box-shadow: 0 0 14px var(--violet-d);
+}
+#theme-toggle .ti {
+  font-size: 1rem; line-height: 1; display: block;
+  transition: transform .4s cubic-bezier(.175,.885,.32,1.275);
+}
+#theme-toggle:hover .ti { transform: rotate(30deg); }
+</style>
+</head>
+<body>
+
+<button id="theme-toggle" aria-label="Toggle theme">
+  <span class="ti">◑</span>Theme
+</button>
+
+<!-- ── HERO ── -->
+<header class="hero">
+  <div class="hero-inner">
+    <p class="hero-eyebrow">
+      <span class="eyebrow-tag">System Architecture</span>
+      AI Engineering · Design Patterns · Production Systems
+    </p>
+    <h1>AI System<br><em>Design Patterns</em></h1>
+    <p class="hero-sub">
+      A catalog of proven architectural patterns for building reliable, observable,
+      and composable AI systems — from single-agent loops to multi-model pipelines.
+    </p>
+    <div class="pattern-count-row">
+      <div class="pcount"><span class="pcount-val">8<sup>×</sup></span><span class="pcount-label">Core Patterns</span></div>
+      <div class="pcount"><span class="pcount-val">4</span><span class="pcount-label">Pattern Categories</span></div>
+      <div class="pcount"><span class="pcount-val">∞</span><span class="pcount-label">Composable</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ── NAV ── -->
+<nav class="pattern-nav" id="pattern-nav">
+  <button class="nav-pill active" data-filter="all">All Patterns</button>
+  <button class="nav-pill" data-filter="orchestration">Orchestration</button>
+  <button class="nav-pill" data-filter="reliability">Reliability</button>
+  <button class="nav-pill" data-filter="retrieval">Retrieval</button>
+  <button class="nav-pill" data-filter="routing">Routing</button>
+  <button class="nav-pill" data-filter="evaluation">Evaluation</button>
+  <button class="nav-pill" data-filter="memory">Memory</button>
+  <button class="nav-pill" data-filter="safety">Safety</button>
+</nav>
+
+<!-- ── PATTERNS ── -->
+<main class="patterns-wrap" id="patterns-wrap">
+
+  <!-- 1. CHAIN OF THOUGHT PIPELINE -->
+  <article class="pattern-card" data-category="orchestration" data-pattern="0">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-orchestration">Orchestration</span>
+      <div class="pc-title-group">
+        <div class="pc-title">Chain-of-Thought Pipeline</div>
+        <div class="pc-tagline">Decompose complex tasks into sequential reasoning steps, each passing context forward</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-0" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">Routes a complex prompt through a fixed sequence of LLM calls — each step narrows the problem, enriches context, or transforms the output before passing it to the next stage. The chain is deterministic and auditable.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Tasks with distinct phases: parse → reason → format</li>
+            <li>When intermediate outputs need human review</li>
+            <li>Compliance workflows needing audit trail per step</li>
+            <li>Latency-tolerant, accuracy-critical pipelines</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Transparent reasoning · Easy to debug · Auditable steps · Predictable cost</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">Error propagation · Sequential latency · Rigid structure</div></div>
+        </div>
+        <div class="code-hint"><span class="cm">// Step 1: extract intent</span><br><span class="kw">const</span> intent = <span class="fn">await</span> llm(<span class="str">`Extract the user's intent: ${input}`</span>)<br><span class="cm">// Step 2: enrich with context</span><br><span class="kw">const</span> enriched = <span class="fn">await</span> llm(<span class="str">`Given intent: ${intent}, retrieve relevant facts`</span>)<br><span class="cm">// Step 3: generate response</span><br><span class="kw">const</span> output = <span class="fn">await</span> llm(<span class="str">`Respond using: ${enriched}`</span>)</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 2. ORCHESTRATOR / SUB-AGENTS -->
+  <article class="pattern-card" data-category="orchestration" data-pattern="1">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-orchestration">Orchestration</span>
+      <div class="pc-title-group">
+        <div class="pc-title">Orchestrator / Sub-Agent</div>
+        <div class="pc-tagline">A planning agent spawns specialized sub-agents, coordinates results, synthesizes output</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-1" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">A high-level orchestrator LLM receives a goal and decomposes it into sub-tasks. Each sub-task is delegated to a specialized sub-agent (coder, researcher, reviewer). Results flow back up; the orchestrator synthesizes the final answer.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Complex multi-domain problems (code + research + QA)</li>
+            <li>Tasks that benefit from parallel workstreams</li>
+            <li>When sub-agents need different tools or permissions</li>
+            <li>Claude Code's spawn pattern for large codebases</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Specialization · Parallelism · Separation of concerns · Scales complexity</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">Orchestrator is a bottleneck · Context handoff cost · Hard to debug</div></div>
+        </div>
+        <div class="code-hint"><span class="cm">// Orchestrator decomposes goal</span><br><span class="kw">const</span> plan = <span class="fn">await</span> orchestrator.plan(goal)<br><span class="cm">// Spawn parallel sub-agents</span><br><span class="kw">const</span> results = <span class="fn">await</span> Promise.all(<br>&nbsp;&nbsp;plan.tasks.map(t =&gt; spawnAgent(t.role, t.task))<br>)<br><span class="cm">// Synthesize</span><br><span class="kw">return</span> <span class="fn">await</span> orchestrator.synthesize(results)</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 3. RAG -->
+  <article class="pattern-card" data-category="retrieval" data-pattern="2">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-retrieval">Retrieval</span>
+      <div class="pc-title-group">
+        <div class="pc-title">Retrieval-Augmented Generation (RAG)</div>
+        <div class="pc-tagline">Inject relevant retrieved knowledge into LLM context at inference time</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-2" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">At query time, the user's input is embedded and used to retrieve semantically similar documents from a vector store. Retrieved chunks are injected into the LLM prompt as grounding context before generating a response.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Private or proprietary knowledge bases</li>
+            <li>Reducing hallucination in factual domains</li>
+            <li>Content that changes faster than retraining</li>
+            <li>DisputesGPT policy and procedure retrieval</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Grounded answers · Updatable knowledge · Source citations possible</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">Retrieval quality ceiling · Chunking strategy matters · Context window pressure</div></div>
+        </div>
+        <div class="code-hint"><span class="kw">const</span> embedding = <span class="fn">await</span> embed(userQuery)<br><span class="kw">const</span> chunks = <span class="fn">await</span> vectorStore.<span class="fn">search</span>(embedding, k=<span class="str">5</span>)<br><span class="kw">const</span> prompt = <span class="str">`Context:\n${chunks.join('\n')}\n\nQ: ${userQuery}`</span><br><span class="kw">return</span> <span class="fn">await</span> llm(prompt)</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 4. ROUTER -->
+  <article class="pattern-card" data-category="routing" data-pattern="3">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-routing">Routing</span>
+      <div class="pc-title-group">
+        <div class="pc-title">Semantic Router</div>
+        <div class="pc-tagline">Classify incoming requests and dispatch to the best-fit model, agent, or handler</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-3" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">A lightweight classifier (LLM or embedding similarity) inspects each incoming request and routes it to a specialized downstream handler — fast model for simple queries, expensive model for complex ones, human for edge cases.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Cost optimization: cheap model for 80% of traffic</li>
+            <li>Multi-domain systems (fraud vs. disputes vs. payments)</li>
+            <li>Hard/soft fallback chains</li>
+            <li>Compliance routing: sensitive → human-in-loop</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Cost efficiency · Specialization · Simple to extend · Observable</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">Router errors cascade · Boundary cases misclassified · Extra latency</div></div>
+        </div>
+        <div class="code-hint"><span class="kw">const</span> intent = <span class="fn">await</span> classifier.classify(query)<br><span class="kw">const</span> handler = routes[intent] ?? routes[<span class="str">'default'</span>]<br><span class="kw">return</span> <span class="fn">await</span> handler.handle(query, context)</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 5. SELF-REFLECTION / EVALUATOR -->
+  <article class="pattern-card" data-category="evaluation" data-pattern="4">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-evaluation">Evaluation</span>
+      <div class="pc-title-group">
+        <div class="pc-title">LLM-as-Evaluator</div>
+        <div class="pc-tagline">A second LLM judges the first's output and triggers correction or retry</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-4" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">The generator LLM produces a draft. An evaluator LLM (same or different model) scores it against criteria: correctness, tone, completeness, policy compliance. Below-threshold outputs are sent back for revision with specific feedback attached.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Customer-facing content requiring quality floor</li>
+            <li>Regulated outputs (dispute letters, compliance text)</li>
+            <li>When human review doesn't scale but quality matters</li>
+            <li>Automated regression testing of AI pipelines</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Quality floor enforcement · Self-correcting · Scalable review</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">2× token cost minimum · Evaluator can be wrong too · Retry loops risk infinite</div></div>
+        </div>
+        <div class="code-hint"><span class="kw">let</span> draft = <span class="fn">await</span> generator.generate(prompt)<br><span class="kw">let</span> attempts = <span class="str">0</span><br><span class="kw">while</span> (attempts++ &lt; MAX_RETRIES) {<br>&nbsp;&nbsp;<span class="kw">const</span> score = <span class="fn">await</span> evaluator.score(draft, rubric)<br>&nbsp;&nbsp;<span class="kw">if</span> (score &gt;= threshold) <span class="kw">break</span><br>&nbsp;&nbsp;draft = <span class="fn">await</span> generator.revise(draft, score.feedback)<br>}</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 6. MEMORY ARCHITECTURE -->
+  <article class="pattern-card" data-category="memory" data-pattern="5">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-memory">Memory</span>
+      <div class="pc-title-group">
+        <div class="pc-title">Layered Memory Architecture</div>
+        <div class="pc-tagline">Combine in-context, episodic, and semantic memory for persistent, context-aware agents</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-5" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">Agents maintain three memory tiers: in-context window (immediate), episodic store (past conversations, vector-indexed), and semantic store (distilled facts). Each query selectively retrieves from all three layers before responding.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Long-running agents that span multiple sessions</li>
+            <li>Customer service bots needing full account history</li>
+            <li>Any agent where "remember our last conversation" matters</li>
+            <li>DisputesGPT case history and analyst preferences</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Persistent personalization · Long-horizon coherence · Efficient context use</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">Stale memory risk · Privacy surface area · Retrieval latency adds up</div></div>
+        </div>
+        <div class="code-hint"><span class="kw">const</span> context = {<br>&nbsp;&nbsp;immediate: conversationBuffer,<br>&nbsp;&nbsp;episodic:  <span class="fn">await</span> episodicStore.<span class="fn">recall</span>(userId, query),<br>&nbsp;&nbsp;semantic:  <span class="fn">await</span> semanticStore.<span class="fn">lookup</span>(entities)<br>}<br><span class="kw">return</span> <span class="fn">await</span> agent.respond(query, context)</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 7. GUARDRAILS / SAFETY LAYER -->
+  <article class="pattern-card" data-category="safety" data-pattern="6">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-safety">Safety</span>
+      <div class="pc-title-group">
+        <div class="pc-title">Input / Output Guardrails</div>
+        <div class="pc-tagline">Intercept, validate, and sanitize at both entry and exit — independent of the LLM</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-6" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">A deterministic validation layer wraps the LLM on both sides. Input guardrails strip PII, detect injection attacks, enforce topic scope. Output guardrails check for policy violations, hallucinated references, and format correctness before the response reaches the user.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Any customer-facing production AI system</li>
+            <li>PCI / GDPR environments — PII must not enter LLM context</li>
+            <li>Financial advice where hallucinated numbers are dangerous</li>
+            <li>Multi-tenant systems where prompt injection is a threat vector</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Deterministic control · Compliance-auditable · LLM-agnostic layer</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">False positives block valid requests · Rules lag threats · Double latency</div></div>
+        </div>
+        <div class="code-hint"><span class="cm">// Input layer</span><br><span class="kw">const</span> safe = inputGuard.<span class="fn">sanitize</span>(userInput) <span class="cm">// strips PII, detects injection</span><br><span class="kw">const</span> raw = <span class="fn">await</span> llm(safe.cleanedPrompt)<br><span class="cm">// Output layer</span><br><span class="kw">const</span> result = outputGuard.<span class="fn">validate</span>(raw) <span class="cm">// policy check, format verify</span><br><span class="kw">return</span> result.approved ? result.text : fallback</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 8. PARALLEL EXPLORATION -->
+  <article class="pattern-card" data-category="orchestration" data-pattern="7">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-orchestration">Orchestration</span>
+      <div class="pc-title-group">
+        <div class="pc-title">Parallel Exploration + Voting</div>
+        <div class="pc-tagline">Run N agents simultaneously on the same problem, synthesize or vote on the best answer</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-7" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">The same task is dispatched to N parallel agents simultaneously. Each agent works independently. A voting or synthesis step picks the majority answer, best-scored output, or merges non-contradictory results. Reduces variance, increases reliability.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>High-stakes decisions where variance is unacceptable</li>
+            <li>Code generation where multiple solutions can be tested</li>
+            <li>Creative tasks where diversity improves output quality</li>
+            <li>Claude Code's parallel explore agents for large refactors</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Lower variance · Higher confidence · Parallelism hides latency</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">N× token cost · Voter/synthesizer is a new failure point · Overkill for simple tasks</div></div>
+        </div>
+        <div class="code-hint"><span class="kw">const</span> N = <span class="str">3</span><br><span class="kw">const</span> drafts = <span class="fn">await</span> Promise.all(<br>&nbsp;&nbsp;Array(N).fill(prompt).map(p =&gt; llm(p, { temperature: <span class="str">0.8</span> }))<br>)<br><span class="cm">// Majority vote or evaluator picks winner</span><br><span class="kw">return</span> <span class="fn">await</span> synthesizer.pick(drafts)</div>
+      </div>
+    </div>
+  </article>
+
+</main>
+
+<footer class="page-footer">
+  AI System Design Patterns — Visual Explainer · Agentic AI Series · Built with Claude
+</footer>
+
+<script>
+// ── CARD TOGGLE ──
+function toggleCard(header) {
+  const card = header.closest('.pattern-card');
+  const wasActive = card.classList.contains('active');
+  document.querySelectorAll('.pattern-card.active').forEach(c => {
+    c.classList.remove('active');
+    stopAnimation(parseInt(c.dataset.pattern));
+  });
+  if (!wasActive) {
+    card.classList.add('active');
+    const patternIdx = parseInt(card.dataset.pattern);
+    setTimeout(() => startAnimation(patternIdx), 50);
+  }
+}
+
+// ── NAV FILTER ──
+document.getElementById('pattern-nav').addEventListener('click', e => {
+  const pill = e.target.closest('.nav-pill');
+  if (!pill) return;
+  document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  const filter = pill.dataset.filter;
+  document.querySelectorAll('.pattern-card').forEach(card => {
+    card.style.display = (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
+  });
+  // Close any open card when switching filter
+  document.querySelectorAll('.pattern-card.active').forEach(c => {
+    c.classList.remove('active');
+    stopAnimation(parseInt(c.dataset.pattern));
+  });
+});
+
+// ── ANIMATION ENGINE ──
+const animStates = {};
+
+const COLORS = {
+  violet: '#7C5CFC',
+  teal:   '#00C9A7',
+  amber:  '#F5A623',
+  ember:  '#F4622A',
+  muted:  '#38383F',
+  muted2: '#4A4A56',
+  chalk:  '#F2F0EB',
+  bg:     '#181820',
+  purple: '#C084FC',
+};
+
+// Node shape helper
+function drawNode(ctx, x, y, w, h, label, color, sublabel) {
+  ctx.save();
+  ctx.fillStyle = '#1E1E28';
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, x - w/2, y - h/2, w, h, 5);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.font = '600 11px JetBrains Mono';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, x, sublabel ? y - 6 : y);
+  if (sublabel) {
+    ctx.fillStyle = '#8888A0';
+    ctx.font = '400 9px JetBrains Mono';
+    ctx.fillText(sublabel, x, y + 8);
+  }
+  ctx.restore();
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color) {
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const len = Math.sqrt((x2-x1)**2 + (y2-y1)**2);
+  const endX = x1 + Math.cos(angle) * (len - 10);
+  const endY = y1 + Math.sin(angle) * (len - 10);
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Arrowhead
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.translate(x2, y2);
+  ctx.rotate(angle);
+  ctx.moveTo(-10, -4);
+  ctx.lineTo(0, 0);
+  ctx.lineTo(-10, 4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawCurvedArrow(ctx, x1, y1, x2, y2, cx, cy, color) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.quadraticCurveTo(cx, cy, x2, y2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  const angle = Math.atan2(y2 - cy, x2 - cx);
+  ctx.fillStyle = color;
+  ctx.save();
+  ctx.translate(x2, y2);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.moveTo(-10, -4);
+  ctx.lineTo(0, 0);
+  ctx.lineTo(-10, 4);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+  ctx.restore();
+}
+
+// Particle along a straight path
+function drawParticle(ctx, x1, y1, x2, y2, t, color) {
+  const x = x1 + (x2 - x1) * t;
+  const y = y1 + (y2 - y1) * t;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x, y, 4, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 8;
+  ctx.fill();
+  ctx.restore();
+}
+
+// Particle along a quadratic curve
+function quadPoint(x1, y1, cx, cy, x2, y2, t) {
+  const mt = 1 - t;
+  return {
+    x: mt*mt*x1 + 2*mt*t*cx + t*t*x2,
+    y: mt*mt*y1 + 2*mt*t*cy + t*t*y2,
+  };
+}
+
+function drawParticleCurved(ctx, x1, y1, cx, cy, x2, y2, t, color) {
+  const p = quadPoint(x1, y1, cx, cy, x2, y2, t);
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 8;
+  ctx.fill();
+  ctx.restore();
+}
+
+// ── PATTERN DEFINITIONS ──
+
+const patterns = [
+
+  // 0 — Chain of Thought
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const nodes = [
+      { x: 55,  y: H/2, label: 'INPUT',   sub: 'raw query',  color: COLORS.muted2 },
+      { x: 170, y: H/2, label: 'STEP 1',  sub: 'extract',    color: COLORS.violet },
+      { x: 280, y: H/2, label: 'STEP 2',  sub: 'enrich',     color: COLORS.violet },
+      { x: 390, y: H/2, label: 'STEP 3',  sub: 'generate',   color: COLORS.violet },
+      { x: 455, y: H/2, label: 'OUTPUT',  sub: 'response',   color: COLORS.teal   },
+    ];
+    const links = [
+      [nodes[0].x + 30, H/2, nodes[1].x - 35, H/2],
+      [nodes[1].x + 35, H/2, nodes[2].x - 35, H/2],
+      [nodes[2].x + 35, H/2, nodes[3].x - 35, H/2],
+      [nodes[3].x + 30, H/2, nodes[4].x - 28, H/2],
+    ];
+
+    links.forEach(([x1,y1,x2,y2], i) => drawArrow(ctx, x1, y1, x2, y2, COLORS.violet));
+    nodes.forEach(n => drawNode(ctx, n.x, n.y, 66, 36, n.label, n.color, n.sub));
+
+    const totalLinks = links.length;
+    const speed = 0.6;
+    const cycle = totalLinks / speed;
+    const raw = (t * speed) % totalLinks;
+    const linkIdx = Math.floor(raw);
+    const localT = raw - linkIdx;
+    if (linkIdx < links.length) {
+      const [x1,y1,x2,y2] = links[linkIdx];
+      drawParticle(ctx, x1, y1, x2, y2, localT, COLORS.teal);
+    }
+
+    // Active node highlight
+    const activeNode = Math.min(Math.floor(raw + 0.5), nodes.length - 1);
+    ctx.save();
+    ctx.strokeStyle = COLORS.teal;
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.4;
+    roundRect(ctx, nodes[activeNode].x - 35, H/2 - 20, 70, 40, 5);
+    ctx.stroke();
+    ctx.restore();
+  },
+
+  // 1 — Orchestrator / Sub-agents
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const orch = { x: W/2, y: 38 };
+    const subs = [
+      { x: 100, y: 140, label: 'CODER',      color: COLORS.violet },
+      { x: W/2, y: 140, label: 'RESEARCHER', color: COLORS.amber  },
+      { x: W-100, y: 140, label: 'REVIEWER', color: COLORS.teal   },
+    ];
+    const synth = { x: W/2, y: H - 32 };
+
+    drawNode(ctx, orch.x, orch.y, 100, 34, 'ORCHESTRATOR', COLORS.ember, 'plans & delegates');
+
+    subs.forEach(s => {
+      drawArrow(ctx, orch.x, orch.y + 17, s.x, s.y - 17, COLORS.muted2);
+      drawNode(ctx, s.x, s.y, 82, 34, s.label, s.color, null);
+      drawArrow(ctx, s.x, s.y + 17, synth.x, synth.y - 17, COLORS.muted2);
+    });
+
+    drawNode(ctx, synth.x, synth.y, 100, 30, 'SYNTHESIZE', COLORS.ember, 'final output');
+
+    // Particles: dispatch phase then collect phase
+    const cycle = 4;
+    const phase = (t * 0.5) % cycle;
+
+    if (phase < 1.5) {
+      // Dispatch particles to each sub
+      const pT = phase / 1.5;
+      subs.forEach(s => drawParticle(ctx, orch.x, orch.y + 17, s.x, s.y - 17, pT, COLORS.ember));
+    } else {
+      // Collect particles from each sub
+      const pT = (phase - 1.5) / 2.5;
+      subs.forEach(s => drawParticle(ctx, s.x, s.y + 17, synth.x, synth.y - 17, pT, COLORS.teal));
+    }
+  },
+
+  // 2 — RAG
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const query  = { x: 50,    y: H/2 - 30 };
+    const embed  = { x: 160,   y: H/2 - 30 };
+    const vstore = { x: 290,   y: H/2 + 38 };
+    const chunks = { x: 290,   y: H/2 - 30 };
+    const llm    = { x: 390,   y: H/2 - 30 };
+    const out    = { x: W - 40, y: H/2 - 30 };
+
+    drawNode(ctx, query.x,  query.y,  58,  32, 'QUERY',   COLORS.muted2, 'user input');
+    drawNode(ctx, embed.x,  embed.y,  72,  32, 'EMBED',   COLORS.violet, 'vectorize');
+    drawNode(ctx, vstore.x, vstore.y, 80,  32, 'VECTOR',  COLORS.amber,  'store');
+    drawNode(ctx, chunks.x, chunks.y, 80,  32, 'CHUNKS',  COLORS.amber,  'top-k docs');
+    drawNode(ctx, llm.x,    llm.y,    60,  32, 'LLM',     COLORS.violet, 'generate');
+    drawNode(ctx, out.x,    out.y,    58,  32, 'OUTPUT',  COLORS.teal,   'grounded');
+
+    drawArrow(ctx, query.x+30, query.y, embed.x-38, embed.y, COLORS.violet);
+    drawArrow(ctx, embed.x+38, embed.y, chunks.x-42, chunks.y, COLORS.violet);
+    drawCurvedArrow(ctx, embed.x, embed.y+16, vstore.x, vstore.y-16, embed.x+30, H/2+10, COLORS.amber);
+    drawCurvedArrow(ctx, vstore.x, vstore.y-16, chunks.x, chunks.y+16, vstore.x-20, H/2+10, COLORS.amber);
+    drawArrow(ctx, chunks.x+42, chunks.y, llm.x-32, llm.y, COLORS.violet);
+    drawArrow(ctx, llm.x+32, llm.y, out.x-31, out.y, COLORS.teal);
+
+    // Particle paths
+    const phase = (t * 0.4) % 4;
+    if (phase < 1) drawParticle(ctx, query.x+30, query.y, embed.x-38, embed.y, phase, COLORS.violet);
+    else if (phase < 1.5) {
+      const p = quadPoint(embed.x, embed.y+16, embed.x+30, H/2+10, vstore.x, vstore.y-16, (phase-1)*2);
+      ctx.save(); ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=COLORS.amber; ctx.shadowColor=COLORS.amber; ctx.shadowBlur=8; ctx.fill(); ctx.restore();
+    } else if (phase < 2) {
+      const p = quadPoint(vstore.x, vstore.y-16, vstore.x-20, H/2+10, chunks.x, chunks.y+16, (phase-1.5)*2);
+      ctx.save(); ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=COLORS.amber; ctx.shadowColor=COLORS.amber; ctx.shadowBlur=8; ctx.fill(); ctx.restore();
+    } else if (phase < 3) drawParticle(ctx, chunks.x+42, chunks.y, llm.x-32, llm.y, phase-2, COLORS.violet);
+    else drawParticle(ctx, llm.x+32, llm.y, out.x-31, out.y, phase-3, COLORS.teal);
+  },
+
+  // 3 — Semantic Router
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const input   = { x: 55,      y: H/2 };
+    const router  = { x: W/2 - 20, y: H/2 };
+    const routes  = [
+      { x: W - 60, y: 50,      label: 'SIMPLE', sub: 'Haiku/fast', color: COLORS.teal   },
+      { x: W - 60, y: H/2,     label: 'COMPLEX',sub: 'Sonnet',     color: COLORS.violet },
+      { x: W - 60, y: H - 50,  label: 'HUMAN',  sub: 'escalate',  color: COLORS.ember  },
+    ];
+
+    drawNode(ctx, input.x,  input.y,  66, 32, 'REQUEST', COLORS.muted2, 'incoming');
+    drawNode(ctx, router.x, router.y, 80, 32, 'ROUTER',  COLORS.amber,  'classifier');
+    routes.forEach(r => drawNode(ctx, r.x, r.y, 72, 30, r.label, r.color, r.sub));
+
+    drawArrow(ctx, input.x+35, input.y, router.x-42, router.y, COLORS.amber);
+    routes.forEach(r => drawArrow(ctx, router.x+42, router.y, r.x-38, r.y, r.color));
+
+    // Select a route rhythmically
+    const cycle = 3;
+    const phase = (t * 0.35) % cycle;
+    const routeIdx = Math.floor(phase);
+    const pT = phase - routeIdx;
+
+    // Particle to router then to selected route
+    if (pT < 0.4) {
+      drawParticle(ctx, input.x+35, input.y, router.x-42, router.y, pT/0.4, COLORS.amber);
+    } else {
+      const r = routes[routeIdx];
+      drawParticle(ctx, router.x+42, router.y, r.x-38, r.y, (pT-0.4)/0.6, r.color);
+      // Glow the active route label
+      ctx.save();
+      ctx.strokeStyle = r.color;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.5 + 0.5*Math.sin(t*4);
+      roundRect(ctx, r.x - 38, r.y - 17, 76, 34, 5);
+      ctx.stroke();
+      ctx.restore();
+    }
+  },
+
+  // 4 — Evaluator loop
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const prompt  = { x: 55,     y: H/2 };
+    const gen     = { x: 185,    y: H/2 };
+    const eval_   = { x: 320,    y: H/2 };
+    const out     = { x: W - 55, y: H/2 };
+    const retry   = { x: (185+320)/2, y: H - 32 };
+
+    drawNode(ctx, prompt.x, prompt.y, 66, 32, 'PROMPT',    COLORS.muted2, 'task input');
+    drawNode(ctx, gen.x,    gen.y,    80, 32, 'GENERATOR', COLORS.violet, 'draft');
+    drawNode(ctx, eval_.x,  eval_.y,  80, 32, 'EVALUATOR', COLORS.purple, 'score');
+    drawNode(ctx, out.x,    out.y,    66, 32, 'OUTPUT',    COLORS.teal,   'approved');
+    drawNode(ctx, retry.x,  retry.y,  80, 28, 'REVISE',    COLORS.ember,  'with feedback');
+
+    drawArrow(ctx, prompt.x+35, prompt.y, gen.x-42, gen.y, COLORS.violet);
+    drawArrow(ctx, gen.x+42, gen.y, eval_.x-42, eval_.y, COLORS.purple);
+    drawArrow(ctx, eval_.x+42, eval_.y, out.x-35, out.y, COLORS.teal);
+    // Feedback loop
+    drawCurvedArrow(ctx, eval_.x, eval_.y+16, gen.x, gen.y+16, retry.x, retry.y-14, COLORS.ember);
+
+    const phase = (t * 0.4) % 5;
+    if (phase < 1) drawParticle(ctx, prompt.x+35, prompt.y, gen.x-42, gen.y, phase, COLORS.violet);
+    else if (phase < 2) drawParticle(ctx, gen.x+42, gen.y, eval_.x-42, eval_.y, phase-1, COLORS.purple);
+    else if (phase < 3) {
+      // Feedback path
+      const p = quadPoint(eval_.x, eval_.y+16, retry.x, retry.y-14, gen.x, gen.y+16, phase-2);
+      ctx.save(); ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=COLORS.ember; ctx.shadowColor=COLORS.ember; ctx.shadowBlur=8; ctx.fill(); ctx.restore();
+    } else if (phase < 4) drawParticle(ctx, gen.x+42, gen.y, eval_.x-42, eval_.y, phase-3, COLORS.purple);
+    else drawParticle(ctx, eval_.x+42, eval_.y, out.x-35, out.y, phase-4, COLORS.teal);
+  },
+
+  // 5 — Memory Layers
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const query   = { x: 55,     y: H/2 };
+    const mem = [
+      { x: W/2, y: 34,    label: 'CONTEXT',  sub: 'in-window',  color: COLORS.teal   },
+      { x: W/2, y: H/2,   label: 'EPISODIC', sub: 'past convos', color: COLORS.amber  },
+      { x: W/2, y: H-34,  label: 'SEMANTIC', sub: 'facts/KB',   color: COLORS.violet },
+    ];
+    const merge   = { x: W - 80,  y: H/2 };
+    const out     = { x: W - 30,  y: H/2 };
+
+    drawNode(ctx, query.x, query.y, 60, 32, 'QUERY', COLORS.muted2, 'input');
+    mem.forEach(m => drawNode(ctx, m.x, m.y, 82, 30, m.label, m.color, m.sub));
+    drawNode(ctx, merge.x, merge.y, 72, 32, 'MERGE', COLORS.ember, 'context');
+    drawNode(ctx, out.x,   out.y,   50, 30, 'LLM',  COLORS.teal,  null);
+
+    mem.forEach(m => {
+      drawArrow(ctx, query.x+32, query.y, m.x-43, m.y, m.color);
+      drawArrow(ctx, m.x+43, m.y, merge.x-38, merge.y, m.color);
+    });
+    drawArrow(ctx, merge.x+38, merge.y, out.x-27, out.y, COLORS.teal);
+
+    const phase = (t * 0.4) % 4;
+    const layerIdx = Math.floor(phase) % mem.length;
+    const pT = phase % 1;
+
+    if (pT < 0.4) {
+      mem.forEach(m => drawParticle(ctx, query.x+32, query.y, m.x-43, m.y, pT/0.4, m.color));
+    } else {
+      const m = mem[layerIdx];
+      drawParticle(ctx, m.x+43, m.y, merge.x-38, merge.y, (pT-0.4)/0.6, m.color);
+    }
+  },
+
+  // 6 — Guardrails
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const user    = { x: 40,    y: H/2 };
+    const inG     = { x: 145,   y: H/2 };
+    const llm     = { x: W/2,   y: H/2 };
+    const outG    = { x: W-145, y: H/2 };
+    const resp    = { x: W-40,  y: H/2 };
+    const block   = { x: (40+145)/2, y: H - 38 };
+    const blockOut = { x: (W-145+W-40)/2, y: H - 38 };
+
+    drawNode(ctx, user.x,   user.y,  50, 32, 'USER',      COLORS.muted2, 'input');
+    drawNode(ctx, inG.x,    inG.y,   80, 32, 'IN GUARD',  COLORS.ember,  'sanitize/block');
+    drawNode(ctx, llm.x,    llm.y,   60, 32, 'LLM',       COLORS.violet, 'generate');
+    drawNode(ctx, outG.x,   outG.y,  82, 32, 'OUT GUARD', COLORS.ember,  'validate/block');
+    drawNode(ctx, resp.x,   resp.y,  50, 32, 'RESP',      COLORS.teal,   'safe');
+    drawNode(ctx, block.x,  block.y, 60, 26, 'BLOCKED',   COLORS.ember,  'PII/inject');
+    drawNode(ctx, blockOut.x, blockOut.y, 60, 26, 'BLOCKED', COLORS.ember, 'policy fail');
+
+    drawArrow(ctx, user.x+27, user.y, inG.x-42, inG.y, COLORS.ember);
+    drawArrow(ctx, inG.x+42, inG.y, llm.x-32, llm.y, COLORS.violet);
+    drawArrow(ctx, llm.x+32, llm.y, outG.x-43, outG.y, COLORS.ember);
+    drawArrow(ctx, outG.x+43, outG.y, resp.x-27, resp.y, COLORS.teal);
+    drawCurvedArrow(ctx, inG.x, inG.y+16, block.x, block.y-13, inG.x-10, H-30, COLORS.ember);
+    drawCurvedArrow(ctx, outG.x, outG.y+16, blockOut.x, blockOut.y-13, outG.x+10, H-30, COLORS.ember);
+
+    const phase = (t * 0.45) % 3;
+    if (phase < 0.7) drawParticle(ctx, user.x+27, user.y, inG.x-42, inG.y, phase/0.7, COLORS.ember);
+    else if (phase < 1.4) drawParticle(ctx, inG.x+42, inG.y, llm.x-32, llm.y, (phase-0.7)/0.7, COLORS.violet);
+    else if (phase < 2.1) drawParticle(ctx, llm.x+32, llm.y, outG.x-43, outG.y, (phase-1.4)/0.7, COLORS.ember);
+    else drawParticle(ctx, outG.x+43, outG.y, resp.x-27, resp.y, (phase-2.1)/0.9, COLORS.teal);
+  },
+
+  // 7 — Parallel + Voting
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const task   = { x: 48,    y: H/2 };
+    const agents = [
+      { x: W/2 - 10, y: 38,    label: 'AGENT A', color: COLORS.violet },
+      { x: W/2 - 10, y: H/2,   label: 'AGENT B', color: COLORS.amber  },
+      { x: W/2 - 10, y: H-38,  label: 'AGENT C', color: COLORS.teal   },
+    ];
+    const voter = { x: W - 100, y: H/2 };
+    const out   = { x: W - 35,  y: H/2 };
+
+    drawNode(ctx, task.x, task.y, 60, 32, 'TASK', COLORS.muted2, 'dispatch');
+    agents.forEach(a => drawNode(ctx, a.x, a.y, 74, 30, a.label, a.color, null));
+    drawNode(ctx, voter.x, voter.y, 72, 32, 'VOTE/PICK', COLORS.ember, 'best output');
+    drawNode(ctx, out.x, out.y, 50, 30, 'FINAL', COLORS.teal, 'output');
+
+    agents.forEach(a => {
+      drawArrow(ctx, task.x+32, task.y, a.x-39, a.y, a.color);
+      drawArrow(ctx, a.x+39, a.y, voter.x-38, voter.y, a.color);
+    });
+    drawArrow(ctx, voter.x+38, voter.y, out.x-27, out.y, COLORS.teal);
+
+    const phase = (t * 0.4) % 3;
+    const pT = phase % 1;
+
+    if (pT < 0.4) {
+      agents.forEach(a => drawParticle(ctx, task.x+32, task.y, a.x-39, a.y, pT/0.4, a.color));
+    } else if (pT < 0.85) {
+      agents.forEach(a => drawParticle(ctx, a.x+39, a.y, voter.x-38, voter.y, (pT-0.4)/0.45, a.color));
+    } else {
+      drawParticle(ctx, voter.x+38, voter.y, out.x-27, out.y, (pT-0.85)/0.15, COLORS.teal);
+    }
+  },
+];
+
+// ── ANIMATION RUNNER ──
+function startAnimation(idx) {
+  const canvas = document.getElementById(`canvas-${idx}`);
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const W = 480, H = 200;
+  canvas.width = W;
+  canvas.height = H;
+
+  let start = null;
+  let rafId;
+
+  function frame(ts) {
+    if (!start) start = ts;
+    const t = (ts - start) / 1000;
+    patterns[idx](ctx, W, H, t);
+    animStates[idx] = rafId = requestAnimationFrame(frame);
+  }
+
+  rafId = requestAnimationFrame(frame);
+  animStates[idx] = rafId;
+}
+
+function stopAnimation(idx) {
+  if (animStates[idx]) {
+    cancelAnimationFrame(animStates[idx]);
+    delete animStates[idx];
+  }
+}
+
+// Open first card by default on load
+window.addEventListener('load', () => {
+  const first = document.querySelector('.pattern-card');
+  if (first) {
+    first.classList.add('active');
+    setTimeout(() => startAnimation(0), 100);
+  }
+});
+</script>
+</body>
+</html>
