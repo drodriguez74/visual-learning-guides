@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +19,39 @@
     --text: #e8eaf0;
     --muted: #6b7280;
     --accent: #a78bfa;
+    --border-hover: #3a4050;
+    --nav-bg: rgba(10,12,15,0.92);
+    --bar2: #7ac3ff;
+    --belt-white: #e2e8f0;
+    --champion: #ff9f43;
+  }
+
+  /* ═══════════════════ LIGHT THEME ═══════════════════ */
+  [data-theme="light"] {
+    --bg: #eef1f6;
+    --surface: #ffffff;
+    --surface2: #e7ebf2;
+    --border: #d2d8e2;
+    --lean: #07916b;       /* deeper teal-green, readable on white */
+    --sixsigma: #1f6fe0;
+    --gold: #a87a05;       /* dark amber for text contrast */
+    --red: #d63b3b;
+    --text: #161a21;
+    --muted: #5c6675;
+    --accent: #6d28d9;
+    --border-hover: #b4bdcb;
+    --nav-bg: rgba(238,241,246,0.9);
+    --bar2: #6aa8f5;
+    --belt-white: #9aa4b3;  /* visible swatch on white surface */
+    --champion: #c9610f;
+  }
+  [data-theme="light"] body { color: var(--text); }
+  /* faint dark-hued rgba tints read fine on white, but bump the
+     hover lift shadow so cards still feel elevated in light mode */
+  [data-theme="light"] .waste-card:hover,
+  [data-theme="light"] .tool-card:hover,
+  [data-theme="light"] .flip-card:hover .flip-card-inner {
+    box-shadow: 0 6px 18px rgba(20,30,50,0.08);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,7 +70,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(10,12,15,0.92);
+    background: var(--nav-bg);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     display: flex;
@@ -115,7 +148,7 @@
     margin-bottom: 16px;
     transition: border-color 0.2s;
   }
-  .card:hover { border-color: #3a4050; }
+  .card:hover { border-color: var(--border-hover); }
   .card h3 {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 22px;
@@ -286,7 +319,7 @@
     height: 100%;
     border-radius: 6px;
     transition: width 1s ease;
-    background: linear-gradient(90deg, var(--sixsigma), #7ac3ff);
+    background: linear-gradient(90deg, var(--sixsigma), var(--bar2));
   }
 
   /* TOOLS GRID */
@@ -329,7 +362,7 @@
     margin-bottom: 10px;
     transition: all 0.2s;
   }
-  .belt-row:hover { border-color: #3a4050; }
+  .belt-row:hover { border-color: var(--border-hover); }
   .belt-icon { width: 40px; height: 14px; border-radius: 7px; flex-shrink: 0; }
   .belt-row h4 {
     font-family: 'Bebas Neue', sans-serif;
@@ -476,7 +509,7 @@
     transition: border-color 0.2s;
   }
   .flip-card:hover .flip-card-front,
-  .flip-card.flipped:hover .flip-card-back { border-color: #3a4050; }
+  .flip-card.flipped:hover .flip-card-back { border-color: var(--border-hover); }
 
   /* Front face */
   .flip-card-front {
@@ -879,10 +912,55 @@
 
   .qres-retry:not(:disabled):hover   { background: rgba(255,92,92,0.2);  border-color: var(--red);    }
   .qres-restart:hover { background: rgba(167,139,250,0.2); border-color: var(--accent); }
-  .qres-exit:hover    { color: var(--text); border-color: #3a4050; }
+  .qres-exit:hover    { color: var(--text); border-color: var(--border-hover); }
+
+  /* ═══════════════════ THEME TOGGLE ═══════════════════ */
+  html { transition: background-color 0.3s; }
+  body { transition: background-color 0.3s, color 0.3s; }
+
+  .theme-toggle {
+    position: fixed;
+    top: 9px;
+    right: 14px;
+    z-index: 200;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 7px 13px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.3s, box-shadow 0.2s;
+  }
+  .theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 14px rgba(124,58,237,0.18);
+  }
+  .theme-toggle .tt-icon {
+    font-size: 13px;
+    line-height: 1;
+    transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  .theme-toggle:hover .tt-icon { transform: rotate(35deg); }
+  @media (max-width: 480px) {
+    .theme-toggle .tt-label { display: none; }
+    .theme-toggle { padding: 7px 9px; }
+  }
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light and dark theme">
+  <span class="tt-icon" aria-hidden="true">☾</span><span class="tt-label">Theme</span>
+</button>
 
 <nav id="nav" role="tablist" aria-label="Lean Six Sigma sections">
   <button role="tab" aria-selected="true" class="active" onclick="show('overview', this)">Overview</button>
@@ -1181,9 +1259,9 @@
 
   <div class="dmaic-flow">
     <div class="dmaic-step">
-      <div class="dmaic-letter" style="background:rgba(255,92,92,0.15);color:#ff5c5c">D</div>
+      <div class="dmaic-letter" style="background:rgba(255,92,92,0.15);color:var(--red)">D</div>
       <div class="dmaic-body">
-        <h4 style="color:#ff5c5c">Define</h4>
+        <h4 style="color:var(--red)">Define</h4>
         <p>Clearly articulate the problem, project scope, customer requirements, and business impact. Build a <strong>Project Charter</strong> with goals, timeline, team, and financial benefits. Translate VOC into measurable CTQs.</p>
         <div class="dmaic-tools">
           <span class="dmaic-tool-tag">Project Charter</span>
@@ -1365,11 +1443,11 @@
          role="button" aria-label="White Belt — click to see details">
       <div class="flip-card-inner">
         <div class="flip-card-front">
-          <div class="fc-belt" style="background:#e2e8f0"></div>
+          <div class="fc-belt" style="background:var(--belt-white)"></div>
           <h4>White Belt</h4>
           <span class="fc-hint">tap to flip ↻</span>
         </div>
-        <div class="flip-card-back" style="border-left-color:#e2e8f0">
+        <div class="flip-card-back" style="border-left-color:var(--belt-white)">
           <div class="fc-back-label">// White Belt</div>
           <h4>Entry Level</h4>
           <p>Basic awareness of Lean Six Sigma concepts. Supports local problem-solving. No formal project leadership. Entry-level understanding for all employees.</p>
@@ -1451,12 +1529,12 @@
       <div class="flip-card-inner">
         <div class="flip-card-front">
           <div class="fc-belt" style="background:linear-gradient(90deg,var(--gold),#ff5c5c)"></div>
-          <h4 style="color:#ff9f43">Champion / Sponsor</h4>
+          <h4 style="color:var(--champion)">Champion / Sponsor</h4>
           <span class="fc-hint">tap to flip ↻</span>
         </div>
-        <div class="flip-card-back" style="border-left-color:#ff9f43">
+        <div class="flip-card-back" style="border-left-color:var(--champion)">
           <div class="fc-back-label">// Champion / Sponsor</div>
-          <h4 style="color:#ff9f43">Executive Owner</h4>
+          <h4 style="color:var(--champion)">Executive Owner</h4>
           <p>Senior executive who owns the business case, removes barriers, and conducts tollgate reviews. Not technically certified but critical to project success.</p>
         </div>
       </div>
@@ -1599,6 +1677,28 @@
 </section>
 
 <script>
+// ── THEME TOGGLE ──
+function applyThemeIcon(t) {
+  const ic = document.querySelector('.theme-toggle .tt-icon');
+  if (ic) ic.textContent = t === 'light' ? '☀' : '☾';
+}
+function toggleTheme() {
+  const root = document.documentElement;
+  const t = root.dataset.theme === 'light' ? 'dark' : 'light';
+  root.dataset.theme = t;
+  applyThemeIcon(t);
+  try { localStorage.setItem('lss-theme', t); } catch (e) {}
+}
+(function () {
+  let t = 'dark';
+  try {
+    const s = localStorage.getItem('lss-theme');
+    if (s === 'light' || s === 'dark') t = s;
+  } catch (e) {}
+  document.documentElement.dataset.theme = t;
+  applyThemeIcon(t);
+})();
+
 // ── NAV ──
 function show(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));

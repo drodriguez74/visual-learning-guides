@@ -32,6 +32,7 @@ Or jump directly to any guide:
 | **Agent Browser** | `https://drodriguez74.github.io/visual-learning-guides/agent-browser-explainer.html` |
 | **AI System Design Patterns** | `https://drodriguez74.github.io/visual-learning-guides/ai-system-design-patterns.html` |
 | **Devin AI in Fintech** | `https://drodriguez74.github.io/visual-learning-guides/devin-fintech-explainer.html` |
+| **Loop Engineering** | `https://drodriguez74.github.io/visual-learning-guides/loop-engineering.html` |
 
 ## Guides
 
@@ -75,7 +76,7 @@ Or jump directly to any guide:
 ---
 
 ### 04 · Lean Six Sigma
-`lean-six-sigma-guide.html` — Dark (Bebas Neue + DM Sans + JetBrains Mono)
+`lean-six-sigma-guide.html` — Dark (Bebas Neue + DM Sans + JetBrains Mono) · Light/Dark mode
 
 | Tab | Contents |
 |-----|----------|
@@ -134,7 +135,7 @@ Or jump directly to any guide:
 ---
 
 ### 08 · QA Automation + AI
-`qa-automation-gherkin-ai.html` — Light editorial (Outfit + Fira Code)
+`qa-automation-gherkin-ai.html` — Light editorial (Outfit + Fira Code) · Light/Dark mode
 
 | Section | Contents |
 |---------|----------|
@@ -148,7 +149,7 @@ Or jump directly to any guide:
 ---
 
 ### 09 · E2E BDD Automation
-`e2e-bdd-playwright-ai.html` — Dark (Space Grotesk + JetBrains Mono)
+`e2e-bdd-playwright-ai.html` — Dark (Space Grotesk + JetBrains Mono) · Light/Dark mode
 
 | Section | Contents |
 |---------|----------|
@@ -166,7 +167,7 @@ Or jump directly to any guide:
 ---
 
 ### 10 · Jupyter Notebooks + Plotly
-`jupyter-plotly-explainer.html` — Dark Cyber (Share Tech Mono + Syne) · Live interactive Plotly charts
+`jupyter-plotly-explainer.html` — Dark Cyber (Share Tech Mono + Syne) · Live interactive Plotly charts · Light/Dark mode
 
 | Section | Contents |
 |---------|----------|
@@ -180,7 +181,7 @@ Or jump directly to any guide:
 ---
 
 ### 11 · Speak Like a CEO
-`speak-like-a-ceo.html` — Dark Executive (Bebas Neue + Libre Baskerville + IBM Plex Mono)
+`speak-like-a-ceo.html` — Dark Executive (Bebas Neue + Libre Baskerville + IBM Plex Mono) · Light/Dark mode
 
 | Section | Contents |
 |---------|----------|
@@ -333,6 +334,22 @@ Or jump directly to any guide:
 | **Devin vs. Claude Code** | Honest assessment of where each leads and where both need a human in the loop |
 | **Risks & Failure Modes** | Data residency / PII leakage, prompt injection, over-automation of review gates, SOX change-management gaps, non-deterministic output, audit advantage |
 | **Orchestrated Sub-Agent** | How Devin maps into a larger system as a node rather than a standalone tool |
+
+---
+
+### 21 · Loop Engineering
+`loop-engineering.html` — Dark (Space Grotesk + Space Mono) · Animated canvas loop · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Evolution** | Four-layer progression: Prompt → Context → Harness → Loop Engineering — each wraps the previous, leverage point moving outward |
+| **Loop Anatomy** | Animated canvas: Trigger → Context → Agent Acts → Verify → Memory cycle with packets traveling the active arc |
+| **5 Components + Memory** | Automations (trigger), Worktrees (isolation), Skills (intent), Connectors/MCP, Sub-agents (maker+checker), and Memory as the critical state layer |
+| **G-CAVS Framework** | Interactive "design your loop" builder — Goal · Context · Action · Verification · Stop, with bug-fix / coverage / PR-review presets, a live readiness meter, and an auto-assembled loop skeleton you can copy |
+| **The Ralph Loop** | Geoffrey Huntley's seed pattern — context reset per iteration, annotated bash loop reading state from disk |
+| **Stopping Conditions** | Success / Failure / Escalate grid + a real production failure (43-commit runaway with no verifier) |
+| **Prompt vs. Loop** | 8-row trade-off table across human role, memory, verification, risk surface, and cognitive risk |
+| **Comprehension Debt** | Animated bars — the gap between code shipped and code understood grows as oversight drops |
 
 ---
 

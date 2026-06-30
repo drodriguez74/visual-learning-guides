@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +20,7 @@
   --step-light: #e8eef8;
   --step-mid: #3060b0;
   --cucumber: #23a55a;
+  --cucumber-pale: rgba(35,165,90,0.08);
   --ai-new: #7c3aed;
   --ai-new-light: #f3eeff;
   --ai-exist: #d97706;
@@ -28,7 +29,82 @@
   --muted: #9a9080;
   --tag-bg: #1c1a17;
   --tag-text: #f7f5f0;
+  /* inverted "dark chip" surfaces — stat boxes, code headers, tags */
+  --chip-bg: #1c1a17;
+  --chip-fg: #ffffff;
+  --chip-fg-dim: rgba(255,255,255,0.45);
+  --on-accent: #ffffff;        /* text on saturated accent fills */
+  /* deep accent fills that always carry light text (decorative stat boxes) */
+  --stat-green: #2d6a2d;
+  --stat-purple: #7c3aed;
+  /* code + syntax-highlight panel (always a dark IDE surface) */
+  --code-bg: #1e1e1e;
+  --code-fg: #d4d4d4;
+  --syn-kw:  #c678dd;
+  --syn-kw2: #61afef;
+  --syn-str: #98c379;
+  --syn-cm:  #5c6370;
+  --syn-fn:  #e5c07b;
+  --syn-tag: #e06c75;
+  --syn-ann: #56b6c2;
+  --syn-num: #d19a66;
+  --syn-and: #abb2bf;
 }
+
+/* ── DARK THEME — warm editorial re-tone (not a naive invert) ── */
+[data-theme="dark"] {
+  --bg: #17150f;
+  --surface: #211e18;
+  --surface2: #2b2720;
+  --ink: #ece7da;
+  --border: #39342a;
+  --gherkin: #5fb85f;
+  --gherkin-light: rgba(95,184,95,0.15);
+  --gherkin-mid: #6cc26c;
+  --step: #5a96e0;
+  --step-light: rgba(90,150,224,0.16);
+  --step-mid: #5a96e0;
+  --cucumber: #34d27a;
+  --cucumber-pale: rgba(52,210,122,0.13);
+  --ai-new: #a884f2;
+  --ai-new-light: rgba(168,132,242,0.16);
+  --ai-exist: #e8973a;
+  --ai-exist-light: rgba(232,151,58,0.15);
+  --red: #f06565;
+  --muted: #9c9486;
+  --tag-bg: #2a261d;
+  --tag-text: #ece7da;
+  --chip-bg: #2a261d;
+  --chip-fg: #f2ede2;
+  --chip-fg-dim: rgba(242,237,226,0.45);
+  --on-accent: #1a160f;        /* dark text rides the brighter dark-mode accents */
+  --stat-green: #357a3b;
+  --stat-purple: #6d3fce;
+  --code-bg: #1a1813;
+  --code-fg: #d4cfc4;
+  /* syntax tokens keep the One-Dark palette — already tuned for the dark code panel */
+}
+
+html { transition: background-color .3s; }
+body { transition: background-color .3s, color .3s; }
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  position: fixed; top: 18px; right: 18px; z-index: 1000;
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 7px 13px;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.theme-toggle:hover { background: var(--surface2); }
+.theme-toggle .ti { font-size: 13px; line-height: 1; transition: transform .35s; display: block; }
+.theme-toggle:hover .ti { transform: rotate(25deg); }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -126,8 +202,8 @@ h1 .ai { color: var(--ai-new); }
 }
 
 .stat-box {
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--chip-bg);
+  color: var(--chip-fg);
   padding: 14px 18px;
   text-align: right;
 }
@@ -136,14 +212,14 @@ h1 .ai { color: var(--ai-new); }
   font-weight: 900;
   font-size: 1.8rem;
   line-height: 1;
-  color: #fff;
+  color: var(--chip-fg);
 }
 
 .stat-l {
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
+  color: var(--chip-fg-dim);
   margin-top: 2px;
 }
 
@@ -249,8 +325,8 @@ h1 .ai { color: var(--ai-new); }
 }
 
 .code-header {
-  background: var(--ink);
-  color: #fff;
+  background: var(--chip-bg);
+  color: var(--chip-fg);
   padding: 8px 16px;
   display: flex;
   align-items: center;
@@ -260,11 +336,11 @@ h1 .ai { color: var(--ai-new); }
   text-transform: uppercase;
 }
 
-.code-header .filename { color: rgba(255,255,255,0.5); }
+.code-header .filename { color: var(--chip-fg-dim); }
 
 .code-body {
-  background: #1e1e1e;
-  color: #d4d4d4;
+  background: var(--code-bg);
+  color: var(--code-fg);
   padding: 16px 18px;
   font-family: 'Fira Code', monospace;
   font-size: 12px;
@@ -274,21 +350,21 @@ h1 .ai { color: var(--ai-new); }
 }
 
 /* Syntax */
-.kw  { color: #c678dd; }
-.kw2 { color: #61afef; }
-.str { color: #98c379; }
-.cm  { color: #5c6370; font-style: italic; }
-.fn  { color: #e5c07b; }
-.tag { color: #e06c75; }
-.ann { color: #56b6c2; }
-.num { color: #d19a66; }
-.gh-feat { color: #98c379; font-weight: 500; }
-.gh-scen { color: #e5c07b; font-weight: 500; }
-.gh-given { color: #61afef; }
-.gh-when  { color: #c678dd; }
-.gh-then  { color: #56b6c2; }
-.gh-and   { color: #abb2bf; }
-.gh-tag   { color: #e06c75; }
+.kw  { color: var(--syn-kw); }
+.kw2 { color: var(--syn-kw2); }
+.str { color: var(--syn-str); }
+.cm  { color: var(--syn-cm); font-style: italic; }
+.fn  { color: var(--syn-fn); }
+.tag { color: var(--syn-tag); }
+.ann { color: var(--syn-ann); }
+.num { color: var(--syn-num); }
+.gh-feat { color: var(--syn-str); font-weight: 500; }
+.gh-scen { color: var(--syn-fn); font-weight: 500; }
+.gh-given { color: var(--syn-kw2); }
+.gh-when  { color: var(--syn-kw); }
+.gh-then  { color: var(--syn-ann); }
+.gh-and   { color: var(--syn-and); }
+.gh-tag   { color: var(--syn-tag); }
 
 /* ── FLOW DIAGRAM ── */
 .flow-diagram {
@@ -320,7 +396,7 @@ h1 .ai { color: var(--ai-new); }
 
 .flow-node.active-gherkin { border-color: var(--gherkin); background: var(--gherkin-light); }
 .flow-node.active-step    { border-color: var(--step); background: var(--step-light); }
-.flow-node.active-cucumber{ border-color: var(--cucumber); background: rgba(35,165,90,0.08); }
+.flow-node.active-cucumber{ border-color: var(--cucumber); background: var(--cucumber-pale); }
 
 .flow-arrow {
   flex-shrink: 0;
@@ -365,10 +441,10 @@ h1 .ai { color: var(--ai-new); }
 }
 
 .kw-block:nth-child(1) .kw-word { color: var(--gherkin); }
-.kw-block:nth-child(2) .kw-word { color: #1a3a6b; }
-.kw-block:nth-child(3) .kw-word { color: #c678dd; }
-.kw-block:nth-child(4) .kw-word { color: #56b6c2; }
-.kw-block:nth-child(5) .kw-word { color: #abb2bf; }
+.kw-block:nth-child(2) .kw-word { color: var(--step); }
+.kw-block:nth-child(3) .kw-word { color: var(--syn-kw); }
+.kw-block:nth-child(4) .kw-word { color: var(--syn-ann); }
+.kw-block:nth-child(5) .kw-word { color: var(--syn-and); }
 
 .kw-desc { font-size: 10px; color: var(--muted); line-height: 1.55; }
 
@@ -395,8 +471,8 @@ h1 .ai { color: var(--ai-new); }
   gap: 14px;
 }
 
-.ai-panel.new-ui .ai-panel-head { background: var(--ai-new); color: #fff; }
-.ai-panel.exist-ui .ai-panel-head { background: var(--ai-exist); color: #fff; }
+.ai-panel.new-ui .ai-panel-head { background: var(--ai-new); color: var(--on-accent); }
+.ai-panel.exist-ui .ai-panel-head { background: var(--ai-exist); color: var(--on-accent); }
 
 .ai-icon { font-size: 1.8rem; flex-shrink: 0; }
 
@@ -448,16 +524,16 @@ h1 .ai { color: var(--ai-new); }
   margin-top: 1px;
 }
 
-.new-ui .ai-step-num { background: var(--ai-new); color: #fff; }
-.exist-ui .ai-step-num { background: var(--ai-exist); color: #fff; }
+.new-ui .ai-step-num { background: var(--ai-new); color: var(--on-accent); }
+.exist-ui .ai-step-num { background: var(--ai-exist); color: var(--on-accent); }
 
 .ai-step-content {}
 .ai-step-title { font-weight: 600; font-size: 12px; margin-bottom: 3px; }
 .ai-step-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
 
 .ai-prompt-example {
-  background: var(--ink);
-  color: #98c379;
+  background: var(--code-bg);
+  color: var(--syn-str);
   font-family: 'Fira Code', monospace;
   font-size: 10px;
   padding: 10px 12px;
@@ -466,7 +542,7 @@ h1 .ai { color: var(--ai-new); }
   border-radius: 2px;
 }
 
-.ai-prompt-example .cm { color: #5c6370; }
+.ai-prompt-example .cm { color: var(--syn-cm); }
 
 .ai-gain {
   background: var(--surface2);
@@ -517,7 +593,7 @@ h1 .ai { color: var(--ai-new); }
 
 .ann-item.a1 { border-left-color: var(--gherkin); }
 .ann-item.a2 { border-left-color: var(--step); }
-.ann-item.a3 { border-left-color: #e5c07b; }
+.ann-item.a3 { border-left-color: var(--syn-fn); }
 .ann-item.a4 { border-left-color: var(--cucumber); }
 .ann-item.a5 { border-left-color: var(--ai-new); }
 
@@ -545,8 +621,8 @@ h1 .ai { color: var(--ai-new); }
 }
 
 .compare-table th:first-child { background: var(--surface2); }
-.compare-table th.new { background: var(--ai-new); color: #fff; }
-.compare-table th.exist { background: var(--ai-exist); color: #fff; }
+.compare-table th.new { background: var(--ai-new); color: var(--on-accent); }
+.compare-table th.exist { background: var(--ai-exist); color: var(--on-accent); }
 
 .compare-table td {
   padding: 11px 16px;
@@ -595,25 +671,25 @@ h1 .ai { color: var(--ai-new); }
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 100px;
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .prompt-badge.new { background: var(--ai-new); }
 .prompt-badge.exist { background: var(--ai-exist); }
 
 .prompt-body {
-  background: #1e1e1e;
+  background: var(--code-bg);
   padding: 14px 16px;
   font-family: 'Fira Code', monospace;
   font-size: 10px;
   line-height: 1.7;
-  color: #abb2bf;
+  color: var(--syn-and);
 }
 
-.prompt-body .cm { color: #5c6370; }
-.prompt-body .str { color: #98c379; }
-.prompt-body .kw { color: #c678dd; }
-.prompt-body .ann { color: #61afef; }
+.prompt-body .cm { color: var(--syn-cm); }
+.prompt-body .str { color: var(--syn-str); }
+.prompt-body .kw { color: var(--syn-kw); }
+.prompt-body .ann { color: var(--syn-kw2); }
 
 /* ── FOOTER ── */
 footer {
@@ -650,6 +726,11 @@ footer {
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light/dark theme">
+  <span class="ti">☾</span><span class="tl">Dark</span>
+</button>
+
 <div class="page">
 
   <!-- HERO -->
@@ -673,11 +754,11 @@ footer {
         <div class="stat-n">3</div>
         <div class="stat-l">Core layers</div>
       </div>
-      <div class="stat-box" style="background:var(--gherkin)">
+      <div class="stat-box" style="background:var(--stat-green)">
         <div class="stat-n">Plain</div>
         <div class="stat-l">English spec</div>
       </div>
-      <div class="stat-box" style="background:var(--ai-new)">
+      <div class="stat-box" style="background:var(--stat-purple)">
         <div class="stat-n">~70%</div>
         <div class="stat-l">AI time savings</div>
       </div>
@@ -739,7 +820,7 @@ footer {
         <span class="fn-label" style="color:var(--cucumber)">Browser<br>Actions</span>
       </div>
       <div class="flow-arrow">→</div>
-      <div class="flow-node" style="border-color:var(--cucumber); background:rgba(35,165,90,0.07)">
+      <div class="flow-node" style="border-color:var(--cucumber); background:var(--cucumber-pale)">
         <span class="fn-icon">📊</span>
         <span class="fn-label" style="color:var(--cucumber)">Test Report</span>
       </div>
@@ -903,7 +984,7 @@ footer {
           </div>
         </div>
         <div class="ann-item a3">
-          <div class="ann-dot" style="background:#e5c07b"></div>
+          <div class="ann-dot" style="background:var(--syn-fn)"></div>
           <div>
             <div class="ann-title">③ Parameter Capture</div>
             <div class="ann-desc">{string} captures the quoted value from Gherkin and passes it as a method argument. Also supports {int}, {float}, {word}.</div>
@@ -1228,5 +1309,32 @@ this UI page. Include:
   <footer>QA Automation · Gherkin + Cucumber + AI Acceleration · Visual Reference</footer>
 
 </div>
+
+<script>
+  // Theme toggle — LIGHT is the default; dark is opt-in and remembered.
+  function applyThemeLabel(theme) {
+    var ic = document.querySelector('.theme-toggle .ti');
+    var lb = document.querySelector('.theme-toggle .tl');
+    if (ic) ic.textContent = theme === 'dark' ? '☀' : '☾';
+    if (lb) lb.textContent = theme === 'dark' ? 'Light' : 'Dark';
+  }
+  function toggleTheme() {
+    var root = document.documentElement;
+    var next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try { localStorage.setItem('qa-gherkin-theme', next); } catch (e) {}
+    applyThemeLabel(next);
+  }
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('qa-gherkin-theme'); } catch (e) {}
+    // Only an explicit saved choice can override the light default.
+    if (saved === 'dark' || saved === 'light') {
+      document.documentElement.dataset.theme = saved;
+    }
+    applyThemeLabel(document.documentElement.dataset.theme || 'light');
+  })();
+</script>
+
 </body>
 </html>

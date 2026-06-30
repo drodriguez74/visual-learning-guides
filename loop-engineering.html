@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loop Engineering — The 2026 Shift</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg:       #0a0c10;
+    --surface:  #111318;
+    --border:   #1e2230;
+    --accent:   #f97316;
+    --accent2:  #fb923c;
+    --gold:     #fbbf24;
+    --green:    #22c55e;
+    --red:      #ef4444;
+    --blue:     #60a5fa;
+    --purple:   #a78bfa;
+    --muted:    #6b7280;
+    --text:     #e2e8f0;
+    --dim:      #94a3b8;
+    --node-fill:#111318;
+    --node-line:#2a3045;
+    --nav-bg:   rgba(10,12,16,.92);
+    --code-sub: #4b5563;
+    --row-alt:  rgba(255,255,255,.015);
+    --on-fill:  rgba(0,0,0,.82);
+    --mono:     'Space Mono', monospace;
+    --sans:     'Space Grotesk', sans-serif;
+  }
+
+  [data-theme="light"] {
+    --bg:       #faf7f2;
+    --surface:  #ffffff;
+    --border:   #e8e1d6;
+    --accent:   #ea6a0a;
+    --accent2:  #f97316;
+    --gold:     #b45309;
+    --green:    #15803d;
+    --red:      #dc2626;
+    --blue:     #2563eb;
+    --purple:   #7c3aed;
+    --muted:    #94897a;
+    --text:     #1c1814;
+    --dim:      #57534e;
+    --node-fill:#ffffff;
+    --node-line:#d8cfc1;
+    --nav-bg:   rgba(250,247,242,.9);
+    --code-sub: #6f6a5e;
+    --row-alt:  rgba(0,0,0,.02);
+    --on-fill:  rgba(255,255,255,.95);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+    transition: background .3s, color .3s;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+  nav span { font-family: var(--mono); font-size: 11px; color: var(--accent); margin-right: 12px; letter-spacing: .08em; }
+  nav a {
+    font-size: 11px; color: var(--muted); text-decoration: none;
+    padding: 4px 10px; border-radius: 4px; transition: .2s;
+    font-family: var(--mono);
+  }
+  nav a:hover { color: var(--text); background: var(--border); }
+
+  /* ── LAYOUT ── */
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+
+  section { padding: 72px 0 48px; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+
+  /* ── HERO ── */
+  #hero {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 60% 50% at 80% 50%, rgba(249,115,22,.07) 0%, transparent 70%);
+  }
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 20px;
+  }
+  h1 {
+    font-size: clamp(36px, 6vw, 64px); font-weight: 700;
+    line-height: 1.05; letter-spacing: -.02em; margin-bottom: 20px;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .subtitle {
+    font-size: 17px; color: var(--dim); max-width: 580px; line-height: 1.65;
+    margin-bottom: 32px;
+  }
+  .quote-block {
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px; background: rgba(249,115,22,.05);
+    border-radius: 0 8px 8px 0; margin-top: 24px; max-width: 620px;
+  }
+  .quote-block p { font-size: 15px; color: var(--dim); font-style: italic; }
+  .quote-block cite { font-size: 12px; font-family: var(--mono); color: var(--accent); margin-top: 8px; display: block; font-style: normal; }
+
+  /* ── SECTION HEADERS ── */
+  h2 {
+    font-size: 13px; font-family: var(--mono); letter-spacing: .12em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 28px;
+  }
+  h3 { font-size: 20px; font-weight: 600; margin-bottom: 10px; }
+
+  /* ── EVOLUTION TIMELINE ── */
+  .evo-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+    margin: 8px 0 32px;
+  }
+  .evo-card {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 20px 16px; position: relative; transition: .25s;
+  }
+  .evo-card:hover { border-color: var(--accent); background: rgba(249,115,22,.04); }
+  .evo-card.active { border-color: var(--accent); background: rgba(249,115,22,.07); }
+  .evo-year { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 8px; }
+  .evo-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .evo-desc { font-size: 12px; color: var(--dim); line-height: 1.5; }
+  .evo-arrow {
+    position: absolute; right: -14px; top: 50%; transform: translateY(-50%);
+    width: 28px; height: 28px; background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; color: var(--accent); z-index: 2;
+  }
+  .evo-card:last-child .evo-arrow { display: none; }
+  .evo-badge {
+    display: inline-block; font-family: var(--mono); font-size: 9px;
+    padding: 2px 7px; border-radius: 3px; margin-top: 8px;
+  }
+  .badge-old { background: rgba(107,114,128,.15); color: var(--muted); }
+  .badge-new { background: rgba(249,115,22,.15); color: var(--accent); }
+
+  /* ── THE LOOP DIAGRAM ── */
+  .loop-diagram-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 32px; margin: 8px 0 32px;
+  }
+  #loop-canvas { width: 100%; display: block; }
+
+  /* ── 5 COMPONENTS ── */
+  .components-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0 24px;
+  }
+  .comp-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 18px 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+    transition: .2s;
+  }
+  .comp-card:hover { border-color: var(--node-line); background: var(--row-alt); transform: translateY(-1px); }
+  .comp-icon {
+    width: 36px; height: 36px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .comp-label { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .comp-desc { font-size: 12px; color: var(--dim); line-height: 1.5; }
+  .comp-tag { font-family: var(--mono); font-size: 10px; color: var(--accent); margin-top: 6px; display: block; }
+
+  /* ── RALPH LOOP ── */
+  .ralph-box {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 24px; margin: 8px 0 24px;
+  }
+  .ralph-box pre {
+    font-family: var(--mono); font-size: 12px; line-height: 1.7;
+    color: var(--green); background: rgba(34,197,94,.05);
+    border: 1px solid rgba(34,197,94,.15); border-radius: 6px;
+    padding: 16px; overflow-x: auto; margin-top: 14px;
+  }
+  .ralph-box pre .c { color: var(--muted); }
+  .ralph-box pre .k { color: var(--blue); }
+  .ralph-box pre .s { color: var(--gold); }
+
+  /* ── STOPPING CONDITIONS ── */
+  .stop-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 24px;
+  }
+  .stop-card {
+    border-radius: 8px; padding: 16px; border: 1px solid;
+  }
+  .stop-card.success { border-color: rgba(34,197,94,.3); background: rgba(34,197,94,.05); }
+  .stop-card.failure { border-color: rgba(239,68,68,.3); background: rgba(239,68,68,.05); }
+  .stop-card.escalate { border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.05); }
+  .stop-card .stop-label { font-size: 11px; font-family: var(--mono); letter-spacing: .08em; margin-bottom: 8px; }
+  .stop-card.success .stop-label { color: var(--green); }
+  .stop-card.failure .stop-label { color: var(--red); }
+  .stop-card.escalate .stop-label { color: var(--gold); }
+  .stop-card ul { font-size: 12px; color: var(--dim); list-style: none; }
+  .stop-card ul li { padding: 2px 0; }
+  .stop-card ul li::before { content: '→ '; opacity: .5; }
+
+  /* ── WARNING BOX ── */
+  .warn-box {
+    background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.2);
+    border-radius: 8px; padding: 16px 20px; margin: 12px 0 24px;
+    font-size: 13px; color: var(--dim); line-height: 1.6;
+  }
+  .warn-box strong { color: var(--red); }
+
+  /* ── VS TABLE ── */
+  .vs-table { width: 100%; border-collapse: collapse; margin: 8px 0 24px; font-size: 13px; }
+  .vs-table th { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 10px 14px; background: var(--surface); color: var(--muted); border: 1px solid var(--border); text-align: left; }
+  .vs-table td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: top; }
+  .vs-table tr:nth-child(even) td { background: var(--row-alt); }
+  .vs-table .col-old { color: var(--muted); }
+  .vs-table .col-new { color: var(--text); }
+  .vs-table .col-key { color: var(--dim); font-weight: 500; }
+
+  /* ── COGNITIVE DEBT ── */
+  .debt-bar-wrap { margin: 8px 0 24px; }
+  .debt-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .debt-label { font-family: var(--mono); font-size: 11px; color: var(--dim); width: 150px; flex-shrink: 0; }
+  .debt-track { flex: 1; height: 24px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .debt-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-family: var(--mono); font-size: 10px; color: var(--on-fill); font-weight: 700; transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+
+  /* ── THEME TOGGLE ── */
+  .theme-toggle {
+    position: fixed; top: 12px; right: 16px; z-index: 200;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; color: var(--dim);
+    font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+    padding: 6px 13px; cursor: pointer; text-transform: uppercase;
+    transition: color .2s, border-color .2s;
+  }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── G-CAVS FRAMEWORK BUILDER ── */
+  .gcavs-lead { color: var(--dim); font-size: 14px; margin-bottom: 18px; max-width: 660px; }
+  .gcavs-lead strong { color: var(--text); }
+  .preset-row {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin-bottom: 20px;
+  }
+  .preset-row .preset-label { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-right: 4px; }
+  .preset-btn {
+    font-family: var(--mono); font-size: 11px; color: var(--dim);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 12px; cursor: pointer; transition: .2s;
+  }
+  .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .preset-btn.clear { color: var(--muted); }
+
+  .gcavs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .gcavs-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px; transition: border-color .25s, box-shadow .25s;
+  }
+  .gcavs-card.filled { border-color: rgba(34,197,94,.45); box-shadow: 0 0 0 1px rgba(34,197,94,.12) inset; }
+  .gcavs-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+  .gcavs-letter {
+    width: 30px; height: 30px; flex-shrink: 0; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-weight: 700; font-size: 15px;
+    background: rgba(249,115,22,.12); color: var(--accent);
+    border: 1px solid rgba(249,115,22,.3);
+  }
+  .gcavs-card.filled .gcavs-letter { background: rgba(34,197,94,.12); color: var(--green); border-color: rgba(34,197,94,.35); }
+  .gcavs-miss {
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    background: var(--row-alt); border-style: dashed; border-color: var(--node-line);
+  }
+  .gcavs-miss p { font-size: 12px; color: var(--dim); line-height: 1.7; }
+  .gcavs-miss b { color: var(--accent); font-family: var(--mono); }
+  .gcavs-name { font-size: 14px; font-weight: 600; }
+  .gcavs-def { font-size: 11px; color: var(--muted); line-height: 1.4; }
+  .gcavs-card textarea {
+    width: 100%; min-height: 58px; resize: vertical;
+    background: var(--bg); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+    font-family: var(--mono); font-size: 12px; line-height: 1.5; padding: 9px 11px;
+    transition: border-color .2s;
+  }
+  .gcavs-card textarea:focus { outline: none; border-color: var(--accent); }
+  .gcavs-card textarea::placeholder { color: var(--muted); opacity: .7; }
+  .gcavs-hint { font-size: 10px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  .gcavs-hint b { font-family: var(--mono); }
+  .gcavs-hint .weak { color: var(--red); }
+  .gcavs-hint .strong { color: var(--green); }
+
+  .gcavs-foot { display: grid; grid-template-columns: 1fr 1.3fr; gap: 12px; align-items: stretch; }
+  .readiness {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; justify-content: center;
+  }
+  .readiness-label { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; margin-bottom: 12px; }
+  .readiness-track { height: 12px; background: var(--border); border-radius: 6px; overflow: hidden; }
+  .readiness-fill { height: 100%; width: 0%; border-radius: 6px; background: var(--red); transition: width .4s cubic-bezier(.4,0,.2,1), background .4s; }
+  .readiness-status { font-size: 12px; color: var(--dim); margin-top: 12px; font-family: var(--mono); }
+  .readiness-status b { color: var(--text); }
+
+  .loop-preview {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; display: flex; flex-direction: column;
+  }
+  .preview-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .06em;
+  }
+  .copy-btn {
+    font-family: var(--mono); font-size: 10px; color: var(--dim);
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 5px; padding: 4px 10px; cursor: pointer; transition: .2s;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .loop-preview pre {
+    font-family: var(--mono); font-size: 12px; line-height: 1.65;
+    color: var(--text); padding: 14px 16px; overflow-x: auto; margin: 0; flex: 1;
+  }
+  .loop-preview pre .c { color: var(--dim); }
+  .loop-preview pre .k { color: var(--blue); }
+  .loop-preview pre .v { color: var(--green); }
+
+  @media (max-width: 720px) {
+    .gcavs-grid { grid-template-columns: 1fr; }
+    .gcavs-foot { grid-template-columns: 1fr; }
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 40px 0; text-align: center;
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+  footer span { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">☾ Dark</button>
+
+<nav>
+  <span>LOOP_ENG</span>
+  <a href="#evolution">Evolution</a>
+  <a href="#anatomy">Anatomy</a>
+  <a href="#components">Components</a>
+  <a href="#framework">G-CAVS</a>
+  <a href="#ralph">Ralph Loop</a>
+  <a href="#stopping">Stop Conditions</a>
+  <a href="#tradeoffs">Trade-offs</a>
+</nav>
+
+<!-- ════════════ HERO ════════════ -->
+<section id="hero">
+  <div class="wrap">
+    <div class="hero-bg"></div>
+    <p class="eyebrow">June 2026 · The New Paradigm</p>
+    <h1>Stop Prompting.<br>Start <em>Designing Loops.</em></h1>
+    <p class="subtitle">
+      Loop Engineering is the 2026 shift that moves your job from typing prompts at agents to architecting the systems that prompt agents for you — autonomously, repeatedly, verifiably.
+    </p>
+    <div class="quote-block">
+      <p>"I don't prompt Claude anymore. I have loops running that prompt Claude and figure out what to do. My job is to write loops."</p>
+      <cite>— Boris Cherny, Head of Claude Code, Anthropic (2026)</cite>
+    </div>
+    <div class="quote-block" style="margin-top:12px">
+      <p>"You shouldn't be prompting coding agents anymore. You should be designing loops that prompt your agents."</p>
+      <cite>— Peter Steinberger · 6.5M views · June 8, 2026</cite>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ EVOLUTION ════════════ -->
+<section id="evolution">
+  <div class="wrap">
+    <h2>// The Four-Layer Evolution</h2>
+    <p style="color:var(--dim); font-size:14px; margin-bottom:24px;">Each layer wraps the previous one — none replace the others. The leverage point keeps moving outward.</p>
+
+    <div class="evo-grid">
+      <div class="evo-card">
+        <div class="evo-year">2022 – 2024</div>
+        <div class="evo-title">Prompt Engineering</div>
+        <div class="evo-desc">Craft the perfect instruction. Add role, chain-of-thought, examples. Optimize the <em>words</em>.</div>
+        <span class="evo-badge badge-old">EXPRESSION</span>
+        <div class="evo-arrow">→</div>
+      </div>
+      <div class="evo-card">
+        <div class="evo-year">2025</div>
+        <div class="evo-title">Context Engineering</div>
+        <div class="evo-desc">Control what the model <em>sees</em> at inference. RAG, tool outputs, history, dynamic assembly.</div>
+        <span class="evo-badge badge-old">INFORMATION</span>
+        <div class="evo-arrow">→</div>
+      </div>
+      <div class="evo-card">
+        <div class="evo-year">Early 2026</div>
+        <div class="evo-title">Harness Engineering</div>
+        <div class="evo-desc">Build the scaffold around the agent: tools, sandboxes, constraints, feedback plumbing.</div>
+        <span class="evo-badge badge-old">ENVIRONMENT</span>
+        <div class="evo-arrow">→</div>
+      </div>
+      <div class="evo-card active">
+        <div class="evo-year">June 2026 →</div>
+        <div class="evo-title">Loop Engineering</div>
+        <div class="evo-desc">Design the cycle that drives agents autonomously: triggers, verify, memory, stop.</div>
+        <span class="evo-badge badge-new">ARCHITECTURE</span>
+        <div class="evo-arrow"></div>
+      </div>
+    </div>
+
+    <p style="font-family:var(--mono); font-size:12px; color:var(--muted); text-align:center; margin-top:4px;">
+      "In 2022, we wrote perfect emails. In 2025, we managed our inbox. In 2026, we designed the email system itself."
+    </p>
+  </div>
+</section>
+
+<!-- ════════════ ANATOMY ════════════ -->
+<section id="anatomy">
+  <div class="wrap">
+    <h2>// Loop Anatomy — The Core Cycle</h2>
+    <p style="color:var(--dim); font-size:14px; margin-bottom:24px;">A loop is a <strong style="color:var(--text)">recursive goal</strong>: define a purpose, verify against a finish line, iterate until it holds.</p>
+    <div class="loop-diagram-wrap">
+      <canvas id="loop-canvas" height="340"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ COMPONENTS ════════════ -->
+<section id="components">
+  <div class="wrap">
+    <h2>// The 5 Components + Memory</h2>
+    <p style="color:var(--dim); font-size:14px; margin-bottom:20px;">A production loop needs all six. Missing any one and the loop either runs forever, forgets state, or collapses on first failure.</p>
+
+    <div class="components-grid">
+      <div class="comp-card">
+        <div class="comp-icon" style="background:rgba(96,165,250,.1)">⏰</div>
+        <div>
+          <div class="comp-label">Automations (The Trigger)</div>
+          <div class="comp-desc">Scheduled cron events, git hooks, CI signals, or Slack messages that start the loop. Without this it's just a one-time run, not a loop.</div>
+          <span class="comp-tag">/loop • scheduled • on-commit • on-fail</span>
+        </div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon" style="background:rgba(167,139,250,.1)">🌿</div>
+        <div>
+          <div class="comp-label">Worktrees (Isolation)</div>
+          <div class="comp-desc">Git worktrees give each parallel agent its own workspace so they don't stomp each other's file writes mid-loop.</div>
+          <span class="comp-tag">git worktree add • parallel safe</span>
+        </div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon" style="background:rgba(34,197,94,.1)">📋</div>
+        <div>
+          <div class="comp-label">Skills (Intent Persistence)</div>
+          <div class="comp-desc">SKILL.md files that encode project conventions, build steps, and "why we don't do it that way." The agent reads this every run so you stop re-explaining it.</div>
+          <span class="comp-tag">SKILL.md • AGENTS.md • project context</span>
+        </div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon" style="background:rgba(251,191,36,.1)">🔌</div>
+        <div>
+          <div class="comp-label">Connectors / MCP</div>
+          <div class="comp-desc">Wire the agent into your real tools — GitHub Issues, Linear, Jira, Slack, Datadog, PagerDuty. The loop reads and writes these as first-class surfaces.</div>
+          <span class="comp-tag">MCP • tool_use • webhooks</span>
+        </div>
+      </div>
+      <div class="comp-card">
+        <div class="comp-icon" style="background:rgba(249,115,22,.1)">🤖</div>
+        <div>
+          <div class="comp-label">Sub-agents (Maker + Checker)</div>
+          <div class="comp-desc">Split the agent that <em>does</em> the work from the agent that <em>verifies</em> it. The checker subagent is what makes "it's done" mean something.</div>
+          <span class="comp-tag">maker-agent • verifier-agent • orchestrator</span>
+        </div>
+      </div>
+      <div class="comp-card" style="border-color:rgba(249,115,22,.3)">
+        <div class="comp-icon" style="background:rgba(249,115,22,.15)">💾</div>
+        <div>
+          <div class="comp-label">Memory (The Critical Layer)</div>
+          <div class="comp-desc">A Markdown file, a GitHub board — anything that lives outside a single conversation. The model forgets everything between runs. The repo does not.</div>
+          <span class="comp-tag">TODO.md • work-log.md • state-on-disk</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ FRAMEWORK ════════════ -->
+<section id="framework">
+  <div class="wrap">
+    <h2>// G-CAVS — A Framework for Designing Loops</h2>
+    <p class="gcavs-lead">
+      <strong>RACE</strong> (Role · Action · Context · Expectation) made <em>prompts</em> repeatable. A loop needs its own checklist, because a loop fails in ways a prompt can't: it runs forever, forgets what it did, or mass-produces garbage. <strong>G-CAVS</strong> is that checklist — five components every production loop needs. Fill in the cards for a loop you actually want to build; the readiness meter rises as your loop becomes well-formed, and the skeleton on the right assembles live.
+    </p>
+
+    <div class="preset-row">
+      <span class="preset-label">Try a preset:</span>
+      <button class="preset-btn" data-preset="bugfix">🐛 Bug-fix loop</button>
+      <button class="preset-btn" data-preset="coverage">🧪 Test-coverage loop</button>
+      <button class="preset-btn" data-preset="prreview">🔍 PR-review loop</button>
+      <button class="preset-btn clear" data-preset="clear">✕ Clear</button>
+    </div>
+
+    <div class="gcavs-grid">
+      <div class="gcavs-card" data-key="goal">
+        <div class="gcavs-head">
+          <span class="gcavs-letter">G</span>
+          <div>
+            <div class="gcavs-name">Goal</div>
+            <div class="gcavs-def">A specific, verifiable target — not a vibe.</div>
+          </div>
+        </div>
+        <textarea data-key="goal" placeholder="Refactor auth.py to use JWT tokens while the existing test suite stays green"></textarea>
+        <div class="gcavs-hint"><b class="weak">weak:</b> "improve the code" &nbsp;·&nbsp; <b class="strong">strong:</b> names the artifact + the pass condition</div>
+      </div>
+
+      <div class="gcavs-card" data-key="context">
+        <div class="gcavs-head">
+          <span class="gcavs-letter">C</span>
+          <div>
+            <div class="gcavs-name">Context / State</div>
+            <div class="gcavs-def">What the agent sees each turn — and where state lives between turns.</div>
+          </div>
+        </div>
+        <textarea data-key="context" placeholder="File tree + open buffers + last test output; durable state in TODO.md and git, reloaded each iteration"></textarea>
+        <div class="gcavs-hint"><b class="weak">weak:</b> "the chat history" &nbsp;·&nbsp; <b class="strong">strong:</b> names the on-disk state the loop reloads</div>
+      </div>
+
+      <div class="gcavs-card" data-key="action">
+        <div class="gcavs-head">
+          <span class="gcavs-letter">A</span>
+          <div>
+            <div class="gcavs-name">Action / Tools</div>
+            <div class="gcavs-def">The actuators the model can fire — read, write, execute, call.</div>
+          </div>
+        </div>
+        <textarea data-key="action" placeholder="read_file, write_file, run_shell(npm test), git_commit — exposed via MCP"></textarea>
+        <div class="gcavs-hint"><b class="weak">weak:</b> "let it do stuff" &nbsp;·&nbsp; <b class="strong">strong:</b> an explicit, bounded tool list</div>
+      </div>
+
+      <div class="gcavs-card" data-key="verify">
+        <div class="gcavs-head">
+          <span class="gcavs-letter">V</span>
+          <div>
+            <div class="gcavs-name">Verification</div>
+            <div class="gcavs-def">The hard gate that decides if the last action moved toward the goal.</div>
+          </div>
+        </div>
+        <textarea data-key="verify" placeholder="npm test exits 0 AND a verifier sub-agent confirms scope wasn't exceeded"></textarea>
+        <div class="gcavs-hint"><b class="weak">weak:</b> "looks done" &nbsp;·&nbsp; <b class="strong">strong:</b> a mechanical check or strict evaluator — the real bottleneck</div>
+      </div>
+
+      <div class="gcavs-card" data-key="stop">
+        <div class="gcavs-head">
+          <span class="gcavs-letter">S</span>
+          <div>
+            <div class="gcavs-name">Stop Conditions</div>
+            <div class="gcavs-def">The guardrails that end the loop — success, failure, or escalate.</div>
+          </div>
+        </div>
+        <textarea data-key="stop" placeholder="Stop on: tests pass · 5 iterations · same error twice · $2 token budget · high-risk file touched → human"></textarea>
+        <div class="gcavs-hint"><b class="weak">weak:</b> "until it's fixed" &nbsp;·&nbsp; <b class="strong">strong:</b> max-steps + cost cap + no-progress + escalation</div>
+      </div>
+
+      <div class="gcavs-card gcavs-miss">
+        <p>Miss <b>G</b> and the loop chases a vibe.<br>Miss <b>C</b> and it forgets.<br>Miss <b>A</b> and it can't act.<br>Miss <b>V</b> and it ships garbage fast.<br>Miss <b>S</b> and it burns your budget.</p>
+      </div>
+    </div>
+
+    <div class="gcavs-foot">
+      <div class="readiness">
+        <div class="readiness-label">Loop readiness</div>
+        <div class="readiness-track"><div class="readiness-fill" id="readiness-fill"></div></div>
+        <div class="readiness-status" id="readiness-status"><b>0 / 5</b> — not a loop yet, just a wish</div>
+      </div>
+      <div class="loop-preview">
+        <div class="preview-head">
+          <span>your_loop.py — assembled live</span>
+          <button class="copy-btn" id="copy-skeleton">copy</button>
+        </div>
+        <pre id="loop-skeleton"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ RALPH ════════════ -->
+<section id="ralph">
+  <div class="wrap">
+    <h2>// The Ralph Loop — Where It Started</h2>
+    <p style="color:var(--dim); font-size:14px; margin-bottom:16px;">
+      Geoffrey Huntley's "Ralph" pattern (July 2025) is the conceptual seed of modern loop engineering. Named after Ralph Wiggum — <em>deterministically simple in an unpredictable world.</em>
+    </p>
+
+    <div class="ralph-box">
+      <p style="font-size:13px; color:var(--dim); margin-bottom:4px;">The non-obvious insight: <strong style="color:var(--text)">context reset per iteration</strong>. Long sessions degrade as the window fills with dead ends. Ralph sidesteps this by starting fresh each tick, reading current state from disk.</p>
+      <pre><span class="c">#!/bin/bash  # The Ralph Loop — one unit of work per tick</span>
+MAX=10
+<span class="k">for</span> i in $(seq 1 $MAX); <span class="k">do</span>
+
+  <span class="c"># 1. TRIGGER — feed spec to fresh agent context</span>
+  cat PROMPT.md | claude -p --dangerously-skip-permissions
+
+  <span class="c"># 2. VERIFY — check exit conditions</span>
+  grep -q <span class="s">"BLOCKED"</span> specs/TODO.md &amp;&amp; <span class="k">break</span>
+  grep -q <span class="s">"\[ \]"</span> specs/TODO.md || <span class="k">break</span>
+
+  <span class="c"># 3. MEMORY — agent committed its work; repo holds state</span>
+  sleep 10
+
+<span class="k">done</span>
+<span class="c"># The model forgets. The repo doesn't.</span></pre>
+    </div>
+
+    <p style="font-size:13px; color:var(--dim);">
+      Modern loop engineering (Claude Code's <code style="font-family:var(--mono); color:var(--accent)">/loop</code>, Codex Automations) is this same pattern elevated to a product primitive — with built-in worktrees, skill loading, and sub-agent orchestration.
+    </p>
+  </div>
+</section>
+
+<!-- ════════════ STOPPING ════════════ -->
+<section id="stopping">
+  <div class="wrap">
+    <h2>// Stopping Conditions — The Most Important Design Decision</h2>
+    <p style="color:var(--dim); font-size:14px; margin-bottom:16px;">
+      A loop without explicit termination logic is the single most common — and most expensive — mistake. Design your stop conditions before you write a single loop instruction.
+    </p>
+
+    <div class="stop-grid">
+      <div class="stop-card success">
+        <div class="stop-label">✓ SUCCESS</div>
+        <ul>
+          <li>All tests pass</li>
+          <li>No linting errors</li>
+          <li>Verifier agent approves</li>
+          <li>Goal condition is met</li>
+          <li>PR merged</li>
+        </ul>
+      </div>
+      <div class="stop-card failure">
+        <div class="stop-label">✗ FAILURE</div>
+        <ul>
+          <li>Max iterations reached</li>
+          <li>Same error 2× in a row</li>
+          <li>Token budget exhausted</li>
+          <li>No-progress detected</li>
+          <li>BLOCKED written to state</li>
+        </ul>
+      </div>
+      <div class="stop-card escalate">
+        <div class="stop-label">⚡ ESCALATE</div>
+        <ul>
+          <li>Ambiguous requirement</li>
+          <li>High-risk file modified</li>
+          <li>Cost spike detected</li>
+          <li>Scope creep detected</li>
+          <li>Human review required</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      <strong>⚠ Real production failure:</strong> A PR-babysitter loop created 43 commits in one day — but its scope expanded until it modified unrelated areas. Nearly all output was rejected. A poorly-designed loop mass-produces waste at high speed. The loop ran. The verifier didn't exist.
+    </div>
+  </div>
+</section>
+
+<!-- ════════════ TRADE-OFFS ════════════ -->
+<section id="tradeoffs">
+  <div class="wrap">
+    <h2>// Prompt vs. Loop — What Actually Changes</h2>
+
+    <table class="vs-table">
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th>Prompt Engineering (2025)</th>
+          <th>Loop Engineering (2026)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-key">Human role</td>
+          <td class="col-old">Typing each turn, in the driver's seat</td>
+          <td class="col-new">Designing the system that drives agents</td>
+        </tr>
+        <tr>
+          <td class="col-key">Unit of work</td>
+          <td class="col-old">One prompt → one response</td>
+          <td class="col-new">One loop definition → N autonomous iterations</td>
+        </tr>
+        <tr>
+          <td class="col-key">Memory</td>
+          <td class="col-old">Context window per session</td>
+          <td class="col-new">External state (disk, board, markdown file)</td>
+        </tr>
+        <tr>
+          <td class="col-key">Verification</td>
+          <td class="col-old">You read the output and judge</td>
+          <td class="col-new">Verifier sub-agent + mechanical checks</td>
+        </tr>
+        <tr>
+          <td class="col-key">When it stops</td>
+          <td class="col-old">When you stop typing</td>
+          <td class="col-new">When a defined goal condition holds</td>
+        </tr>
+        <tr>
+          <td class="col-key">Risk surface</td>
+          <td class="col-old">One bad response, easy to catch</td>
+          <td class="col-new">Mass-produced mistakes if verifier is weak</td>
+        </tr>
+        <tr>
+          <td class="col-key">Skill needed</td>
+          <td class="col-old">Clever phrasing, good context</td>
+          <td class="col-new">Define verifiable "done," design control flow</td>
+        </tr>
+        <tr>
+          <td class="col-key">Cognitive risk</td>
+          <td class="col-old">Low — you stay in the loop</td>
+          <td class="col-new">Comprehension debt grows if you don't read output</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 style="margin-top:40px">// Comprehension Debt — The Hidden Cost</h2>
+    <p style="color:var(--dim); font-size:14px; margin-bottom:20px;">The faster the loop ships code you didn't write, the bigger the gap between what exists and what you actually understand. Designing the loop with judgment is the cure; designing it to avoid thinking is the accelerant.</p>
+
+    <div class="debt-bar-wrap" id="debt-bars">
+      <div class="debt-row">
+        <div class="debt-label">Manual prompting</div>
+        <div class="debt-track">
+          <div class="debt-fill" style="width:0%; background:var(--green);" data-target="15">15%</div>
+        </div>
+      </div>
+      <div class="debt-row">
+        <div class="debt-label">Loop, light oversight</div>
+        <div class="debt-track">
+          <div class="debt-fill" style="width:0%; background:var(--gold);" data-target="45">45%</div>
+        </div>
+      </div>
+      <div class="debt-row">
+        <div class="debt-label">Loop, no verifier</div>
+        <div class="debt-track">
+          <div class="debt-fill" style="width:0%; background:var(--accent);" data-target="75">75%</div>
+        </div>
+      </div>
+      <div class="debt-row">
+        <div class="debt-label">Loop, cognitive surrender</div>
+        <div class="debt-track">
+          <div class="debt-fill" style="width:0%; background:var(--red);" data-target="95">95%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warn-box" style="border-color:rgba(249,115,22,.3); background:rgba(249,115,22,.05);">
+      <strong style="color:var(--accent)">Loop Engineering doesn't replace prompt or context engineering</strong> — it wraps them. You still need precise goal definitions (prompting skill), curated state (context skill), and a hardened scaffold (harness skill). The verifier is the bottleneck, not the model.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>LOOP_ENGINEERING</span> · Addy Osmani · Peter Steinberger · Boris Cherny · June 2026 · Agentic AI Series
+  </div>
+</footer>
+
+<script>
+// ── LOOP DIAGRAM ──
+const canvas = document.getElementById('loop-canvas');
+const ctx = canvas.getContext('2d');
+
+function dpr() { return window.devicePixelRatio || 1; }
+
+function resize() {
+  const w = canvas.parentElement.clientWidth - 64;
+  const h = 340;
+  canvas.width = w * dpr();
+  canvas.height = h * dpr();
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr(), dpr());
+  draw(w, h);
+}
+
+const NODES = [
+  { id: 'trigger',  label: 'TRIGGER',    sub: 'cron / git hook / CI',   cvar: '--blue',   icon: '⏰' },
+  { id: 'context',  label: 'CONTEXT',    sub: 'skills + state + spec',  cvar: '--purple', icon: '📋' },
+  { id: 'agent',    label: 'AGENT ACTS', sub: 'Claude / Codex',         cvar: '--accent', icon: '🤖' },
+  { id: 'verify',   label: 'VERIFY',     sub: 'tests / verifier agent', cvar: '--green',  icon: '✓' },
+  { id: 'memory',   label: 'MEMORY',     sub: 'write state to disk',    cvar: '--gold',   icon: '💾' },
+];
+
+let tick = 0;
+let animFrame;
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function draw(W, H) {
+  ctx.clearRect(0, 0, W, H);
+
+  const COL = {
+    border:   cssVar('--border'),
+    nodeFill: cssVar('--node-fill'),
+    nodeLine: cssVar('--node-line'),
+    dim:      cssVar('--dim'),
+    sub:      cssVar('--code-sub'),
+    accent:   cssVar('--accent'),
+  };
+  // resolve each node's color from the active theme every frame
+  const colors = NODES.map(n => cssVar(n.cvar));
+
+  const cx = W / 2, cy = H / 2;
+  const R = Math.min(W, H) * 0.33;
+  const nodeR = 44;
+
+  // positions around a circle
+  const positions = NODES.map((n, i) => {
+    const angle = (i / NODES.length) * Math.PI * 2 - Math.PI / 2;
+    return { x: cx + Math.cos(angle) * R, y: cy + Math.sin(angle) * R };
+  });
+
+  // active node based on tick
+  const active = Math.floor(tick / 60) % NODES.length;
+  const progress = (tick % 60) / 60;
+
+  // draw arcs between nodes
+  for (let i = 0; i < NODES.length; i++) {
+    const from = positions[i];
+    const to = positions[(i + 1) % NODES.length];
+    const isActive = i === active;
+
+    // base arc
+    ctx.beginPath();
+    ctx.strokeStyle = isActive ? colors[i] : COL.border;
+    ctx.lineWidth = isActive ? 2.5 : 1.5;
+    ctx.setLineDash(isActive ? [] : [4, 4]);
+
+    // curved path
+    const mx = (from.x + to.x) / 2 + (to.y - from.y) * 0.18;
+    const my = (from.y + to.y) / 2 - (to.x - from.x) * 0.18;
+    ctx.moveTo(from.x, from.y);
+    ctx.quadraticCurveTo(mx, my, to.x, to.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // animated packet on active arc
+    if (isActive) {
+      const t = progress;
+      const px = (1-t)*(1-t)*from.x + 2*(1-t)*t*mx + t*t*to.x;
+      const py = (1-t)*(1-t)*from.y + 2*(1-t)*t*my + t*t*to.y;
+      ctx.beginPath();
+      ctx.arc(px, py, 5, 0, Math.PI * 2);
+      ctx.fillStyle = colors[i];
+      ctx.fill();
+    }
+  }
+
+  // draw nodes
+  NODES.forEach((n, i) => {
+    const { x, y } = positions[i];
+    const isActive = i === active;
+    const prevActive = (active - 1 + NODES.length) % NODES.length;
+    const glowing = i === prevActive;
+    const nc = colors[i];
+
+    // glow
+    if (isActive || glowing) {
+      ctx.beginPath();
+      ctx.arc(x, y, nodeR + 10, 0, Math.PI * 2);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, nodeR + 10);
+      g.addColorStop(0, nc + '22');
+      g.addColorStop(1, 'transparent');
+      ctx.fillStyle = g;
+      ctx.fill();
+    }
+
+    // circle
+    ctx.beginPath();
+    ctx.arc(x, y, nodeR, 0, Math.PI * 2);
+    ctx.fillStyle = isActive ? nc + '20' : COL.nodeFill;
+    ctx.fill();
+    ctx.strokeStyle = isActive ? nc : COL.nodeLine;
+    ctx.lineWidth = isActive ? 2.5 : 1.5;
+    ctx.stroke();
+
+    // icon
+    ctx.font = '18px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(n.icon, x, y - 10);
+
+    // label
+    ctx.font = `700 10px 'Space Mono', monospace`;
+    ctx.fillStyle = isActive ? nc : COL.dim;
+    ctx.fillText(n.label, x, y + 8);
+
+    // sub
+    ctx.font = `9px 'Space Grotesk', sans-serif`;
+    ctx.fillStyle = COL.sub;
+    ctx.fillText(n.sub, x, y + 22);
+  });
+
+  // center label
+  ctx.font = `600 13px 'Space Grotesk', sans-serif`;
+  ctx.fillStyle = COL.accent;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('THE', cx, cy - 10);
+  ctx.fillText('LOOP', cx, cy + 8);
+
+  tick++;
+  animFrame = requestAnimationFrame(() => draw(W, H));
+}
+
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(animFrame);
+  resize();
+});
+resize();
+
+// ── DEBT BARS ANIMATION ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      document.querySelectorAll('.debt-fill').forEach(el => {
+        const target = el.dataset.target;
+        el.style.width = target + '%';
+      });
+      observer.disconnect();
+    }
+  });
+}, { threshold: 0.3 });
+
+const debtBars = document.getElementById('debt-bars');
+if (debtBars) observer.observe(debtBars);
+
+// ── THEME TOGGLE ──
+// The loop canvas redraws every frame and reads CSS vars, so it adapts automatically.
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('loop-theme', html.dataset.theme); } catch (e) {}
+  syncThemeLabel();
+}
+function syncThemeLabel() {
+  const btn = document.getElementById('theme-toggle');
+  if (!btn) return;
+  const isLight = document.documentElement.dataset.theme === 'light';
+  btn.textContent = isLight ? '☀ Light' : '☾ Dark';
+}
+try {
+  const saved = localStorage.getItem('loop-theme');
+  if (saved) document.documentElement.dataset.theme = saved;
+} catch (e) {}
+syncThemeLabel();
+
+// ── G-CAVS BUILDER ──
+const KEYS = ['goal', 'context', 'action', 'verify', 'stop'];
+const PRESETS = {
+  bugfix: {
+    goal: 'Make the failing test in checkout.spec.ts pass without breaking any other test',
+    context: 'Repo tree + the failing stack trace + last npm test output; progress tracked in TODO.md, reloaded each iteration',
+    action: 'read_file, write_file, run_shell(npm test), git_commit',
+    verify: 'npm test exits 0 AND the diff touches only checkout-related files',
+    stop: 'Stop on: all tests pass · 5 iterations · same error twice in a row · $2 token cap',
+  },
+  coverage: {
+    goal: 'Raise statement coverage of src/payments to 80% with meaningful tests (no assertion-free filler)',
+    context: 'Coverage report JSON + source files + existing test patterns; coverage delta logged to work-log.md',
+    action: 'read_file, write_file, run_shell(npm run coverage), git_commit',
+    verify: 'Coverage report >= 80% AND a verifier sub-agent rejects trivial/no-op tests',
+    stop: 'Stop on: 80% reached · 10 iterations · coverage stops climbing for 2 rounds · human review if a public API changes',
+  },
+  prreview: {
+    goal: 'Review the open PR and post line-level comments for correctness and scope creep, then approve or request changes',
+    context: 'PR diff + linked issue + repo conventions in AGENTS.md; one PR at a time, state in the PR thread itself',
+    action: 'github.get_diff, github.post_comment, github.set_review_state (read-mostly — no code writes)',
+    verify: 'Every comment cites a specific line + reason; a checker sub-agent confirms no hallucinated file paths',
+    stop: 'Stop after one full pass · escalate to human if the PR modifies auth, billing, or migrations',
+  },
+};
+
+const skeletonEl = document.getElementById('loop-skeleton');
+const fillEl = document.getElementById('readiness-fill');
+const statusEl = document.getElementById('readiness-status');
+const cards = {};
+const inputs = {};
+document.querySelectorAll('.gcavs-card[data-key]').forEach(card => {
+  const k = card.dataset.key;
+  cards[k] = card;
+  inputs[k] = card.querySelector('textarea');
+  inputs[k].addEventListener('input', render);
+});
+
+const STATUS = [
+  '<b>0 / 5</b> — not a loop yet, just a wish',
+  '<b>1 / 5</b> — a fragment; it will spin in place',
+  '<b>2 / 5</b> — runnable, but it won\'t know when it\'s done',
+  '<b>3 / 5</b> — getting there; still missing a guardrail',
+  '<b>4 / 5</b> — one gap from production-safe',
+  '<b>5 / 5</b> — well-formed loop ✓ goal, state, tools, a real gate, and a way to stop',
+];
+const COLORS = ['#ef4444', '#ef4444', '#f59e0b', '#fbbf24', '#a3e635', '#22c55e'];
+
+function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function oneLine(s, n) { s = s.replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+
+function render() {
+  const v = {};
+  let done = 0;
+  KEYS.forEach(k => {
+    v[k] = inputs[k].value.trim();
+    const filled = v[k].length > 0;
+    if (filled) done++;
+    cards[k].classList.toggle('filled', filled);
+  });
+
+  fillEl.style.width = (done / 5 * 100) + '%';
+  fillEl.style.background = COLORS[done];
+  statusEl.innerHTML = STATUS[done];
+
+  const g = c => `<span class="c">${c}</span>`;
+  const k = w => `<span class="k">${w}</span>`;
+  const cm = (label, val, ph) => g('# ' + label + ': ' + esc(oneLine(val || ph, 64)));
+
+  skeletonEl.innerHTML =
+`${cm('GOAL', v.goal, '‹define your goal›')}
+GOAL  = goal_spec()
+TOOLS = [ ${esc(oneLine(v.action || '‹tools›', 48))} ]   ${g('# ACTION')}
+state = load_state()                 ${cm('CONTEXT', v.context, '‹where state lives›')}
+
+${k('for')} step ${k('in')} range(MAX_STEPS):       ${cm('STOP', v.stop, '‹max steps / cost cap›')}
+    result = agent.act(GOAL, state, TOOLS)
+    state  = save_state(result)      ${g('# memory persists between turns')}
+
+    ${k('if')} <span class="v">verify</span>(state):              ${cm('VERIFY', v.verify, '‹the hard gate›')}
+        ${k('break')}                       ${g('# success — goal holds')}
+${k('else')}:
+    escalate(${g('"stop hit before goal — human review"')})`;
+}
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const p = btn.dataset.preset;
+    KEYS.forEach(key => { inputs[key].value = (p === 'clear') ? '' : (PRESETS[p][key] || ''); });
+    render();
+  });
+});
+
+const copyBtn = document.getElementById('copy-skeleton');
+copyBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(skeletonEl.innerText).then(() => {
+    copyBtn.textContent = 'copied ✓';
+    setTimeout(() => { copyBtn.textContent = 'copy'; }, 1400);
+  });
+});
+
+render();
+</script>
+</body>
+</html>

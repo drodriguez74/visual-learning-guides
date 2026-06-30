@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,9 +22,68 @@
   --text: #d8dce8;
   --muted: #4a5068;
   --code-bg: #090b10;
+  --comment: #3a4060;
+  --chart-code: #8089a8;
+  --footer: #2a3040;
+  --grid-line: rgba(0,212,255,0.03);
+  --scanline: rgba(0,0,0,0.03);
+  --label-overlay: rgba(0,0,0,0.3);
+  --badge-glow: rgba(0,212,255,0.2);
+}
+
+/* ── LIGHT THEME — re-toned, not inverted. Neons darkened for contrast on white,
+      cyber identity preserved (cyan/pink/purple accents, gold replaces unreadable neon yellow). ── */
+[data-theme="light"] {
+  --bg: #e7ebf3;
+  --surface: #ffffff;
+  --surface2: #eef1f7;
+  --border: #cdd5e4;
+  --cyan: #0091b8;
+  --green: #1f9d3a;
+  --orange: #d96b00;
+  --pink: #d81b60;
+  --purple: #7b3fd4;
+  --yellow: #b07d00;
+  --text: #10141d;
+  --muted: #5b6478;
+  --code-bg: #f3f6fc;
+  --comment: #8089a0;
+  --chart-code: #6b7488;
+  --footer: #aab2c4;
+  --grid-line: rgba(0,145,184,0.05);
+  --scanline: rgba(0,0,0,0.015);
+  --label-overlay: rgba(0,0,0,0.04);
+  --badge-glow: rgba(0,145,184,0.18);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { transition: background-color .3s; }
+body { transition: background-color .3s, color .3s; }
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  position: fixed; top: 16px; right: 16px; z-index: 10000;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: border-color .2s, color .2s, box-shadow .2s, background .3s;
+}
+.theme-toggle:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: 0 0 12px var(--badge-glow);
+}
+.theme-toggle .ti {
+  font-size: 13px; line-height: 1; display: block;
+  transition: transform .4s cubic-bezier(.175,.885,.32,1.275);
+}
+.theme-toggle:hover .ti { transform: rotate(40deg); }
 
 body {
   background: var(--bg);
@@ -43,8 +102,8 @@ body::after {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0,0,0,0.03) 2px,
-    rgba(0,0,0,0.03) 4px
+    var(--scanline) 2px,
+    var(--scanline) 4px
   );
   pointer-events: none;
   z-index: 9999;
@@ -56,8 +115,8 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
   z-index: 0;
@@ -93,7 +152,7 @@ body::before {
   padding: 5px 12px;
   margin-bottom: 18px;
   display: inline-block;
-  box-shadow: 0 0 10px rgba(0,212,255,0.2);
+  box-shadow: 0 0 10px var(--badge-glow);
 }
 
 .hero h1 {
@@ -274,7 +333,7 @@ body::before {
 .fn { color: var(--cyan); }
 .str { color: var(--green); }
 .num { color: var(--orange); }
-.cm { color: #3a4060; }
+.cm { color: var(--comment); }
 .var { color: var(--text); }
 .imp { color: var(--yellow); }
 
@@ -298,7 +357,7 @@ body::before {
   letter-spacing: 0.2em;
   color: var(--muted);
   padding: 4px 16px;
-  background: rgba(0,0,0,0.3);
+  background: var(--label-overlay);
   border-bottom: 1px solid var(--border);
   text-transform: uppercase;
   display: flex;
@@ -498,7 +557,7 @@ body::before {
   font-size: 10px;
   line-height: 1.6;
   background: var(--code-bg);
-  color: #8089a8;
+  color: var(--chart-code);
   overflow-x: auto;
 }
 
@@ -605,7 +664,7 @@ footer {
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #2a3040;
+  color: var(--footer);
   text-align: center;
   animation: fadeUp 0.7s 0.6s ease both;
   opacity: 0;
@@ -636,6 +695,9 @@ footer {
 </style>
 </head>
 <body>
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light / dark theme">
+  <span class="ti">◑</span><span class="tl">Light</span>
+</button>
 <div class="page">
 
   <!-- HERO -->
@@ -997,141 +1059,185 @@ footer {
 </div>
 
 <script>
-const DARK = {
-  plot_bgcolor: '#12151e',
-  paper_bgcolor: '#12151e',
-  font: { family: 'Share Tech Mono, monospace', color: '#4a5068', size: 10 },
-  xaxis: { gridcolor: '#1f2535', zerolinecolor: '#1f2535' },
-  yaxis: { gridcolor: '#1f2535', zerolinecolor: '#1f2535' },
-  legend: { bgcolor: 'rgba(0,0,0,0)', bordercolor: '#1f2535', borderwidth: 1 },
-  margin: { t: 16, b: 36, l: 44, r: 16 }
-};
-
 const CONFIG = { displayModeBar: false, responsive: true };
+const root = document.documentElement;
 
-// ── LINE CHART ──
+// Read the current palette straight from the CSS custom properties so charts
+// always track whatever theme is active (single source of truth = the :root vars).
+function tc() {
+  const s = getComputedStyle(root);
+  const g = n => s.getPropertyValue(n).trim();
+  return {
+    theme:   root.dataset.theme,
+    bg:      g('--bg'),
+    surface: g('--surface'),
+    border:  g('--border'),
+    text:    g('--text'),
+    muted:   g('--muted'),
+    cyan:    g('--cyan'),
+    green:   g('--green'),
+    orange:  g('--orange'),
+    pink:    g('--pink'),
+    purple:  g('--purple'),
+    yellow:  g('--yellow')
+  };
+}
+
+// Shared layout fragment built from the live theme.
+function plotlyTheme(c) {
+  return {
+    plot_bgcolor: c.surface,
+    paper_bgcolor: c.surface,
+    font: { family: 'Share Tech Mono, monospace', color: c.muted, size: 10 },
+    xaxis: { gridcolor: c.border, zerolinecolor: c.border },
+    yaxis: { gridcolor: c.border, zerolinecolor: c.border },
+    legend: { bgcolor: 'rgba(0,0,0,0)', bordercolor: c.border, borderwidth: 1 },
+    margin: { t: 16, b: 36, l: 44, r: 16 }
+  };
+}
+
+// ── Stable random data — generated ONCE so a theme toggle re-colors the same
+//    chart instead of reshuffling the numbers. ──
 const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
 const products = ['Pro Plan','Starter','Enterprise'];
-const colors = ['#00d4ff','#39ff14','#ff7f00'];
-const lineTraces = products.map((p, i) => ({
-  x: months,
-  y: months.map(() => Math.round(Math.random()*40000 + (i===2?60000:i===0?30000:10000) + Math.random()*8000)),
-  name: p,
-  type: 'scatter',
-  mode: 'lines+markers',
-  line: { color: colors[i], width: 2 },
-  marker: { color: colors[i], size: 4 }
-}));
+const lineData = products.map((p, i) =>
+  months.map(() => Math.round(Math.random()*40000 + (i===2?60000:i===0?30000:10000) + Math.random()*8000)));
 
-Plotly.newPlot('chart-line', lineTraces, {
-  ...DARK,
-  showlegend: true,
-  xaxis: { ...DARK.xaxis, color: '#4a5068' },
-  yaxis: { ...DARK.yaxis, color: '#4a5068', tickformat: '$,.0f' }
-}, CONFIG);
-
-// ── BAR CHART ──
 const regions = ['West','East','North','South'];
 const cats = ['Hardware','Software','Services'];
-const barColors = ['#ff2d78','#9b5de5','#ffe600'];
-const barTraces = cats.map((c, i) => ({
-  x: regions,
-  y: regions.map(() => Math.round(Math.random()*80000+20000)),
-  name: c,
-  type: 'bar',
-  marker: { color: barColors[i], opacity: 0.85 }
-}));
+const barData = cats.map(() => regions.map(() => Math.round(Math.random()*80000+20000)));
 
-Plotly.newPlot('chart-bar', barTraces, {
-  ...DARK,
-  barmode: 'group',
-  showlegend: true,
-  xaxis: { ...DARK.xaxis, color: '#4a5068' },
-  yaxis: { ...DARK.yaxis, color: '#4a5068', tickformat: '$,.0f' }
-}, CONFIG);
-
-// ── SCATTER ──
 const scatRegions = ['West','East','North','South'];
-const scatColors = ['#00d4ff','#ff2d78','#39ff14','#ff7f00'];
-const scatterTraces = scatRegions.map((r, i) => {
+const scatterData = scatRegions.map(() => {
   const n = 18;
   return {
     x: Array.from({length:n}, () => Math.random()*80+20),
     y: Array.from({length:n}, () => Math.random()*120000+10000),
-    mode: 'markers',
-    name: r,
-    marker: {
-      color: scatColors[i],
-      size: Array.from({length:n}, () => Math.random()*16+6),
-      opacity: 0.7,
-      line: { width: 0 }
-    }
+    size: Array.from({length:n}, () => Math.random()*16+6)
   };
 });
 
-Plotly.newPlot('chart-scatter', scatterTraces, {
-  ...DARK,
-  showlegend: true,
-  xaxis: { ...DARK.xaxis, color: '#4a5068', title: { text: 'Ad Spend ($k)', font:{color:'#4a5068',size:9} } },
-  yaxis: { ...DARK.yaxis, color: '#4a5068', title: { text: 'Revenue', font:{color:'#4a5068',size:9} }, tickformat: '$,.0f' }
-}, CONFIG);
-
-// ── HEATMAP ──
 const vars = ['Revenue','Units','Spend','CAC','Churn'];
 const heatZ = vars.map((_, i) => vars.map((__, j) => {
   if (i === j) return 1;
-  const v = (Math.random() * 2 - 1).toFixed(2);
-  return parseFloat(v);
+  return parseFloat((Math.random() * 2 - 1).toFixed(2));
 }));
 
-Plotly.newPlot('chart-heat', [{
-  z: heatZ,
-  x: vars, y: vars,
-  type: 'heatmap',
-  colorscale: [
-    [0, '#c0392b'], [0.5, '#12151e'], [1, '#00d4ff']
-  ],
-  showscale: true,
-  zmin: -1, zmax: 1
-}], {
-  ...DARK,
-  xaxis: { ...DARK.xaxis, color: '#4a5068', side: 'bottom' },
-  yaxis: { ...DARK.yaxis, color: '#4a5068', autorange: 'reversed' },
-  margin: { t: 16, b: 48, l: 68, r: 16 }
-}, CONFIG);
+// Sunburst child shades don't map to a CSS var, so keep an explicit ramp per theme.
+const sunburstColors = {
+  dark: ['#12151e','#00d4ff','#ff2d78','#39ff14',
+         '#0090aa','#007a55','#004b6b',
+         '#aa1f55','#6b0030',
+         '#1a8c00','#005c3a','#003d1a'],
+  light:['#ffffff','#0091b8','#d81b60','#1f9d3a',
+         '#4db8d4','#79cbe0','#a3dcea',
+         '#e35d8f','#ee9ab7',
+         '#5cb874','#8ed09e','#bce3c6']
+};
 
-// ── SUNBURST ──
-Plotly.newPlot('chart-sunburst', [{
-  type: 'sunburst',
-  labels: [
-    'Total',
-    'West','East','South',
-    'W-Pro','W-Start','W-Ent',
-    'E-Pro','E-Start',
-    'S-Pro','S-Start','S-Ent'
-  ],
-  parents: [
-    '',
-    'Total','Total','Total',
-    'West','West','West',
-    'East','East',
-    'South','South','South'
-  ],
-  values: [0, 0, 0, 0, 48000,22000,61000, 31000,18000, 27000,12000,38000],
-  branchvalues: 'total',
-  marker: {
-    colors: ['#12151e','#00d4ff','#ff2d78','#39ff14',
-             '#0090aa','#007a55','#004b6b',
-             '#aa1f55','#6b0030',
-             '#1a8c00','#005c3a','#003d1a'],
-    line: { color: '#0c0e14', width: 2 }
-  },
-  textfont: { color: '#d8dce8', size: 11 },
-  hovertemplate: '<b>%{label}</b><br>Revenue: $%{value:,}<extra></extra>'
-}], {
-  ...DARK,
-  margin: { t: 0, b: 0, l: 0, r: 0 }
-}, CONFIG);
+// ── RENDER FUNCTIONS — each rebuilds traces+layout from the live theme and uses
+//    Plotly.react, which initialises on first call and updates in place after. ──
+function renderLine(c, t) {
+  const accents = [c.cyan, c.green, c.orange];
+  const traces = products.map((p, i) => ({
+    x: months, y: lineData[i], name: p,
+    type: 'scatter', mode: 'lines+markers',
+    line: { color: accents[i], width: 2 },
+    marker: { color: accents[i], size: 4 }
+  }));
+  Plotly.react('chart-line', traces, {
+    ...t, showlegend: true,
+    xaxis: { ...t.xaxis, color: c.muted },
+    yaxis: { ...t.yaxis, color: c.muted, tickformat: '$,.0f' }
+  }, CONFIG);
+}
+
+function renderBar(c, t) {
+  const accents = [c.pink, c.purple, c.yellow];
+  const traces = cats.map((cat, i) => ({
+    x: regions, y: barData[i], name: cat,
+    type: 'bar', marker: { color: accents[i], opacity: 0.85 }
+  }));
+  Plotly.react('chart-bar', traces, {
+    ...t, barmode: 'group', showlegend: true,
+    xaxis: { ...t.xaxis, color: c.muted },
+    yaxis: { ...t.yaxis, color: c.muted, tickformat: '$,.0f' }
+  }, CONFIG);
+}
+
+function renderScatter(c, t) {
+  const accents = [c.cyan, c.pink, c.green, c.orange];
+  const traces = scatRegions.map((r, i) => ({
+    x: scatterData[i].x, y: scatterData[i].y,
+    mode: 'markers', name: r,
+    marker: { color: accents[i], size: scatterData[i].size, opacity: 0.7, line: { width: 0 } }
+  }));
+  Plotly.react('chart-scatter', traces, {
+    ...t, showlegend: true,
+    xaxis: { ...t.xaxis, color: c.muted, title: { text: 'Ad Spend ($k)', font:{color:c.muted,size:9} } },
+    yaxis: { ...t.yaxis, color: c.muted, title: { text: 'Revenue', font:{color:c.muted,size:9} }, tickformat: '$,.0f' }
+  }, CONFIG);
+}
+
+function renderHeat(c, t) {
+  Plotly.react('chart-heat', [{
+    z: heatZ, x: vars, y: vars, type: 'heatmap',
+    colorscale: [ [0, '#c0392b'], [0.5, c.surface], [1, c.cyan] ],
+    showscale: true, zmin: -1, zmax: 1
+  }], {
+    ...t,
+    xaxis: { ...t.xaxis, color: c.muted, side: 'bottom' },
+    yaxis: { ...t.yaxis, color: c.muted, autorange: 'reversed' },
+    margin: { t: 16, b: 48, l: 68, r: 16 }
+  }, CONFIG);
+}
+
+function renderSunburst(c, t) {
+  Plotly.react('chart-sunburst', [{
+    type: 'sunburst',
+    labels: ['Total','West','East','South','W-Pro','W-Start','W-Ent','E-Pro','E-Start','S-Pro','S-Start','S-Ent'],
+    parents: ['','Total','Total','Total','West','West','West','East','East','South','South','South'],
+    values: [0, 0, 0, 0, 48000,22000,61000, 31000,18000, 27000,12000,38000],
+    branchvalues: 'total',
+    marker: {
+      colors: sunburstColors[c.theme === 'light' ? 'light' : 'dark'],
+      line: { color: c.bg, width: 2 }
+    },
+    textfont: { color: c.text, size: 11 },
+    hovertemplate: '<b>%{label}</b><br>Revenue: $%{value:,}<extra></extra>'
+  }], { ...t, margin: { t: 0, b: 0, l: 0, r: 0 } }, CONFIG);
+}
+
+function renderAll() {
+  const c = tc();
+  const t = plotlyTheme(c);
+  renderLine(c, t);
+  renderBar(c, t);
+  renderScatter(c, t);
+  renderHeat(c, t);
+  renderSunburst(c, t);
+}
+
+// ── THEME TOGGLE — default stays dark; honour a saved choice. ──
+function updateToggleUI() {
+  const light = root.dataset.theme === 'light';
+  const btn = document.querySelector('.theme-toggle');
+  if (!btn) return;
+  btn.querySelector('.ti').textContent = light ? '◐' : '◑';
+  btn.querySelector('.tl').textContent = light ? 'Dark' : 'Light';
+}
+
+function toggleTheme() {
+  root.dataset.theme = root.dataset.theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('theme', root.dataset.theme);
+  updateToggleUI();
+  renderAll();           // live re-theme every chart in place
+}
+
+const saved = localStorage.getItem('theme');
+if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
+updateToggleUI();
+renderAll();             // first paint in the active (default dark) theme
 </script>
 </body>
 </html>

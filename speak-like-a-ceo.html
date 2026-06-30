@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,15 +11,51 @@
   --bg: #0a0a0a;
   --surface: #111;
   --surface2: #171717;
+  --row-hover: #161616;
   --red: #c0392b;
   --red-dim: rgba(192,57,43,0.12);
   --green: #27ae60;
   --green-dim: rgba(39,174,96,0.1);
   --gold: #f0a500;
   --gold-dim: rgba(240,165,0,0.1);
+  --purple: #9b59b6;
+  --blue: #2980b9;
+  --orange: #e67e22;
+  --banned-text: #e57373;
+  --better-text: #81c784;
+  --better-why: rgba(129,199,132,0.6);
+  --phrase-soft: #c8c4bc;
+  --faint: #333;
+  --book-why: #555;
   --text: #e8e4dc;
   --muted: #666;
   --border: #222;
+}
+
+/* ── LIGHT THEME — warm editorial "ivory desk" re-tone ── */
+[data-theme="light"] {
+  --bg: #f3efe6;          /* warm cream paper */
+  --surface: #fbf8f1;     /* card stock */
+  --surface2: #ece4d5;    /* tab / header panel */
+  --row-hover: #f1ebdf;
+  --red: #a23226;         /* deep brick */
+  --red-dim: rgba(162,50,38,0.08);
+  --green: #1f7a45;       /* forest */
+  --green-dim: rgba(31,122,69,0.09);
+  --gold: #9a6a11;        /* restrained brass accent */
+  --gold-dim: rgba(154,106,17,0.12);
+  --purple: #7d3c98;
+  --blue: #1f618d;
+  --orange: #b9651a;
+  --banned-text: #9c2f24;
+  --better-text: #1e7344;
+  --better-why: rgba(30,114,68,0.85);
+  --phrase-soft: #4a443c;
+  --faint: #b3a78f;       /* faint warm tan (arrows / footer / big numerals) */
+  --book-why: #837a6b;
+  --text: #1c1813;        /* warm near-black ink */
+  --muted: #7a7062;       /* warm gray */
+  --border: #ddd3c0;      /* tan rule */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -149,7 +185,7 @@ body {
   transition: background 0.2s;
 }
 
-.swap-row:hover { background: #161616; }
+.swap-row:hover { background: var(--row-hover); }
 
 .swap-banned {
   padding: 18px;
@@ -164,7 +200,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #333;
+  color: var(--faint);
   font-size: 14px;
 }
 
@@ -182,8 +218,8 @@ body {
   line-height: 1.45;
 }
 
-.phrase-banned { color: #e57373; }
-.phrase-better { color: #81c784; }
+.phrase-banned { color: var(--banned-text); }
+.phrase-better { color: var(--better-text); }
 
 .phrase-why {
   font-size: 10px;
@@ -192,7 +228,7 @@ body {
   letter-spacing: 0.02em;
 }
 
-.why-good { color: rgba(129,199,132,0.6); }
+.why-good { color: var(--better-why); }
 
 /* ── CEO GREETING MATRIX ── */
 .greet-section {
@@ -369,7 +405,7 @@ body {
   font-family: 'Libre Baskerville', serif;
   font-size: 0.85rem;
   line-height: 1.45;
-  color: #c8c4bc;
+  color: var(--phrase-soft);
   border-bottom: 1px solid var(--border);
   transition: background 0.15s, color 0.15s;
   cursor: default;
@@ -431,7 +467,7 @@ body {
 
 .book-why {
   font-size: 10px;
-  color: #555;
+  color: var(--book-why);
   line-height: 1.6;
 }
 
@@ -492,7 +528,7 @@ footer {
   font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #333;
+  color: var(--faint);
   text-align: center;
   animation: rise 0.7s 0.6s ease both;
   opacity: 0;
@@ -516,9 +552,47 @@ footer {
   .power-cats { grid-template-columns: 1fr; }
   .books-grid { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── THEME TOGGLE ── */
+html { transition: background-color 0.3s; }
+body { transition: background-color 0.3s, color 0.3s; }
+
+.theme-toggle {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 8px 13px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.3s;
+}
+
+.theme-toggle:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.theme-toggle .ti {
+  font-size: 13px;
+  line-height: 1;
+}
 </style>
 </head>
 <body>
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light and dark theme">
+  <span class="ti">◑</span><span class="tl">Light</span>
+</button>
 <div class="page">
 
   <!-- HERO -->
@@ -657,22 +731,22 @@ footer {
       <div class="ctx-panel active">
         <div class="greeting-cards">
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#27ae60"></div><span style="color:#27ae60">Strong open</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--green)"></div><span style="color:var(--green)">Strong open</span></div>
             <div class="g-phrase">"Before we get into the agenda — is there anything that's shifted since we last spoke that I should know about?"</div>
             <div class="g-why">Signals situational awareness. Immediately relevant. Shows you're listening, not just presenting.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#27ae60"></div><span style="color:#27ae60">Strong open</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--green)"></div><span style="color:var(--green)">Strong open</span></div>
             <div class="g-phrase">"I want to use our time well today — what would make this conversation most valuable for you?"</div>
             <div class="g-why">Reframes the meeting as a service to them. Immediately differentiates you.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#f0a500"></div><span style="color:#f0a500">Executive level</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--gold)"></div><span style="color:var(--gold)">Executive level</span></div>
             <div class="g-phrase">"I've been thinking about what you said last time about X — I wanted to start there."</div>
             <div class="g-why">Demonstrates retention and respect. Every executive appreciates being remembered precisely.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#f0a500"></div><span style="color:#f0a500">Executive level</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--gold)"></div><span style="color:var(--gold)">Executive level</span></div>
             <div class="g-phrase">"I'll keep this tight — three things I want your input on, then the floor is yours."</div>
             <div class="g-why">Signals respect for their time before a single word of content. Sets a structured, confident tone.</div>
           </div>
@@ -682,22 +756,22 @@ footer {
       <div class="ctx-panel">
         <div class="greeting-cards">
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#27ae60"></div><span style="color:#27ae60">Strong open</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--green)"></div><span style="color:var(--green)">Strong open</span></div>
             <div class="g-phrase">"I've been looking forward to this conversation — I've heard good things about your work on [X]."</div>
             <div class="g-why">Specific flattery beats generic. Shows you prepared. Immediately builds rapport.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#27ae60"></div><span style="color:#27ae60">Strong open</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--green)"></div><span style="color:var(--green)">Strong open</span></div>
             <div class="g-phrase">"What's the problem you're most focused on solving right now?"</div>
             <div class="g-why">Bold but effective. Cuts to substance. The kind of question executives respect immediately.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#f0a500"></div><span style="color:#f0a500">Executive level</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--gold)"></div><span style="color:var(--gold)">Executive level</span></div>
             <div class="g-phrase">"I'd love to understand how you got to where you are — not the resume version, the real version."</div>
             <div class="g-why">Disarms. Invites authenticity. Signals psychological safety and genuine curiosity.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#f0a500"></div><span style="color:#f0a500">Executive level</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--gold)"></div><span style="color:var(--gold)">Executive level</span></div>
             <div class="g-phrase">"What's your honest take on where the industry is heading — not the PR answer?"</div>
             <div class="g-why">Signals you can handle real conversation. Creates instant intellectual intimacy.</div>
           </div>
@@ -707,22 +781,22 @@ footer {
       <div class="ctx-panel">
         <div class="greeting-cards">
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#27ae60"></div><span style="color:#27ae60">Strong open</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--green)"></div><span style="color:var(--green)">Strong open</span></div>
             <div class="g-phrase">"It's been a while — I'd love to hear what's changed for you since we last connected."</div>
             <div class="g-why">Warmer than "how have you been," but still invites a substantive answer.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#27ae60"></div><span style="color:#27ae60">Strong open</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--green)"></div><span style="color:var(--green)">Strong open</span></div>
             <div class="g-phrase">"Last time we spoke you were working through [X] — did that ever resolve itself?"</div>
             <div class="g-why">Retention is the highest compliment. People feel seen when you remember specific details.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#f0a500"></div><span style="color:#f0a500">Executive level</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--gold)"></div><span style="color:var(--gold)">Executive level</span></div>
             <div class="g-phrase">"I've followed your trajectory from a distance — what's been the most clarifying experience in that time?"</div>
             <div class="g-why">Elevates the reconnection to a real exchange. Invites reflection, not status updates.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#f0a500"></div><span style="color:#f0a500">Executive level</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--gold)"></div><span style="color:var(--gold)">Executive level</span></div>
             <div class="g-phrase">"I owe you a proper conversation — you've been on my list for months."</div>
             <div class="g-why">Warm, direct, and honest. Signals you value them without being sycophantic.</div>
           </div>
@@ -732,22 +806,22 @@ footer {
       <div class="ctx-panel">
         <div class="greeting-cards">
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#27ae60"></div><span style="color:#27ae60">Strong open</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--green)"></div><span style="color:var(--green)">Strong open</span></div>
             <div class="g-phrase">"I saw what you accomplished with [project] — what did that process actually look like from the inside?"</div>
             <div class="g-why">Acknowledges the win, then goes deeper. Shows genuine curiosity, not just congratulations.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#27ae60"></div><span style="color:#27ae60">Strong open</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--green)"></div><span style="color:var(--green)">Strong open</span></div>
             <div class="g-phrase">"That outcome was impressive — what's the part of the journey people aren't seeing?"</div>
             <div class="g-why">Invites the real story. People are hungry to share the hard parts when asked well.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#f0a500"></div><span style="color:#f0a500">Executive level</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--gold)"></div><span style="color:var(--gold)">Executive level</span></div>
             <div class="g-phrase">"Congratulations is the easy part — I want to understand what you had to give up to make that happen."</div>
             <div class="g-why">Acknowledges tradeoffs. Signals intellectual depth and respect for the difficulty of achievement.</div>
           </div>
           <div class="g-card">
-            <div class="g-tier"><div class="tier-dot" style="background:#f0a500"></div><span style="color:#f0a500">Executive level</span></div>
+            <div class="g-tier"><div class="tier-dot" style="background:var(--gold)"></div><span style="color:var(--gold)">Executive level</span></div>
             <div class="g-phrase">"The result speaks for itself — but I'd be curious what you'd do differently with what you now know."</div>
             <div class="g-why">Rare question. Signals you think at a systems level, not just outcomes.</div>
           </div>
@@ -761,32 +835,32 @@ footer {
   <section class="mindset-section">
     <div class="sec-label">CEO Communication Framework</div>
     <div class="framework-grid">
-      <div class="fw-block" style="--block-color:#f0a500">
+      <div class="fw-block" style="--block-color:var(--gold)">
         <div class="fw-num">01</div>
         <div class="fw-title">Lead with Insight, Not Information</div>
         <div class="fw-desc">Never open with facts. Open with your interpretation of facts. "The numbers are in — and what they tell me is..." signals a thinker, not a reporter.</div>
       </div>
-      <div class="fw-block" style="--block-color:#27ae60">
+      <div class="fw-block" style="--block-color:var(--green)">
         <div class="fw-num">02</div>
         <div class="fw-title">Ask Better Questions Than They Expect</div>
         <div class="fw-desc">The quality of your questions signals the depth of your thinking. One incisive question outweighs ten correct answers. It shows you've already processed the basics.</div>
       </div>
-      <div class="fw-block" style="--block-color:#c0392b">
+      <div class="fw-block" style="--block-color:var(--red)">
         <div class="fw-num">03</div>
         <div class="fw-title">Name the Tension in the Room</div>
         <div class="fw-desc">Executives trust people who say what others are thinking. "I want to name something that may be uncomfortable" instantly elevates your perceived authority.</div>
       </div>
-      <div class="fw-block" style="--block-color:#9b59b6">
+      <div class="fw-block" style="--block-color:var(--purple)">
         <div class="fw-num">04</div>
         <div class="fw-title">Speak in Threes</div>
         <div class="fw-desc">Structure everything in three: "My read on this is X. The risk I see is Y. The move I'd recommend is Z." It sounds complete, disciplined, and memorable.</div>
       </div>
-      <div class="fw-block" style="--block-color:#2980b9">
+      <div class="fw-block" style="--block-color:var(--blue)">
         <div class="fw-num">05</div>
         <div class="fw-title">Disagree with Precision</div>
         <div class="fw-desc">"I'd push back on one thing" is more powerful than "I disagree." It signals surgical thinking. You're not rejecting — you're improving.</div>
       </div>
-      <div class="fw-block" style="--block-color:#e67e22">
+      <div class="fw-block" style="--block-color:var(--orange)">
         <div class="fw-num">06</div>
         <div class="fw-title">Close Every Exchange with Intent</div>
         <div class="fw-desc">Never let a conversation just end. "What I'm taking from this is X — and I'll follow up on Y by Z date." Closes the loop. Signals execution mindset.</div>
@@ -842,37 +916,37 @@ footer {
     <div class="sec-label">Books Worth Your 20-per-Year Slots</div>
     <div class="books-grid">
       <div class="book-card">
-        <div class="book-spine" style="background:#f0a500"></div>
+        <div class="book-spine" style="background:var(--gold)"></div>
         <div class="book-title">Never Split the Difference</div>
         <div class="book-author">Chris Voss</div>
         <div class="book-why">FBI negotiation tactics translated to everyday conversation. Tactical empathy, mirroring, calibrated questions.</div>
       </div>
       <div class="book-card">
-        <div class="book-spine" style="background:#27ae60"></div>
+        <div class="book-spine" style="background:var(--green)"></div>
         <div class="book-title">Talk Like TED</div>
         <div class="book-author">Carmine Gallo</div>
         <div class="book-why">Deconstructs what makes the most-watched talks compelling. Structure, emotional content, novelty.</div>
       </div>
       <div class="book-card">
-        <div class="book-spine" style="background:#c0392b"></div>
+        <div class="book-spine" style="background:var(--red)"></div>
         <div class="book-title">Simply Said</div>
         <div class="book-author">Jay Sullivan</div>
         <div class="book-why">Executive communication distilled. Focus less on yourself; more on audience. Used at Goldman Sachs.</div>
       </div>
       <div class="book-card">
-        <div class="book-spine" style="background:#9b59b6"></div>
+        <div class="book-spine" style="background:var(--purple)"></div>
         <div class="book-title">The Art of Thinking Clearly</div>
         <div class="book-author">Rolf Dobelli</div>
         <div class="book-why">99 cognitive biases. Knowing them makes your arguments sharper and your thinking harder to attack.</div>
       </div>
       <div class="book-card">
-        <div class="book-spine" style="background:#2980b9"></div>
+        <div class="book-spine" style="background:var(--blue)"></div>
         <div class="book-title">How to Win Friends & Influence People</div>
         <div class="book-author">Dale Carnegie</div>
         <div class="book-why">Still the foundational text. The principles are timeless: genuine interest, names, listening.</div>
       </div>
       <div class="book-card">
-        <div class="book-spine" style="background:#e67e22"></div>
+        <div class="book-spine" style="background:var(--orange)"></div>
         <div class="book-title">Exactly What to Say</div>
         <div class="book-author">Phil M. Jones</div>
         <div class="book-why">Short, tactical. Specific language patterns that lower resistance and open minds. Highly practical.</div>
@@ -927,6 +1001,27 @@ footer {
 </div>
 
 <script>
+// Theme toggle
+function applyThemeLabel(t) {
+  const btn = document.querySelector('.theme-toggle');
+  if (!btn) return;
+  btn.querySelector('.ti').textContent = t === 'light' ? '◐' : '◑';
+  btn.querySelector('.tl').textContent = t === 'light' ? 'Dark' : 'Light';
+}
+function toggleTheme() {
+  const root = document.documentElement;
+  const t = root.dataset.theme === 'light' ? 'dark' : 'light';
+  root.dataset.theme = t;
+  applyThemeLabel(t);
+  try { localStorage.setItem('ceo-theme', t); } catch (e) {}
+}
+(function () {
+  let t = 'dark';
+  try { t = localStorage.getItem('ceo-theme') || 'dark'; } catch (e) {}
+  document.documentElement.dataset.theme = t;
+  applyThemeLabel(t);
+})();
+
 // Tab switching
 const tabs = document.querySelectorAll('.ctx-tab');
 const panels = document.querySelectorAll('.ctx-panel');
