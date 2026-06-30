@@ -331,7 +331,8 @@
   .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
   .loop-preview pre {
     font-family: var(--mono); font-size: 12px; line-height: 1.65;
-    color: var(--text); padding: 14px 16px; overflow-x: auto; margin: 0; flex: 1;
+    color: var(--text); padding: 14px 16px; margin: 0; flex: 1;
+    white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2;
   }
   .loop-preview pre .c { color: var(--dim); }
   .loop-preview pre .k { color: var(--blue); }
@@ -1035,24 +1036,31 @@ function render() {
   fillEl.style.background = COLORS[done];
   statusEl.innerHTML = STATUS[done];
 
-  const g = c => `<span class="c">${c}</span>`;
+  const g = c => `<span class="c">${esc(c)}</span>`;
   const k = w => `<span class="k">${w}</span>`;
-  const cm = (label, val, ph) => g('# ' + label + ': ' + esc(oneLine(val || ph, 64)));
+  const cm = (label, val, ph) => g('# ' + label + ': ' + oneLine(val || ph, 52));
 
   skeletonEl.innerHTML =
 `${cm('GOAL', v.goal, '‹define your goal›')}
 GOAL  = goal_spec()
-TOOLS = [ ${esc(oneLine(v.action || '‹tools›', 48))} ]   ${g('# ACTION')}
-state = load_state()                 ${cm('CONTEXT', v.context, '‹where state lives›')}
 
-${k('for')} step ${k('in')} range(MAX_STEPS):       ${cm('STOP', v.stop, '‹max steps / cost cap›')}
+${cm('CONTEXT', v.context, '‹where state lives between turns›')}
+state = load_state()
+
+${cm('ACTION', v.action, '‹the tools the agent can fire›')}
+TOOLS = [ read_file, write_file, run, commit ]
+
+${k('for')} step ${k('in')} range(MAX_STEPS):
     result = agent.act(GOAL, state, TOOLS)
-    state  = save_state(result)      ${g('# memory persists between turns')}
+    state  = save_state(result)   ${g('# memory persists')}
 
-    ${k('if')} <span class="v">verify</span>(state):              ${cm('VERIFY', v.verify, '‹the hard gate›')}
-        ${k('break')}                       ${g('# success — goal holds')}
-${k('else')}:
-    escalate(${g('"stop hit before goal — human review"')})`;
+    ${cm('VERIFY', v.verify, '‹the hard gate›')}
+    ${k('if')} <span class="v">verify</span>(state):
+        ${k('break')}   ${g('# success — goal holds')}
+
+    ${cm('STOP', v.stop, '‹max steps / cost cap / no-progress›')}
+    ${k('if')} no_progress(state) ${k('or')} over_budget():
+        escalate(${g('"human review"')})`;
 }
 
 document.querySelectorAll('.preset-btn').forEach(btn => {
