@@ -33,6 +33,8 @@ Or jump directly to any guide:
 | **AI System Design Patterns** | `https://drodriguez74.github.io/visual-learning-guides/ai-system-design-patterns.html` |
 | **Devin AI in Fintech** | `https://drodriguez74.github.io/visual-learning-guides/devin-fintech-explainer.html` |
 | **Loop Engineering** | `https://drodriguez74.github.io/visual-learning-guides/loop-engineering.html` |
+| **Claude Code — Signal Path** | `https://drodriguez74.github.io/visual-learning-guides/claude-code-mental-model.html` |
+| **Prompt Framework Field Guide** | `https://drodriguez74.github.io/visual-learning-guides/prompt-frameworks-field-guide.html` |
 
 ## Guides
 
@@ -350,6 +352,34 @@ Or jump directly to any guide:
 | **Stopping Conditions** | Success / Failure / Escalate grid + a real production failure (43-commit runaway with no verifier) |
 | **Prompt vs. Loop** | 8-row trade-off table across human role, memory, verification, risk surface, and cognitive risk |
 | **Comprehension Debt** | Animated bars — the gap between code shipped and code understood grows as oversight drops |
+
+---
+
+### 22 · Claude Code — Signal Path
+`claude-code-mental-model.html` — Dark warm terminal (JetBrains Mono + Source Serif 4) · Interactive · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Signal Path** | Clickable end-to-end trace of one tool call: Model → PreToolUse → Permission → PermissionRequest → Execute → PostToolUse — each gate explains what actually happens there |
+| **Context & CLAUDE.md** | Interactive token gauge across session start / mid-session / post-compaction — what loads eagerly vs. on demand, and what belongs in CLAUDE.md |
+| **Permission Modes** | Five modes × five actions matrix — which specific things stop asking and which stay guarded, including protected paths |
+| **Orchestration** | Subagent vs. fork vs. agent team — what context each worker starts with, what it solves, and how it's misused |
+| **Hooks** | Exit-code contract (0 / 1 / 2) — why the "conventional" failure code doesn't block, and which events can actually prevent an action |
+| **Skills vs. Hooks vs. MCP** | Scenario sorter — knowledge/procedure vs. hard rule vs. external system |
+| **Model & Effort** | Effort dial (low → max) — tier picks which mind, effort picks how hard it thinks per step |
+| **Headless & Security** | `-p` vs. `--bare -p` config inheritance; platform-enforced vs. your-job security boundaries |
+
+---
+
+### 23 · Prompt Framework Field Guide
+`prompt-frameworks-field-guide.html` — Dark editorial cards (Fraunces + JetBrains Mono + Inter) · Live prompt builder · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Nine Frameworks** | RACE, RISE, STAR, SOAP, CLEAR, PASTOR, FAB, 5W1H, GROW — each as a tabbed reference card with its letter breakdown |
+| **Reference Mode** | Every field defined (Role, Action, Context, Expectation, …) with a plain-language description |
+| **Build Mode** | Fill in each field and watch a ready-to-copy composed prompt assemble live, with copy-to-clipboard |
+| **When to Use Which** | Per-framework guidance — routine task vs. diagnosing a stuck process vs. recounting what happened vs. persuasion vs. coaching |
 
 ---
 

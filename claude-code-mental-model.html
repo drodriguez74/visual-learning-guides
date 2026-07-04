@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code — Signal Path</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#12110f;
+  --panel:#1a1815;
+  --panel-raised:#211f1a;
+  --paper:#e8e3d3;
+  --paper-dim:#a8a190;
+  --amber:#e8a33d;
+  --amber-dim:#8a6a35;
+  --teal:#5fb8ab;
+  --teal-dim:#3d6b64;
+  --rust:#c2453d;
+  --rust-dim:#7a352f;
+  --line:#3a362e;
+  --line-soft:#26241f;
+  --term-bg:#0a0908;
+  --mono:'JetBrains Mono', monospace;
+  --serif:'Source Serif 4', Georgia, serif;
+}
+[data-theme="light"]{
+  --ink:#efeade;
+  --panel:#fbf9f2;
+  --panel-raised:#e8e2d2;
+  --paper:#26231d;
+  --paper-dim:#6f6959;
+  --amber:#a4680f;
+  --amber-dim:#a5732a;
+  --teal:#2d7a6f;
+  --teal-dim:#6a9e96;
+  --rust:#b03a32;
+  --rust-dim:#c98077;
+  --line:#dcd4c2;
+  --line-soft:#ece6d6;
+  --term-bg:#efe9d9;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto;}
+  *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+}
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--paper);
+  font-family:var(--serif);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  transition:background 0.3s, color 0.3s;
+}
+a{color:var(--amber);}
+::selection{background:var(--amber-dim); color:var(--ink);}
+
+/* ---------- layout shell ---------- */
+.shell{display:flex; min-height:100vh;}
+.rail{
+  width:196px;
+  flex-shrink:0;
+  position:sticky;
+  top:0;
+  height:100vh;
+  border-right:1px solid var(--line);
+  padding:28px 0 28px 0;
+  overflow-y:auto;
+}
+.rail-brand{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:0.12em;
+  color:var(--paper-dim);
+  padding:0 22px 20px 22px;
+  border-bottom:1px solid var(--line-soft);
+  margin-bottom:14px;
+}
+.rail-brand strong{color:var(--amber); display:block; font-size:13px; letter-spacing:0.06em; margin-bottom:4px;}
+.rail-list{list-style:none; margin:0; padding:0;}
+.rail-list li{margin:0;}
+.rail-link{
+  display:block;
+  padding:9px 22px;
+  font-family:var(--mono);
+  font-size:11.5px;
+  letter-spacing:0.06em;
+  color:var(--paper-dim);
+  text-decoration:none;
+  border-left:2px solid transparent;
+  transition:color 0.15s, border-color 0.15s, background 0.15s;
+}
+.rail-link:hover{color:var(--paper); background:var(--line-soft);}
+.rail-link.active{color:var(--amber); border-left-color:var(--amber); background:var(--panel);}
+.rail-link .code{opacity:0.55; margin-right:8px;}
+
+.main{flex:1; min-width:0;}
+.wrap{max-width:860px; margin:0 auto; padding:0 40px;}
+
+/* ---------- hero ---------- */
+.hero{padding:72px 0 40px 0; border-bottom:1px solid var(--line);}
+.hero-eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:0.16em; color:var(--teal); text-transform:uppercase; margin-bottom:18px;}
+.hero h1{
+  font-family:var(--mono);
+  font-size:clamp(28px, 4vw, 42px);
+  font-weight:700;
+  letter-spacing:-0.01em;
+  margin:0 0 16px 0;
+  color:var(--paper);
+  line-height:1.15;
+}
+.hero p.lede{font-size:18px; color:var(--paper-dim); max-width:560px; margin:0 0 44px 0;}
+
+/* signal path svg */
+.signal-wrap{position:relative; margin:0 0 8px 0;}
+.signal-caption{font-family:var(--mono); font-size:11px; color:var(--paper-dim); letter-spacing:0.04em; margin-top:10px; min-height:36px;}
+.signal-caption strong{color:var(--amber);}
+svg.signal{width:100%; height:auto; display:block; overflow:visible;}
+.gate{cursor:pointer;}
+.gate rect{fill:var(--panel); stroke:var(--line); stroke-width:1.5; transition:stroke 0.2s, fill 0.2s;}
+.gate:hover rect, .gate.active rect{stroke:var(--amber); fill:var(--panel-raised);}
+.gate text{fill:var(--paper-dim); font-family:var(--mono); font-size:9.5px; text-anchor:middle; letter-spacing:0.02em; pointer-events:none;}
+.gate.active text{fill:var(--paper);}
+.pulse{fill:var(--amber); filter:drop-shadow(0 0 6px var(--amber));}
+.trackline{stroke:var(--line); stroke-width:2; fill:none;}
+
+/* ---------- sections / panels ---------- */
+section{padding:56px 0; border-bottom:1px solid var(--line);}
+section:last-of-type{border-bottom:none;}
+.mod-eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--amber-dim);
+  display:flex; align-items:center; gap:10px; margin-bottom:12px; text-transform:uppercase;
+}
+.mod-eyebrow::before{content:''; width:16px; height:1px; background:var(--amber-dim);}
+h2{font-family:var(--mono); font-size:24px; font-weight:600; margin:0 0 18px 0; color:var(--paper); letter-spacing:-0.01em;}
+h3{font-family:var(--mono); font-size:14px; font-weight:600; margin:28px 0 10px 0; color:var(--teal); letter-spacing:0.01em;}
+p{margin:0 0 16px 0; color:var(--paper);}
+p.dim{color:var(--paper-dim); font-size:15px;}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:3px; padding:22px 24px; margin:20px 0;}
+code, .kbd{font-family:var(--mono); font-size:0.88em; background:var(--panel-raised); padding:2px 6px; border-radius:2px; color:var(--teal);}
+ul.plain{margin:0 0 16px 0; padding-left:20px;}
+ul.plain li{margin-bottom:8px;}
+
+/* ---------- widget: gauge (context) ---------- */
+.gauge-widget{display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap;}
+.gauge-bar{flex:1; min-width:260px;}
+.gauge-track{
+  height:34px; border-radius:3px; background:var(--panel-raised); border:1px solid var(--line);
+  display:flex; overflow:hidden; margin-bottom:10px;
+}
+.gauge-seg{height:100%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:10px; letter-spacing:0.03em; color:var(--ink); white-space:nowrap; overflow:hidden; transition:flex-grow 0.4s;}
+.gauge-legend{font-family:var(--mono); font-size:11px; color:var(--paper-dim); display:flex; gap:18px; flex-wrap:wrap;}
+.gauge-legend span{display:inline-flex; align-items:center; gap:6px;}
+.dot{width:9px; height:9px; border-radius:2px; display:inline-block;}
+.toggle-row{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+.btn{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:0.03em; padding:8px 14px;
+  background:var(--panel-raised); border:1px solid var(--line); color:var(--paper-dim);
+  border-radius:3px; cursor:pointer; transition:all 0.15s;
+}
+.btn:hover{border-color:var(--paper-dim); color:var(--paper);}
+.btn.on{background:var(--amber-dim); border-color:var(--amber); color:var(--ink); font-weight:600;}
+.btn:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+
+/* ---------- widget: mode switches (permissions) ---------- */
+.mode-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:10px; margin-bottom:20px;}
+.mode-card{
+  background:var(--panel-raised); border:1px solid var(--line); border-radius:3px; padding:14px 14px 12px;
+  cursor:pointer; transition:border-color 0.15s, background 0.15s;
+}
+.mode-card:hover{border-color:var(--paper-dim);}
+.mode-card.sel{border-color:var(--amber); background:var(--panel);}
+.mode-card .m-name{font-family:var(--mono); font-size:12.5px; font-weight:700; color:var(--paper); margin-bottom:4px;}
+.mode-card .m-tag{font-family:var(--mono); font-size:10px; color:var(--paper-dim);}
+.action-list{display:flex; flex-direction:column; gap:8px;}
+.action-row{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:var(--panel-raised); border:1px solid var(--line-soft); border-radius:3px; padding:10px 14px;
+}
+.action-name{font-family:var(--mono); font-size:12.5px; color:var(--paper);}
+.verdict{font-family:var(--mono); font-size:11px; letter-spacing:0.05em; padding:4px 10px; border-radius:12px; white-space:nowrap; font-weight:600;}
+.v-allow{background:rgba(95,184,171,0.18); color:var(--teal);}
+.v-ask{background:rgba(232,163,61,0.18); color:var(--amber);}
+.v-deny{background:rgba(194,69,61,0.18); color:var(--rust);}
+
+/* ---------- widget: route diagram (subagents) ---------- */
+.route-tabs{display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap;}
+.route-view{display:none;}
+.route-view.show{display:block;}
+.ctx-blob{
+  border:1.5px dashed var(--line); border-radius:6px; padding:12px 14px; font-family:var(--mono); font-size:11px;
+  color:var(--paper-dim); margin-bottom:8px;
+}
+.ctx-blob.full{border-color:var(--teal); color:var(--paper);}
+.ctx-blob.partial{border-color:var(--amber); color:var(--paper);}
+.ctx-blob .lbl{display:block; font-size:9.5px; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:5px; opacity:0.8;}
+.route-diagram{display:flex; gap:16px; align-items:stretch; flex-wrap:wrap;}
+.route-col{flex:1; min-width:180px;}
+
+/* ---------- widget: hooks exit codes ---------- */
+.exit-row{display:flex; gap:8px; margin-bottom:16px;}
+.exit-btn{
+  font-family:var(--mono); font-size:13px; font-weight:700; width:48px; height:48px; border-radius:3px;
+  background:var(--panel-raised); border:1.5px solid var(--line); color:var(--paper-dim); cursor:pointer;
+}
+.exit-btn:hover{border-color:var(--paper-dim);}
+.exit-btn.sel{border-color:currentColor;}
+.exit-btn[data-code="0"].sel{color:var(--teal); border-color:var(--teal);}
+.exit-btn[data-code="2"].sel{color:var(--rust); border-color:var(--rust);}
+.exit-btn[data-code="1"].sel{color:var(--amber); border-color:var(--amber);}
+.exit-result{
+  font-family:var(--mono); font-size:12.5px; padding:16px 18px; border-radius:3px; background:var(--panel-raised);
+  border-left:3px solid var(--line);
+}
+
+/* ---------- widget: decision sorter ---------- */
+.decide-btns{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;}
+.decide-card{
+  font-family:var(--serif); font-size:14.5px; text-align:left; padding:14px 16px; border-radius:3px;
+  background:var(--panel-raised); border:1px solid var(--line); color:var(--paper); cursor:pointer; flex:1; min-width:220px;
+}
+.decide-card:hover{border-color:var(--paper-dim);}
+.decide-card .tag{font-family:var(--mono); font-size:10px; letter-spacing:0.06em; color:var(--paper-dim); display:block; margin-bottom:6px; text-transform:uppercase;}
+.decide-answer{display:none;}
+.decide-answer.show{display:block;}
+.answer-badge{
+  display:inline-block; font-family:var(--mono); font-size:11px; font-weight:700; letter-spacing:0.05em;
+  padding:5px 12px; border-radius:12px; margin-bottom:12px; text-transform:uppercase;
+}
+.b-skill{background:rgba(232,163,61,0.18); color:var(--amber);}
+.b-hook{background:rgba(194,69,61,0.18); color:var(--rust);}
+.b-mcp{background:rgba(95,184,171,0.18); color:var(--teal);}
+
+/* ---------- widget: effort dial ---------- */
+.dial-widget{display:flex; gap:30px; align-items:center; flex-wrap:wrap;}
+.dial-track{position:relative; flex:1; min-width:260px; height:6px; background:var(--panel-raised); border-radius:3px; margin:30px 0;}
+.dial-fill{position:absolute; top:0; left:0; height:100%; background:var(--amber-dim); border-radius:3px; transition:width 0.25s;}
+.dial-ticks{display:flex; justify-content:space-between; position:relative;}
+.dial-tick{
+  width:16px; height:16px; border-radius:50%; background:var(--panel); border:2px solid var(--line); cursor:pointer;
+  position:relative; top:-11px; transition:border-color 0.2s, background 0.2s;
+}
+.dial-tick.sel{border-color:var(--amber); background:var(--amber);}
+.dial-labels{display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; color:var(--paper-dim); margin-top:-22px;}
+.dial-readout{
+  min-width:220px; background:var(--panel-raised); border-left:3px solid var(--amber); padding:14px 16px; border-radius:3px;
+}
+.dial-readout .d-name{font-family:var(--mono); font-weight:700; color:var(--paper); font-size:13px; margin-bottom:6px;}
+.dial-readout .d-desc{font-size:13.5px; color:var(--paper-dim); margin:0;}
+
+/* ---------- widget: headless toggle ---------- */
+.headless-toggle{display:flex; gap:8px; margin-bottom:14px;}
+.term{
+  font-family:var(--mono); font-size:12.5px; background:var(--term-bg); border:1px solid var(--line); border-radius:3px;
+  padding:18px 20px; overflow-x:auto; line-height:1.7;
+}
+.term .prompt{color:var(--teal);}
+.term .c{color:var(--paper-dim);}
+.term .flag{color:var(--amber);}
+.hl-view{display:none;}
+.hl-view.show{display:block;}
+
+/* ---------- widget: security map ---------- */
+.sec-map{display:grid; grid-template-columns:1fr; gap:2px; border:1px solid var(--line); border-radius:3px; overflow:hidden;}
+.sec-row{display:flex; align-items:center; gap:14px; padding:11px 16px; background:var(--panel-raised);}
+.sec-row.blocked{background:rgba(194,69,61,0.08);}
+.sec-row.writable{background:rgba(95,184,171,0.06);}
+.sec-icon{font-family:var(--mono); font-size:10px; font-weight:700; width:64px; flex-shrink:0; letter-spacing:0.04em;}
+.sec-row.blocked .sec-icon{color:var(--rust);}
+.sec-row.writable .sec-icon{color:var(--teal);}
+.sec-row.readonly .sec-icon{color:var(--amber);}
+.sec-path{font-family:var(--mono); font-size:12.5px; color:var(--paper);}
+.sec-note{font-size:13px; color:var(--paper-dim); margin-left:auto; text-align:right; max-width:280px;}
+
+/* ---------- closing ---------- */
+.closing{padding:64px 0 100px;}
+.leverage-grid{display:grid; grid-template-columns:1fr; gap:14px; margin:24px 0;}
+.leverage-card{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--teal); border-radius:3px; padding:20px 22px;}
+.leverage-card h4{font-family:var(--mono); font-size:13.5px; color:var(--paper); margin:0 0 8px 0;}
+.leverage-card p{font-size:14.5px; color:var(--paper-dim); margin:0;}
+.caveat{border-left-color:var(--rust); background:rgba(194,69,61,0.05);}
+
+footer{padding:32px 40px; border-top:1px solid var(--line); font-family:var(--mono); font-size:11px; color:var(--paper-dim); text-align:center;}
+
+.theme-toggle{
+  position:fixed; top:14px; right:16px; z-index:300;
+  background:var(--panel); border:1px solid var(--line); color:var(--paper-dim);
+  font-family:var(--mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase;
+  padding:6px 13px; border-radius:20px; cursor:pointer;
+  transition:color 0.2s, border-color 0.2s, background 0.2s;
+}
+.theme-toggle:hover{color:var(--amber); border-color:var(--amber);}
+.theme-toggle:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+
+@media (max-width: 760px){
+  .rail{display:none;}
+  .wrap{padding:0 22px;}
+  .hero{padding:44px 0 32px;}
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">☾ Dark</button>
+
+<div class="shell">
+  <nav class="rail" id="rail">
+    <div class="rail-brand"><strong>CLAUDE CODE</strong>signal path / a working model</div>
+    <ul class="rail-list">
+      <li><a class="rail-link" href="#hero"><span class="code">◆</span>overview</a></li>
+      <li><a class="rail-link" href="#ctx"><span class="code">01</span>context</a></li>
+      <li><a class="rail-link" href="#gates"><span class="code">02</span>permissions</a></li>
+      <li><a class="rail-link" href="#route"><span class="code">03</span>orchestration</a></li>
+      <li><a class="rail-link" href="#hooks"><span class="code">04</span>hooks</a></li>
+      <li><a class="rail-link" href="#decision"><span class="code">05</span>skills/mcp</a></li>
+      <li><a class="rail-link" href="#dial"><span class="code">06</span>model & effort</a></li>
+      <li><a class="rail-link" href="#headless"><span class="code">07</span>headless</a></li>
+      <li><a class="rail-link" href="#security"><span class="code">08</span>security</a></li>
+      <li><a class="rail-link" href="#closing"><span class="code">◆</span>leverage</a></li>
+    </ul>
+  </nav>
+
+  <main class="main">
+    <div class="wrap">
+
+      <header class="hero" id="hero">
+        <div class="hero-eyebrow">a working mental model</div>
+        <h1>Everything is a gate<br>on a signal path.</h1>
+        <p class="lede">One tool call, traced end to end. Click a gate to see what actually happens there — this sequence is the skeleton every other concept in this page attaches to.</p>
+
+        <div class="signal-wrap">
+          <svg class="signal" viewBox="0 0 860 190" xmlns="http://www.w3.org/2000/svg">
+            <path class="trackline" d="M 40 95 H 820"></path>
+            <circle id="pulse" class="pulse" cx="40" cy="95" r="6"></circle>
+
+            <g class="gate" data-key="model" transform="translate(20,60)">
+              <rect x="0" y="0" width="90" height="70" rx="4"></rect>
+              <text x="45" y="28">MODEL</text>
+              <text x="45" y="42">emits tool</text>
+              <text x="45" y="54">request</text>
+            </g>
+
+            <g class="gate" data-key="pre" transform="translate(150,60)">
+              <rect x="0" y="0" width="100" height="70" rx="4"></rect>
+              <text x="50" y="28">PreToolUse</text>
+              <text x="50" y="42">hooks fire</text>
+              <text x="50" y="54">(can block)</text>
+            </g>
+
+            <g class="gate" data-key="perm" transform="translate(290,60)">
+              <rect x="0" y="0" width="100" height="70" rx="4"></rect>
+              <text x="50" y="28">PERMISSION</text>
+              <text x="50" y="42">mode checks</text>
+              <text x="50" y="54">allow/ask/deny</text>
+            </g>
+
+            <g class="gate" data-key="ask" transform="translate(430,60)">
+              <rect x="0" y="0" width="100" height="70" rx="4"></rect>
+              <text x="50" y="28">PermissionRequest</text>
+              <text x="50" y="42">hook may</text>
+              <text x="50" y="54">answer for you</text>
+            </g>
+
+            <g class="gate" data-key="exec" transform="translate(570,60)">
+              <rect x="0" y="0" width="90" height="70" rx="4"></rect>
+              <text x="45" y="28">EXECUTE</text>
+              <text x="45" y="42">tool runs</text>
+              <text x="45" y="54">for real</text>
+            </g>
+
+            <g class="gate" data-key="post" transform="translate(700,60)">
+              <rect x="0" y="0" width="100" height="70" rx="4"></rect>
+              <text x="50" y="28">PostToolUse</text>
+              <text x="50" y="42">can reshape</text>
+              <text x="50" y="54">the result</text>
+            </g>
+          </svg>
+          <div class="signal-caption" id="signalCaption">Click any gate above — start with <strong>PreToolUse</strong>, the one people misuse most.</div>
+        </div>
+      </header>
+
+      <!-- 01 CONTEXT -->
+      <section id="ctx">
+        <div class="mod-eyebrow">mod.01 — context &amp; CLAUDE.md</div>
+        <h2>What loads eagerly vs. on demand</h2>
+        <p>CLAUDE.md is paid for on every single turn, whether it's relevant or not. Skills and MCP schemas are deferred — they only cost tokens once something actually triggers them. This is the whole game of keeping a session cheap.</p>
+
+        <div class="panel">
+          <div class="toggle-row" role="group" aria-label="session state">
+            <button class="btn on" data-ctxstate="start">session start</button>
+            <button class="btn" data-ctxstate="working">mid-session, skill invoked</button>
+            <button class="btn" data-ctxstate="compact">just after compaction</button>
+          </div>
+          <div class="gauge-widget">
+            <div class="gauge-bar">
+              <div class="gauge-track" id="gaugeTrack"></div>
+              <p class="dim" id="gaugeNote" style="margin:0; font-size:13px;"></p>
+            </div>
+          </div>
+        </div>
+
+        <h3>What belongs in CLAUDE.md</h3>
+        <p>Facts and standing rules that apply to <em>every</em> session — architecture conventions, "TypeScript/Playwright, not Selenium," where things live. Not procedures you invoke occasionally (that's a skill), not one-time instructions (that's your prompt), not large reference material (link it, or make it a skill's supporting file). A section that reads like a runbook — "first do X, then check Y" — is a sign it should move to a skill instead.</p>
+
+        <h3>Degradation, in one sentence</h3>
+        <p class="dim">If Claude "forgets" a rule from 40 turns ago, that's compaction working as intended, not misbehaving — the fix is writing the rule down (CLAUDE.md) or enforcing it deterministically (a hook), not repeating yourself more forcefully.</p>
+      </section>
+
+      <!-- 02 PERMISSIONS -->
+      <section id="gates">
+        <div class="mod-eyebrow">mod.02 — permission modes</div>
+        <h2>The same five actions, five different modes</h2>
+        <p>Pick a mode. Watch what happens to the same set of actions. The tradeoff is never "safe vs. fast" — it's <em>which specific things</em> stop asking, and which stay guarded no matter what.</p>
+
+        <div class="panel">
+          <div class="mode-grid" id="modeGrid"></div>
+          <div class="action-list" id="actionList"></div>
+        </div>
+        <p class="dim" style="font-size:13.5px;">Protected paths — <code>.git</code>, <code>.claude</code>, <code>.mcp.json</code>, shell rc files — are the one row that never fully clears, in any mode except the one built for isolated containers.</p>
+      </section>
+
+      <!-- 03 ORCHESTRATION -->
+      <section id="route">
+        <div class="mod-eyebrow">mod.03 — subagents, forks &amp; teams</div>
+        <h2>Three ways to hand off work — and what each one remembers</h2>
+        <p>The question that actually matters isn't "which is more powerful," it's <strong>what context does the worker start with</strong>. That answer changes what you have to tell it.</p>
+
+        <div class="route-tabs" role="tablist">
+          <button class="btn on" data-route="subagent">subagent</button>
+          <button class="btn" data-route="fork">fork</button>
+          <button class="btn" data-route="team">agent team</button>
+        </div>
+
+        <div class="route-view show" id="route-subagent">
+          <div class="route-diagram">
+            <div class="route-col">
+              <div class="ctx-blob"><span class="lbl">starts with</span>own system prompt + delegation message Claude writes + CLAUDE.md + git snapshot</div>
+              <div class="ctx-blob"><span class="lbl">does NOT see</span>your conversation history, files already read</div>
+            </div>
+            <div class="route-col">
+              <p class="dim" style="font-size:13.5px; margin-top:0;"><strong style="color:var(--paper)">Solves:</strong> context pollution. A search or log dump that would flood your main window gets isolated — you get a summary back, not the raw material.</p>
+              <p class="dim" style="font-size:13.5px;"><strong style="color:var(--paper)">Misuse:</strong> assuming it "knows what we've been discussing." It doesn't — vague delegation makes it research from scratch.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="route-view" id="route-fork">
+          <div class="route-diagram">
+            <div class="route-col">
+              <div class="ctx-blob full"><span class="lbl">starts with</span>the ENTIRE parent conversation — same system prompt, tools, model, full history</div>
+              <div class="ctx-blob"><span class="lbl">stays isolated</span>its own tool calls — only the final result returns</div>
+            </div>
+            <div class="route-col">
+              <p class="dim" style="font-size:13.5px; margin-top:0;"><strong style="color:var(--paper)">Solves:</strong> "a subagent would need too much background to be useful." No re-briefing required — and the first request reuses the parent's prompt cache, so it's cheaper than it looks.</p>
+              <p class="dim" style="font-size:13.5px;"><strong style="color:var(--paper)">Use it when:</strong> the task genuinely needs everything discussed so far — e.g. drafting a regression test for a bug you just spent 20 turns diagnosing.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="route-view" id="route-team">
+          <div class="route-diagram">
+            <div class="route-col">
+              <div class="ctx-blob partial"><span class="lbl">starts with</span>a fully separate Claude Code instance, own context window, own CLAUDE.md/skills</div>
+              <div class="ctx-blob"><span class="lbl">does NOT inherit</span>the lead's conversation — you must give task context explicitly</div>
+            </div>
+            <div class="route-col">
+              <p class="dim" style="font-size:13.5px; margin-top:0;"><strong style="color:var(--paper)">Solves:</strong> work that benefits from perspectives arguing with each other, not just running in parallel — teammates message each other directly and self-claim from a shared task list.</p>
+              <p class="dim" style="font-size:13.5px;"><strong style="color:var(--paper)">Misuse:</strong> reaching for this by default because it's new and impressive. Anthropic's own docs say a single session or a subagent is more effective for anything sequential — teams cost real tokens for the coordination.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 04 HOOKS -->
+      <section id="hooks">
+        <div class="mod-eyebrow">mod.04 — hooks</div>
+        <h2>The exit code is the entire contract</h2>
+        <p>A hook's shell command signals through its exit code — nothing else. Try each one. Notice which code most people assume works, and doesn't.</p>
+
+        <div class="panel">
+          <div class="exit-row" role="group" aria-label="exit code">
+            <button class="exit-btn" data-code="0">0</button>
+            <button class="exit-btn" data-code="1">1</button>
+            <button class="exit-btn" data-code="2">2</button>
+          </div>
+          <div class="exit-result" id="exitResult">Pick an exit code above.</div>
+        </div>
+
+        <h3>Where it actually gets enforced</h3>
+        <p class="dim">Only events with real prevention semantics can block: <code>PreToolUse</code>, <code>PermissionRequest</code>, <code>UserPromptSubmit</code>. <code>PostToolUse</code> fires after the action already happened — good for logging or telling Claude the result was bad, useless for stopping it. And the <code>if</code> filter is best-effort: it <em>fails open</em> on unparseable Bash syntax, so it's a convenience filter, not a security boundary — that job belongs to permission deny-rules.</p>
+      </section>
+
+      <!-- 05 SKILLS/HOOKS/MCP -->
+      <section id="decision">
+        <div class="mod-eyebrow">mod.05 — skills vs. hooks vs. mcp</div>
+        <h2>Sort the request into the right bucket</h2>
+        <p>All three "extend" Claude Code, which is exactly why they get conflated. The boundary isn't capability — it's what kind of thing you're adding. Click a scenario.</p>
+
+        <div class="decide-btns" id="decideBtns">
+          <button class="decide-card" data-d="skill"><span class="tag">scenario A</span>"Here's how we structure dispute-classification prompts in this codebase."</button>
+          <button class="decide-card" data-d="mcp"><span class="tag">scenario B</span>"Connect to our GitLab so Claude can check MR status."</button>
+          <button class="decide-card" data-d="hook"><span class="tag">scenario C</span>"No MR may be created without 50% test coverage. Ever."</button>
+        </div>
+
+        <div class="panel decide-answer" id="decideAnswer"></div>
+      </section>
+
+      <!-- 06 MODEL & EFFORT -->
+      <section id="dial">
+        <div class="mod-eyebrow">mod.06 — model &amp; effort</div>
+        <h2>Effort is a dial, not a toggle</h2>
+        <p>Model tier picks <em>which mind</em> is working. Effort picks <em>how hard it thinks per step</em>, independent of the model. Drag the dial.</p>
+
+        <div class="panel dial-widget">
+          <div style="flex:2; min-width:280px;">
+            <div class="dial-track">
+              <div class="dial-fill" id="dialFill"></div>
+              <div class="dial-ticks" id="dialTicks"></div>
+            </div>
+            <div class="dial-labels">
+              <span>low</span><span>medium</span><span>high</span><span>xhigh</span><span>max</span>
+            </div>
+          </div>
+          <div class="dial-readout" id="dialReadout"></div>
+        </div>
+        <p class="dim" style="font-size:13.5px;"><code>high</code> is the default on Sonnet 5 / Opus 4.8 / Fable 5 for a reason — don't move the dial without one. <code>ultrathink</code> in a single prompt borrows <code>xhigh</code>-style depth for one step without changing the session setting.</p>
+      </section>
+
+      <!-- 07 HEADLESS -->
+      <section id="headless">
+        <div class="mod-eyebrow">mod.07 — headless mode</div>
+        <h2>Same engine, one flag changes what loads</h2>
+        <div class="headless-toggle" role="group">
+          <button class="btn on" data-hl="interactive">interactive session</button>
+          <button class="btn" data-hl="print">-p (with local config)</button>
+          <button class="btn" data-hl="bare">--bare -p (CI-safe)</button>
+        </div>
+
+        <div class="hl-view show" id="hl-interactive">
+          <div class="term"><span class="prompt">$</span> claude<br><span class="c"># loads your ~/.claude hooks, project CLAUDE.md, skills, MCP — waits for you at every prompt</span></div>
+        </div>
+        <div class="hl-view" id="hl-print">
+          <div class="term"><span class="prompt">$</span> claude <span class="flag">-p</span> "check coverage floor"<br><span class="c"># STILL loads your full local config — usually right for a personal script, usually wrong for CI</span></div>
+        </div>
+        <div class="hl-view" id="hl-bare">
+          <div class="term"><span class="prompt">$</span> claude <span class="flag">--bare -p</span> "check coverage floor" \<br>&nbsp;&nbsp;<span class="flag">--allowedTools</span> "Read,Bash(cat *)" \<br>&nbsp;&nbsp;<span class="flag">--output-format</span> json<br><span class="c"># only flags you pass explicitly apply — a teammate's stray hook can't touch this run</span></div>
+        </div>
+        <p class="dim" style="font-size:13.5px; margin-top:16px;">The bug people hit isn't "headless is missing a feature" — it's forgetting that <code>-p</code> alone still inherits whatever's sitting in <code>~/.claude</code> on the machine running it.</p>
+      </section>
+
+      <!-- 08 SECURITY -->
+      <section id="security">
+        <div class="mod-eyebrow">mod.08 — security &amp; compliance boundaries</div>
+        <h2>What's actually enforced by the platform vs. by you</h2>
+        <div class="sec-map">
+          <div class="sec-row writable"><span class="sec-icon">R/W</span><span class="sec-path">working directory + subtree</span><span class="sec-note">Default read/write scope. Files outside it are readable with permission, never written.</span></div>
+          <div class="sec-row blocked"><span class="sec-icon">BLOCKED</span><span class="sec-path">.git, .claude, .mcp.json, shell rc files</span><span class="sec-note">Protected in every mode except the one built for isolated containers. Structural, not policy.</span></div>
+          <div class="sec-row readonly"><span class="sec-icon">YOUR JOB</span><span class="sec-path">e.g. payment-processing/ (PCI scope)</span><span class="sec-note">No native data-classification concept. Enforce with deny-rules + hooks — the platform gives primitives, not policy.</span></div>
+        </div>
+        <p class="dim" style="font-size:13.5px; margin-top:16px;">Tool <em>results</em> — fetched pages, MCP responses, file contents — are treated as data, never instructions. That's why a hook's <code>additionalContext</code> should read as a fact ("this repo uses <code>bun test</code>") rather than a command — imperative phrasing trips the same defense meant to catch injected instructions.</p>
+      </section>
+
+      <!-- CLOSING -->
+      <section id="closing" class="closing">
+        <div class="mod-eyebrow">synthesis</div>
+        <h2>What actually separates the leverage</h2>
+        <div class="leverage-grid">
+          <div class="leverage-card">
+            <h4>1. Context is the scarce resource — everything else is that discipline, applied six ways</h4>
+            <p>CLAUDE.md, skills, subagents, forks, and compaction are all answers to one question: does this token deserve to be in front of the model right now? Ask it before writing anything down.</p>
+          </div>
+          <div class="leverage-card">
+            <h4>2. Hooks as policy infrastructure, not a linter trigger</h4>
+            <p>Most "hook users" run a formatter after edits. Real leverage treats hooks as the deterministic backbone under everything probabilistic — enforcement, audit logging, self-correction loops. More setup cost, which is exactly why it's underused.</p>
+          </div>
+          <div class="leverage-card">
+            <h4>3. Choosing orchestration shape by dependency structure, not novelty</h4>
+            <p>Agent teams look impressive. They're right for a genuinely ambiguous, adversarial-benefit problem and overkill for almost everything else. The skill is recognizing the minority case, not defaulting to the shiny one.</p>
+          </div>
+          <div class="leverage-card caveat">
+            <h4>Honest caveat</h4>
+            <p>A lot of "levels of context engineering" content is post-hoc narrative on a small number of real mechanisms: persist, isolate, or defer. Understand those three verbs and you have the substance — frameworks past that are mostly vocabulary.</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+    <footer>built from docs.claude.com — verified, not recalled</footer>
+  </main>
+</div>
+
+<script>
+// ---------- theme toggle ----------
+function toggleTheme(){
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('cc-mental-theme', html.dataset.theme); } catch(e){}
+  syncThemeLabel();
+}
+function syncThemeLabel(){
+  const btn = document.getElementById('theme-toggle');
+  if(!btn) return;
+  btn.textContent = document.documentElement.dataset.theme === 'light' ? '☀ Light' : '☾ Dark';
+}
+try {
+  const saved = localStorage.getItem('cc-mental-theme');
+  if(saved) document.documentElement.dataset.theme = saved;
+} catch(e){}
+syncThemeLabel();
+
+// ---------- nav active state ----------
+const railLinks = document.querySelectorAll('.rail-link');
+const sections = document.querySelectorAll('section, header.hero');
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id = e.target.id;
+      railLinks.forEach(l=>l.classList.toggle('active', l.getAttribute('href') === '#'+id));
+    }
+  });
+}, {rootMargin:'-40% 0px -50% 0px'});
+sections.forEach(s=>io.observe(s));
+
+// ---------- signal path ----------
+const gateInfo = {
+  model: "The model doesn't act — it emits a <strong>request</strong> (tool name + arguments). Everything downstream is Claude Code's harness deciding what happens with that request.",
+  pre: "<strong>PreToolUse</strong> hooks run first, matched by tool name and an optional <code>if</code> pattern on the arguments. A hook here can allow, deny, ask, or rewrite the input entirely before anything executes — this is the only point where you can stop an action before it happens.",
+  perm: "The permission system evaluates allow/deny rules from settings, then permission-mode defaults. In <code>auto</code> mode this step is a classifier reviewing the action; in <code>bypassPermissions</code> this step is skipped entirely — which is why that mode has zero protection, not just fewer prompts.",
+  ask: "If a prompt is needed, a <strong>PermissionRequest</strong> hook gets first crack at answering on the user's behalf — before the human ever sees a dialog. Useful for auto-approving a narrow, well-understood case without weakening the mode globally.",
+  exec: "The tool actually runs. Nothing before this point had real-world side effects — which is exactly why <code>PreToolUse</code>, not <code>PostToolUse</code>, is where you put anything meant to prevent an action.",
+  post: "<strong>PostToolUse</strong> fires after success (or <strong>PostToolUseFailure</strong> after failure) and can inject context or rewrite the tool's output before the model sees it — e.g. redacting a secret from a log dump. It cannot undo what already happened."
+};
+const pulse = document.getElementById('pulse');
+const caption = document.getElementById('signalCaption');
+const gates = document.querySelectorAll('.gate');
+const gateCenters = {};
+gates.forEach(g=>{
+  const rect = g.querySelector('rect');
+  const tf = g.getAttribute('transform').match(/translate\(([-\d.]+),([-\d.]+)\)/);
+  const tx = parseFloat(tf[1]), ty = parseFloat(tf[2]);
+  const w = parseFloat(rect.getAttribute('width'));
+  gateCenters[g.dataset.key] = {x: tx + w/2, y: ty + 35};
+});
+gates.forEach(g=>{
+  g.addEventListener('click', ()=>{
+    gates.forEach(o=>o.classList.remove('active'));
+    g.classList.add('active');
+    const c = gateCenters[g.dataset.key];
+    pulse.setAttribute('cx', c.x);
+    pulse.setAttribute('cy', c.y);
+    caption.innerHTML = gateInfo[g.dataset.key];
+  });
+});
+
+// ---------- context gauge ----------
+const gaugeData = {
+  start: {segs:[
+      {w:34, c:'var(--amber)', label:'CLAUDE.md'},
+      {w:10, c:'var(--amber-dim)', label:'memory'},
+      {w:8, c:'var(--teal-dim)', label:'git status'},
+      {w:6, c:'var(--teal-dim)', label:'skill names'},
+      {w:6, c:'var(--teal-dim)', label:'MCP names'},
+      {w:36, c:'var(--line-soft)', label:'headroom'}
+    ], note:'Session start: CLAUDE.md and memory are the only heavy, unconditional cost. Skills and MCP contribute only their names/descriptions here — bodies aren\'t loaded yet.'},
+  working: {segs:[
+      {w:34, c:'var(--amber)', label:'CLAUDE.md'},
+      {w:10, c:'var(--amber-dim)', label:'memory'},
+      {w:18, c:'var(--teal)', label:'invoked skill body'},
+      {w:8, c:'var(--teal-dim)', label:'MCP schema (1 server)'},
+      {w:30, c:'var(--line-soft)', label:'headroom'}
+    ], note:'Invoking a skill pulls its full body into context. Calling an MCP tool pulls that server\'s schema, deferred until now — not paid at session start.'},
+  compact: {segs:[
+      {w:34, c:'var(--amber)', label:'CLAUDE.md'},
+      {w:10, c:'var(--amber-dim)', label:'memory'},
+      {w:14, c:'var(--teal)', label:'re-attached skills (capped)'},
+      {w:42, c:'var(--line-soft)', label:'freed headroom'}
+    ], note:'Compaction clears old tool output and summarizes conversation. CLAUDE.md/memory survive intact; invoked skills keep only their first 5,000 tokens each, 25,000 shared across all of them.'}
+};
+function renderGauge(key){
+  const track = document.getElementById('gaugeTrack');
+  const note = document.getElementById('gaugeNote');
+  track.innerHTML = '';
+  gaugeData[key].segs.forEach(s=>{
+    const seg = document.createElement('div');
+    seg.className = 'gauge-seg';
+    seg.style.flexGrow = s.w;
+    seg.style.background = s.c;
+    if(s.w > 12) seg.textContent = s.label;
+    track.appendChild(seg);
+  });
+  note.textContent = gaugeData[key].note;
+}
+document.querySelectorAll('[data-ctxstate]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-ctxstate]').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    renderGauge(b.dataset.ctxstate);
+  });
+});
+renderGauge('start');
+
+// ---------- permission modes ----------
+const modes = {
+  default: {tag:'ask on everything', name:'default'},
+  acceptEdits: {tag:'edits & safe fs auto-run', name:'acceptEdits'},
+  plan: {tag:'research only, propose first', name:'plan'},
+  auto: {tag:'classifier reviews all', name:'auto'},
+  bypassPermissions: {tag:'zero checks — container only', name:'bypassPermissions'}
+};
+const actions = [
+  {name:'Edit a file in the working directory'},
+  {name:'Run `git push`'},
+  {name:'Write to .git/config'},
+  {name:'Run `mkdir` / `mv` in working dir'},
+  {name:"Run an arbitrary Bash network call"}
+];
+const verdicts = {
+  default:      ['ask','ask','ask','ask','ask'],
+  acceptEdits:  ['allow','ask','ask','allow','ask'],
+  plan:         ['ask','deny','deny','ask','deny'],
+  auto:         ['allow','ask','ask','allow','ask'],
+  bypassPermissions: ['allow','allow','allow','allow','allow']
+};
+const vLabel = {allow:['ALLOW','v-allow'], ask:['ASK','v-ask'], deny:['DENY','v-deny']};
+let curMode = 'default';
+function renderModes(){
+  const grid = document.getElementById('modeGrid');
+  grid.innerHTML = '';
+  Object.entries(modes).forEach(([key,m])=>{
+    const card = document.createElement('div');
+    card.className = 'mode-card' + (key===curMode ? ' sel':'');
+    card.innerHTML = `<div class="m-name">${m.name}</div><div class="m-tag">${m.tag}</div>`;
+    card.addEventListener('click', ()=>{ curMode = key; renderModes(); renderActions(); });
+    grid.appendChild(card);
+  });
+}
+function renderActions(){
+  const list = document.getElementById('actionList');
+  list.innerHTML = '';
+  actions.forEach((a,i)=>{
+    const v = verdicts[curMode][i];
+    const [label, cls] = vLabel[v];
+    const row = document.createElement('div');
+    row.className = 'action-row';
+    row.innerHTML = `<span class="action-name">${a.name}</span><span class="verdict ${cls}">${label}</span>`;
+    list.appendChild(row);
+  });
+}
+renderModes(); renderActions();
+
+// ---------- orchestration tabs ----------
+document.querySelectorAll('[data-route]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-route]').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    document.querySelectorAll('.route-view').forEach(v=>v.classList.remove('show'));
+    document.getElementById('route-'+b.dataset.route).classList.add('show');
+  });
+});
+
+// ---------- hooks exit codes ----------
+const exitInfo = {
+  0: "<strong style='color:var(--teal)'>Success.</strong> Claude Code reads stdout as JSON if present. The action proceeded (or was already decided upstream) and the hook's job was just to report.",
+  1: "<strong style='color:var(--amber)'>Non-blocking error — even though 1 is the conventional Unix failure code.</strong> This is the most common hook bug: a script meant to enforce policy exits 1 on failure, and Claude Code treats that as a soft, ignorable error. Nothing was actually blocked.",
+  2: "<strong style='color:var(--rust)'>Blocking error.</strong> Any JSON on stdout is ignored; stderr becomes the error message fed back to the model. This is the exit code that actually stops the action — and the only one that does."
+};
+document.querySelectorAll('.exit-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.exit-btn').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel');
+    document.getElementById('exitResult').innerHTML = exitInfo[b.dataset.code];
+  });
+});
+
+// ---------- skills/hooks/mcp sorter ----------
+const decideInfo = {
+  skill: {badge:['SKILL','b-skill'], text:"This is knowledge/procedure — \"how we do X in this codebase.\" It should load only when Claude's actually working on dispute classification, not sit in context for every unrelated task. That's a skill: description always visible, full body loads on invocation."},
+  mcp: {badge:['MCP SERVER','b-mcp'], text:"GitLab has its own live state that changes independent of this session — that's a genuine external system, not a procedure. Building a skill to \"remember how to check MR status\" would mean re-deriving an API integration in prose. Connect it as MCP instead."},
+  hook: {badge:['HOOK','b-hook'], text:"This must be true every time, regardless of what the model decides — a rule, not a suggestion. A skill only fires when Claude judges it relevant; this can't be optional. Enforce it at PreToolUse, backed by a permission deny-rule as the hard boundary."}
+};
+document.querySelectorAll('#decideBtns .decide-card').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const info = decideInfo[b.dataset.d];
+    const box = document.getElementById('decideAnswer');
+    box.innerHTML = `<span class="answer-badge ${info.badge[1]}">${info.badge[0]}</span><p style="margin:0; font-size:14.5px;">${info.text}</p>`;
+    box.classList.add('show');
+  });
+});
+
+// ---------- effort dial ----------
+const dialData = [
+  {name:'low', desc:'Latency-sensitive, scoped, not intelligence-sensitive. e.g. rename a variable across one file.'},
+  {name:'medium', desc:'Cost-sensitive work that can trade some intelligence. Routine CRUD generation.'},
+  {name:'high', desc:'Default on Sonnet 5 / Opus 4.8 / Fable 5. Right for almost everything — don\'t touch without a reason.'},
+  {name:'xhigh', desc:'Deep reasoning at real token cost. Architectural decisions, root-cause debugging on ambiguous bugs.'},
+  {name:'max', desc:'Diminishing returns, prone to overthinking. Test before adopting — "more" isn\'t automatically better.'}
+];
+const dialTicks = document.getElementById('dialTicks');
+const dialFill = document.getElementById('dialFill');
+const dialReadout = document.getElementById('dialReadout');
+dialData.forEach((d,i)=>{
+  const tick = document.createElement('div');
+  tick.className = 'dial-tick' + (i===2 ? ' sel':'');
+  tick.dataset.i = i;
+  tick.setAttribute('role','button');
+  tick.setAttribute('tabindex','0');
+  tick.setAttribute('aria-label', d.name);
+  tick.addEventListener('click', ()=>setDial(i));
+  tick.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' ') setDial(i); });
+  dialTicks.appendChild(tick);
+});
+function setDial(i){
+  document.querySelectorAll('.dial-tick').forEach(t=>t.classList.toggle('sel', +t.dataset.i===i));
+  dialFill.style.width = (i/(dialData.length-1)*100)+'%';
+  dialReadout.innerHTML = `<div class="d-name">${dialData[i].name}</div><p class="d-desc">${dialData[i].desc}</p>`;
+}
+setDial(2);
+
+// ---------- headless toggle ----------
+document.querySelectorAll('[data-hl]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('[data-hl]').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    document.querySelectorAll('.hl-view').forEach(v=>v.classList.remove('show'));
+    document.getElementById('hl-'+b.dataset.hl).classList.add('show');
+  });
+});
+</script>
+</body>
+</html>
