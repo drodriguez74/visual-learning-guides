@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude Code — The Ladder</title>
+<meta name="description" content="A self-guided, interactive curriculum for mastering Claude Code from first launch to multi-agent teams." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #09090c;
+    --bg-raised: #0f0f14;
+    --surface: #14141b;
+    --surface-2: #1b1b24;
+    --border: #26262f;
+    --border-soft: #1d1d26;
+    --text: #eceef2;
+    --text-dim: #9a9aa8;
+    --text-faint: #5c5c6a;
+    --accent: #8b6bff;
+    --accent-2: #5b7fff;
+    --accent-soft: rgba(139,107,255,0.14);
+    --accent-soft-2: rgba(91,127,255,0.08);
+    --accent-line: rgba(139,107,255,0.35);
+    --success: #34d399;
+    --success-soft: rgba(52,211,153,0.14);
+    --amber: #f5b942;
+    --term-bg: #0c0c11;
+    --term-bar-bg: #0f0f14;
+    --term-text: #bdf2c9;
+    --term-border: #26262f;
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  [data-theme="light"]{
+    --bg: #f3f2f7;
+    --bg-raised: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #edebf6;
+    --border: #dbd9e6;
+    --border-soft: #e7e5f1;
+    --text: #17161f;
+    --text-dim: #53525f;
+    --text-faint: #8a8895;
+    --accent: #6a3ff5;
+    --accent-2: #3d5de0;
+    --accent-soft: rgba(106,63,245,0.08);
+    --accent-soft-2: rgba(61,93,224,0.06);
+    --accent-line: rgba(106,63,245,0.3);
+    --success: #0e9a63;
+    --success-soft: rgba(14,154,99,0.10);
+    --amber: #ad6c07;
+    --term-bg: #eceafa;
+    --term-bar-bg: #ffffff;
+    --term-text: #157a45;
+    --term-border: #dbd9e6;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; margin:0; padding:0; }
+  body{
+    background:
+      radial-gradient(1200px 600px at 85% -10%, var(--accent-soft), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, var(--accent-soft-2), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 200ms ease, color 200ms ease;
+  }
+  ::selection{ background: var(--accent-soft); color: var(--text); }
+  ::-webkit-scrollbar{ width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track{ background: transparent; }
+  ::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 999px; border: 2px solid var(--bg); }
+  a{ color: inherit; }
+  button{ font-family: inherit; }
+
+  .font-mono{ font-family: var(--mono); }
+  .eyebrow{
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .icon{ width: 1em; height: 1em; display:inline-block; vertical-align:-0.125em; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---------- App shell ---------- */
+  .app-shell{ display:flex; min-height:100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width: 320px;
+    flex-shrink: 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg-raised) 60%, transparent);
+    overflow-y: auto;
+  }
+  .sidebar-brand{
+    display:flex; align-items:center; gap:0.65rem;
+    padding: 1.65rem 1.5rem 1.15rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .brand-mark{
+    width: 2rem; height: 2rem; border-radius: 0.5rem; flex-shrink:0;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center; color:#fff;
+  }
+  .brand-course{ font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-faint); line-height:1; }
+  .brand-title{ font-weight: 700; font-size: 0.98rem; line-height:1.25; margin-top: 0.3rem; }
+
+  .sidebar-progress{
+    display:flex; align-items:center; gap:1rem;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .progress-ring-track{ stroke: var(--border); }
+  .progress-ring-fill{
+    stroke: url(#ringGradient);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 600ms cubic-bezier(.22,1,.36,1);
+  }
+  .ring-stop-a{ stop-color: var(--accent); }
+  .ring-stop-b{ stop-color: var(--accent-2); }
+  .progress-pct{ font-family: var(--mono); font-size: 1.1rem; font-weight: 700; }
+  .progress-count{ font-size: 0.72rem; color: var(--text-faint); margin-top: 0.15rem; }
+
+  .ladder-rail{
+    position: relative;
+    padding: 1.4rem 1.5rem 1.4rem 2.85rem;
+    flex: 1;
+  }
+  .ladder-rail::before{
+    content:"";
+    position:absolute;
+    left: 1.55rem;
+    top: 1.8rem;
+    bottom: 1.8rem;
+    width: 2px;
+    background: var(--border);
+    z-index: 0;
+  }
+  .ladder-rail-fill{
+    position:absolute;
+    left: 1.55rem;
+    top: 1.8rem;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent-2));
+    box-shadow: 0 0 10px var(--accent-line);
+    z-index: 1;
+    transition: height 500ms cubic-bezier(.22,1,.36,1);
+  }
+  .rung-btn{
+    position: relative;
+    z-index: 2;
+    display:flex;
+    align-items:center;
+    gap: 0.85rem;
+    width: 100%;
+    text-align:left;
+    padding: 0.6rem 0.7rem;
+    margin-bottom: 0.2rem;
+    border-radius: 0.6rem;
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease;
+  }
+  .rung-btn:hover{ background: var(--surface); }
+  .rung-btn.active{ background: var(--surface-2); border-color: var(--border); }
+  .rung-node{
+    position:relative;
+    left: -2.15rem;
+    flex-shrink:0;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 999px;
+    background: var(--bg-raised);
+    border: 2px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    transition: all 220ms ease;
+  }
+  .rung-btn.active .rung-node{ border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .rung-node.complete{ border-color: var(--success); background: var(--success-soft); color: var(--success); }
+  .rung-body{ margin-left: -1.5rem; min-width:0; }
+  .rung-title{
+    display:block;
+    font-size: 0.86rem; font-weight: 600; color: var(--text); line-height: 1.3;
+    white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
+  }
+  .rung-meta{ display:block; font-family: var(--mono); font-size: 0.68rem; color: var(--text-faint); margin-top: 0.2rem; }
+  .rung-meta.done{ color: var(--success); }
+
+  .sidebar-footer{ padding: 1rem 1.5rem 1.4rem; border-top: 1px solid var(--border-soft); display:flex; gap:0.6rem; }
+  .ghost-btn{
+    display:flex; align-items:center; justify-content:center; gap: 0.4rem;
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.03em;
+    color: var(--text-faint); background: transparent;
+    border: 1px solid var(--border); border-radius: 0.5rem;
+    padding: 0.55rem 0.7rem; cursor:pointer; transition: all 150ms ease;
+    flex: 1;
+  }
+  .ghost-btn:hover{ color: var(--text); border-color: var(--accent-line); }
+
+  /* ---------- Mobile topbar ---------- */
+  .mobile-topbar{
+    display:none;
+    position: fixed; top:0; left:0; right:0; z-index: 40;
+    align-items:center; justify-content:space-between;
+    padding: 0.85rem 1.1rem;
+    background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-topbar .brand-mini{ display:flex; align-items:center; gap:0.55rem; font-weight:700; font-size:0.92rem; }
+  .icon-btn{
+    display:flex; align-items:center; justify-content:center;
+    width: 2.1rem; height: 2.1rem;
+    border: 1px solid var(--border); border-radius: 0.5rem;
+    background: transparent; color: var(--text); cursor:pointer;
+  }
+  .mobile-drawer{
+    display:none;
+    position: fixed; inset:0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 97%, transparent);
+    backdrop-filter: blur(6px);
+    padding: 4.5rem 1.2rem 1.5rem;
+    overflow-y:auto;
+  }
+  .mobile-drawer.open{ display:block; }
+
+  /* ---------- Main viewport ---------- */
+  .main{ flex:1; min-width:0; }
+  .main-inner{ max-width: 760px; margin: 0 auto; padding: 3.5rem 1.75rem 5rem; }
+
+  .rung-panel{ display:none; }
+  .rung-panel.active{ display:block; animation: fadein 260ms ease; }
+  @keyframes fadein{ from{opacity:0; transform: translateY(6px);} to{opacity:1; transform:none;} }
+
+  .rung-header{ margin-bottom: 2rem; }
+  .rung-heading{ font-size: clamp(1.5rem, 3vw, 1.9rem); font-weight: 700; letter-spacing: -0.01em; margin: 0.65rem 0 0.75rem; text-wrap: balance; }
+  .rung-tagline{ color: var(--text-dim); font-size: 0.98rem; line-height: 1.65; max-width: 40rem; margin:0; }
+  .rung-progress-row{ display:flex; align-items:center; gap: 0.85rem; margin-top: 1.25rem; }
+  .rung-progress-track{ flex:1; max-width: 220px; height: 0.35rem; border-radius: 999px; background: var(--surface-2); overflow:hidden; }
+  .rung-progress-fill{ height:100%; border-radius:999px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 400ms ease; }
+  .rung-progress-label{ font-family: var(--mono); font-size: 0.72rem; color: var(--text-faint); }
+
+  /* ---------- Steps / accordion ---------- */
+  .steps{ display:flex; flex-direction:column; gap: 0.75rem; }
+  .step{
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 0.9rem;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 420ms ease, transform 420ms ease, border-color 200ms ease;
+  }
+  .step.revealed{ opacity:1; transform:none; }
+  .step-head{
+    display:flex; align-items:center; gap: 0.9rem;
+    width:100%; padding: 1.1rem 1.25rem; cursor:pointer;
+    background: transparent; border:none; text-align:left; color: var(--text);
+  }
+  .step-head:hover{ background: var(--surface-2); }
+  .step-index{ font-family: var(--mono); font-size: 0.7rem; color: var(--text-faint); flex-shrink:0; }
+  .step-title{ font-weight: 600; font-size: 0.95rem; }
+  .step-chevron{ margin-left:auto; flex-shrink:0; transition: transform 280ms cubic-bezier(.22,1,.36,1); color: var(--text-faint); width:1.1rem; height:1.1rem; }
+  .step.open .step-chevron{ transform: rotate(180deg); color: var(--accent); }
+  .step-panel{ display:grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms cubic-bezier(.22,1,.36,1); }
+  .step.open .step-panel{ grid-template-rows: 1fr; }
+  .step-panel-inner{ overflow:hidden; }
+  .step-content{ padding: 0 1.25rem 1.4rem 1.25rem; border-top: 1px solid var(--border-soft); padding-top: 1.1rem; }
+
+  .prose-body p{ margin: 0 0 0.85rem 0; color: var(--text-dim); font-size: 0.94rem; line-height: 1.7; }
+  .prose-body p:last-child{ margin-bottom:0; }
+  .prose-body code{
+    font-family: var(--mono); background: var(--surface-2); border: 1px solid var(--border);
+    padding: 0.08rem 0.4rem; border-radius: 0.3rem; font-size: 0.85em; color: var(--accent);
+  }
+
+  /* ---------- Terminal chrome ---------- */
+  .terminal{ background: var(--term-bg); border: 1px solid var(--term-border); border-radius: 0.65rem; overflow:hidden; margin: 0.9rem 0; }
+  .terminal-bar{ display:flex; align-items:center; justify-content:space-between; padding: 0.55rem 0.85rem; background: var(--term-bar-bg); border-bottom: 1px solid var(--term-border); }
+  .terminal-dots{ display:flex; gap:0.4rem; }
+  .terminal-dots span{ width:0.6rem; height:0.6rem; border-radius:999px; display:block; }
+  .terminal-body{ padding: 0.9rem 1.1rem; font-family: var(--mono); font-size: 0.84rem; color: var(--term-text); line-height: 1.7; overflow-x:auto; white-space: pre; }
+  .terminal-body .prompt{ color: var(--text-faint); user-select:none; }
+  .copy-btn{
+    display:flex; align-items:center; gap:0.35rem;
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.03em;
+    color: var(--text-dim); background: var(--surface-2); border: 1px solid var(--border);
+    padding: 0.28rem 0.55rem; border-radius: 0.4rem; cursor:pointer; transition: all 150ms ease;
+  }
+  .copy-btn:hover{ color: var(--text); border-color: var(--accent-line); }
+  .copy-btn.copied{ color: var(--success); border-color: var(--success); }
+  .copy-btn .icon{ width: 0.85rem; height: 0.85rem; }
+
+  /* ---------- Exercise card ---------- */
+  .exercise{
+    display:flex; gap: 0.9rem; padding: 1rem; border-radius: 0.7rem;
+    border: 1px dashed var(--border);
+    background: linear-gradient(180deg, var(--accent-soft), transparent 60%);
+    margin-top: 1rem;
+  }
+  .exercise.done{ border-style: solid; border-color: var(--success); background: linear-gradient(180deg, var(--success-soft), transparent 70%); }
+  .exercise-check{
+    flex-shrink:0; width: 1.4rem; height: 1.4rem; margin-top: 0.1rem;
+    border-radius: 0.4rem; border: 1.5px solid var(--border); background: var(--bg-raised);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; transition: all 150ms ease; padding:0;
+  }
+  .exercise-check:hover{ border-color: var(--accent); }
+  .exercise.done .exercise-check{ background: var(--success); border-color: var(--success); }
+  .exercise-check .icon{ width: 0.8rem; height: 0.8rem; color:#06110c; opacity:0; transition: opacity 120ms ease; }
+  .exercise.done .exercise-check .icon{ opacity:1; }
+  .exercise-text{ font-size: 0.92rem; color: var(--text-dim); line-height:1.55; }
+  .exercise.done .exercise-text{ color: var(--text); }
+  .exercise-label{ font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); display:block; margin-bottom: 0.3rem; }
+
+  .rung-nav{ display:flex; align-items:center; justify-content:space-between; margin-top: 2.5rem; border-top: 1px solid var(--border-soft); padding-top: 1.5rem; }
+  .rung-nav button{ font-family: var(--mono); font-size: 0.78rem; background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:0.4rem; padding:0; }
+  .rung-nav-prev{ color: var(--text-dim); }
+  .rung-nav-prev:hover{ color: var(--text); }
+  .rung-nav-next{ color: var(--accent); }
+  .rung-nav-next:hover{ opacity:0.8; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+    .step{ opacity:1 !important; transform:none !important; }
+  }
+
+  @media (max-width: 959px){
+    .sidebar{ display:none; }
+    .mobile-topbar{ display:flex; }
+    .main-inner{ padding-top: 5.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop class="ring-stop-a" offset="0%"/>
+      <stop class="ring-stop-b" offset="100%"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR (desktop) ============ -->
+  <aside class="sidebar" id="sidebarDesktop">
+    <div class="sidebar-brand">
+      <div class="brand-mark">
+        <svg class="icon" viewBox="0 0 24 24" style="width:1.1rem;height:1.1rem;"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      </div>
+      <div>
+        <div class="brand-course">Self-guided course</div>
+        <div class="brand-title">Claude Code — The Ladder</div>
+      </div>
+    </div>
+
+    <div class="sidebar-progress">
+      <svg width="52" height="52" viewBox="0 0 56 56" style="flex-shrink:0; transform:rotate(-90deg);">
+        <circle cx="28" cy="28" r="24" fill="none" stroke-width="4" class="progress-ring-track"/>
+        <circle id="ringFill" cx="28" cy="28" r="24" fill="none" stroke-width="4" class="progress-ring-fill" stroke-dasharray="150.8" stroke-dashoffset="150.8"/>
+      </svg>
+      <div>
+        <div class="progress-pct font-mono" id="overallPct">0%</div>
+        <div class="progress-count" id="overallCount">0 / 16 exercises</div>
+      </div>
+    </div>
+
+    <nav class="ladder-rail" id="ladderNav" aria-label="Ladder rungs">
+      <div class="ladder-rail-fill" id="railFill" style="height:0%;"></div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="themeToggle" class="ghost-btn" aria-label="Toggle light and dark theme">
+        <svg class="icon" id="themeIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <span id="themeLabel">Dark</span>
+      </button>
+      <button id="resetBtn" class="ghost-btn">
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Reset
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============ MOBILE TOPBAR ============ -->
+  <div class="mobile-topbar">
+    <div class="brand-mini">
+      <div class="brand-mark" style="width:1.7rem;height:1.7rem;">
+        <svg class="icon" viewBox="0 0 24 24" style="width:0.9rem;height:0.9rem;"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      </div>
+      Claude Code Ladder
+    </div>
+    <div style="display:flex; gap:0.5rem;">
+      <button id="themeToggleMobile" class="icon-btn" aria-label="Toggle light and dark theme">
+        <svg class="icon" id="themeIconMobile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+      <button id="mobileMenuBtn" class="icon-btn" aria-label="Open ladder menu">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-drawer" id="mobileDrawer">
+    <div class="sidebar-progress" style="border:1px solid var(--border); border-radius:0.9rem; background:var(--surface); margin-bottom:1.2rem;">
+      <svg width="48" height="48" viewBox="0 0 56 56" style="flex-shrink:0; transform:rotate(-90deg);">
+        <circle cx="28" cy="28" r="24" fill="none" stroke-width="4" class="progress-ring-track"/>
+        <circle id="ringFillMobile" cx="28" cy="28" r="24" fill="none" stroke-width="4" class="progress-ring-fill" stroke-dasharray="150.8" stroke-dashoffset="150.8"/>
+      </svg>
+      <div>
+        <div class="progress-pct font-mono" id="overallPctMobile">0%</div>
+        <div class="progress-count" id="overallCountMobile">0 / 16 exercises</div>
+      </div>
+    </div>
+    <nav class="ladder-rail" id="ladderNavMobile" aria-label="Ladder rungs">
+      <div class="ladder-rail-fill" id="railFillMobile" style="height:0%;"></div>
+    </nav>
+    <button id="resetBtnMobile" class="ghost-btn" style="width:100%; margin-top:1rem;">
+      <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      Reset progress
+    </button>
+  </div>
+
+  <!-- ============ MAIN VIEWPORT ============ -->
+  <main class="main">
+    <div class="main-inner" id="rungPanels"></div>
+  </main>
+</div>
+
+<script>
+const LADDER = [
+  {
+    id: "foundation",
+    title: "Foundation & Initialization",
+    tagline: "Get Claude Code running, and teach it about your codebase before you ask it for anything.",
+    steps: [
+      {
+        title: "Launch Claude Code",
+        body: [
+          "Claude Code runs as an interactive session inside your terminal, anchored to whatever directory you launch it from. It reads the surrounding project as context automatically — you don't hand it files one at a time.",
+          "Start every new project the same way: launch it, then ask a question before asking for a change. You'll immediately see how well it already understands the codebase."
+        ],
+        commands: [{ code: "claude" }],
+        exercises: [
+          { id: "f1", text: "Open a terminal in any existing project and run <code>claude</code>. Ask it &ldquo;what does this repo do?&rdquo; and read the answer before touching any code." }
+        ]
+      },
+      {
+        title: "Generate CLAUDE.md with /init",
+        body: [
+          "<code>/init</code> scans your repository — structure, dependencies, scripts, conventions — and writes the findings to a <code>CLAUDE.md</code> file. That file becomes the standing brief every future session reads first, so you stop re-explaining the same project facts.",
+          "Treat the generated file as a first draft, not gospel. Claude infers conventions from what it can see; it will get some of them wrong or miss ones that only live in your head."
+        ],
+        commands: [{ code: "/init" }],
+        exercises: [
+          { id: "f2", text: "Run <code>/init</code> in a real project. Open the generated <code>CLAUDE.md</code> and correct or add one convention it got wrong or missed entirely." }
+        ]
+      },
+      {
+        title: "Curate memory with /memory",
+        body: [
+          "<code>/memory</code> opens the project's memory files directly for editing, rather than waiting for Claude to relearn a fact every session. This is where durable rules live: testing conventions, deployment gotchas, things you're tired of repeating.",
+          "Good memory entries are specific and load-bearing — a rule that changes what Claude actually does, not a restatement of something already obvious from the code."
+        ],
+        commands: [{ code: "/memory" }],
+        exercises: [
+          { id: "f3", text: "Run <code>/memory</code>, add one durable rule (e.g. a testing convention), save, then start a fresh session and confirm Claude follows it unprompted." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "core-loop",
+    title: "The Core Loop & Plan Mode",
+    tagline: "Stop guessing at code — architect the approach before a single file changes.",
+    steps: [
+      {
+        title: "The core loop",
+        body: [
+          "Every task follows the same shape: you prompt, Claude reads and edits and runs commands, and you verify the result before moving on. The loop breaks down at the last step — it's tempting to accept a confident-sounding change without actually reading the diff or running the tests yourself.",
+          "Verification is your job, not Claude's. A change that compiles isn't the same as a change that's correct."
+        ],
+        commands: [],
+        exercises: [
+          { id: "c1", text: "Ask Claude to fix a small, real bug. Before accepting the change, read the diff line by line and run the test suite yourself." }
+        ]
+      },
+      {
+        title: "Plan Mode with /plan",
+        body: [
+          "<code>/plan</code> switches Claude into a read-only research-and-design mode. It investigates the codebase and proposes an approach in prose — no files change — which you can approve, edit, or reject before any code gets written.",
+          "Plan Mode earns its keep on anything with more than one reasonable approach: a new endpoint, a schema change, a refactor that touches several files. Skipping it on those is where most wasted iterations come from."
+        ],
+        commands: [{ code: "/plan" }],
+        exercises: [
+          { id: "c2", text: "Use <code>/plan</code> to design a mid-size feature (e.g. a new API endpoint). Push back on the plan at least once before approving it." }
+        ]
+      },
+      {
+        title: "Managing context with /compact and /clear",
+        body: [
+          "<code>/compact</code> summarizes the running conversation to reclaim token budget without losing the thread — use it when a session is getting long but the task isn't done.",
+          "<code>/clear</code> wipes the conversation entirely. Use it when you're switching to genuinely unrelated work — carrying old context into a new task just confuses the next answer."
+        ],
+        commands: [{ code: "/compact" }, { code: "/clear" }],
+        exercises: [
+          { id: "c3", text: "After a long session, run <code>/compact</code> and confirm Claude still remembers the task. Then start an unrelated task with <code>/clear</code> instead of continuing the old thread." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "context-safety",
+    title: "Context Management & Safety Controls",
+    tagline: "Know exactly what's in the window, and decide what Claude can do without asking first.",
+    steps: [
+      {
+        title: "Audit the window with /context",
+        body: [
+          "<code>/context</code> prints a breakdown of what's consuming your token budget — system prompt, files read into context, conversation history — so you can spot bloat before it forces an unplanned compact.",
+          "Run it as a habit on long sessions, not just when things feel slow. Catching a runaway file read early is cheaper than recovering from a lost thread later."
+        ],
+        commands: [{ code: "/context" }],
+        exercises: [
+          { id: "s1", text: "Mid-session, run <code>/context</code>. Identify the single largest consumer of tokens and decide whether it still needs to be there." }
+        ]
+      },
+      {
+        title: "Set boundaries with /permissions",
+        body: [
+          "<code>/permissions</code> defines which tools and commands run automatically versus require your explicit confirmation. The right boundary depends on the project — a personal script tolerates more autonomy than a production repo.",
+          "Tightening this isn't about distrust — it's about matching the blast radius of a mistake to how much oversight you actually want on this codebase."
+        ],
+        commands: [{ code: "/permissions" }],
+        exercises: [
+          { id: "s2", text: "Open <code>/permissions</code> and add one rule that requires explicit approval for a command you consider risky in this repo (e.g. any <code>git push</code>)." }
+        ]
+      },
+      {
+        title: "Run a /security-review",
+        body: [
+          "<code>/security-review</code> audits your pending changes for common vulnerability classes — injection, auth gaps, unsafe deserialization — acting as a second reviewer whose only job is safety, not style.",
+          "Run it before a commit ships, not after something breaks in production. It's cheapest exactly when you're least inclined to slow down."
+        ],
+        commands: [{ code: "/security-review" }],
+        exercises: [
+          { id: "s3", text: "Before your next commit, run <code>/security-review</code> on the diff and resolve — or consciously dismiss — every finding it raises." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "review-git",
+    title: "Code Review, Testing & Git Workflows",
+    tagline: "Turn Claude into a reviewer and a debugger, not just a writer of code.",
+    steps: [
+      {
+        title: "Read diffs with /diff",
+        body: [
+          "<code>/diff</code> shows exactly what's changed in the working tree — the same view you'd want before any commit. Treat it as a checkpoint you hit deliberately, not something you glance at on the way past.",
+          "If you can't explain what a hunk does in one sentence, that's the signal to slow down before it ships."
+        ],
+        commands: [{ code: "/diff" }],
+        exercises: [
+          { id: "r1", text: "Before your next commit, run <code>/diff</code> and narrate out loud what each hunk does. If you can't explain a hunk, don't ship it yet." }
+        ]
+      },
+      {
+        title: "Automated review with /code-review --fix",
+        body: [
+          "<code>/code-review --fix</code> runs an automated pass over your pending changes and applies safe, mechanical fixes directly, leaving the judgment calls — naming, structure, tradeoffs — for you to decide.",
+          "It's a first pass, not a replacement for reading the diff yourself. Use it to clear the mechanical noise so your own review time goes to the decisions that actually matter."
+        ],
+        commands: [{ code: "/code-review --fix" }],
+        exercises: [
+          { id: "r2", text: "Run <code>/code-review --fix</code> on a branch with real changes. Compare what it fixed automatically against what it flagged but left for you to decide." }
+        ]
+      },
+      {
+        title: "Debug your setup with /doctor",
+        body: [
+          "<code>/doctor</code> inspects your Claude Code environment — configuration, permissions, connectivity — and reports what's misconfigured. Reach for it the moment something feels off rather than guessing at the cause.",
+          "Running it once when everything is healthy is worth doing too — you'll recognize the abnormal output faster when something actually breaks."
+        ],
+        commands: [{ code: "/doctor" }],
+        exercises: [
+          { id: "r3", text: "Run <code>/doctor</code> even when nothing is obviously broken, and read every line of its output once so a real problem stands out later." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "subagents",
+    title: "Subagents & Parallel Workflows",
+    tagline: "Delegate side quests instead of doing everything in one linear thread.",
+    steps: [
+      {
+        title: "Track work with /tasks",
+        body: [
+          "<code>/tasks</code> lists everything running or queued — subagents doing research, background jobs — so a long-running operation doesn't just disappear from view while it works.",
+          "Check it the way you'd check a job queue: not because you expect a problem, but because visibility is what lets you trust delegation in the first place."
+        ],
+        commands: [{ code: "/tasks" }],
+        exercises: [
+          { id: "a1", text: "Kick off a subagent to research something broad (e.g. &ldquo;find every place we call this API&rdquo;), then check <code>/tasks</code> while it's still running." }
+        ]
+      },
+      {
+        title: "Run work with /background",
+        body: [
+          "<code>/background</code> sends a long-running command — a build, a test suite, a dev server — to run out of the way, so the main conversation stays responsive instead of blocking on it.",
+          "It's the difference between waiting on a process and working alongside it. Save it for anything that runs longer than you're willing to sit idle for."
+        ],
+        commands: [{ code: "/background" }],
+        exercises: [
+          { id: "a2", text: "Send your test suite or dev server to <code>/background</code>, keep working in the foreground, then check back on its output when you need it." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "agent-teams",
+    title: "Advanced Multi-Agent Teams",
+    tagline: "Direct multiple Claude instances working the same problem at once.",
+    steps: [
+      {
+        title: "Enable agent teams",
+        body: [
+          "<code>CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS</code> is an experimental environment flag that unlocks multi-instance team coordination. It's off by default — the workflow is still evolving, and enabling it is an opt-in into that instability.",
+          "Set it in the shell you launch Claude Code from, the same way you'd set any other environment variable for a single session."
+        ],
+        commands: [{ code: "export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1" }],
+        exercises: [
+          { id: "t1", text: "Set the flag in one terminal session and confirm team-mode options appear that weren't there before." }
+        ]
+      },
+      {
+        title: "Direct a team lead",
+        body: [
+          "With teams enabled, one instance acts as lead: it breaks a goal into independent pieces, assigns them to teammate instances, and reconciles their output into a single result.",
+          "This pays off on genuinely parallel work — pieces that don't depend on each other's output. Feeding it a goal that's actually sequential just adds coordination overhead for nothing."
+        ],
+        commands: [],
+        exercises: [
+          { id: "t2", text: "Give a team lead a goal with 2–3 independent sub-parts (e.g. &ldquo;add tests for these three separate modules&rdquo;). Review how it splits the work before letting it run." }
+        ]
+      }
+    ]
+  }
+];
+
+const TOTAL_EXERCISES = LADDER.reduce((sum, r) => sum + r.steps.reduce((s2, st) => s2 + st.exercises.length, 0), 0);
+const STORAGE_KEY = "cc-ladder-progress";
+const THEME_KEY = "cc-ladder-theme";
+
+function loadProgress(){
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ return {}; }
+}
+function saveProgress(p){ localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); }
+let progress = loadProgress();
+let activeRungIndex = 0;
+
+function rungCounts(rung){
+  let total = 0, done = 0;
+  rung.steps.forEach(st => st.exercises.forEach(ex => {
+    total++;
+    if(progress[ex.id]) done++;
+  }));
+  return { total, done };
+}
+
+const CHECK_ICON = '<svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+const CHEVRON_ICON = '<svg class="icon step-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
+const COPY_ICON = '<svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+const ARROW_LEFT_ICON = '<svg class="icon" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>';
+const ARROW_RIGHT_ICON = '<svg class="icon" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+
+function renderSidebar(){
+  const navTargets = [
+    { nav: document.getElementById("ladderNav"), fill: document.getElementById("railFill") },
+    { nav: document.getElementById("ladderNavMobile"), fill: document.getElementById("railFillMobile") }
+  ];
+
+  navTargets.forEach(({nav, fill}) => {
+    [...nav.querySelectorAll(".rung-btn")].forEach(n => n.remove());
+    LADDER.forEach((rung, i) => {
+      const { total, done } = rungCounts(rung);
+      const complete = done === total;
+      const btn = document.createElement("button");
+      btn.className = "rung-btn" + (i === activeRungIndex ? " active" : "");
+      btn.dataset.index = i;
+      btn.innerHTML = `
+        <span class="rung-node${complete ? " complete" : ""}">${complete ? CHECK_ICON : String(i+1).padStart(2,"0")}</span>
+        <span class="rung-body">
+          <span class="rung-title">${rung.title}</span>
+          <span class="rung-meta${complete ? " done" : ""}">${done} / ${total} complete</span>
+        </span>
+      `;
+      btn.addEventListener("click", () => {
+        activeRungIndex = i;
+        render();
+        document.getElementById("mobileDrawer").classList.remove("open");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      nav.appendChild(btn);
+    });
+
+    const totalDone = LADDER.reduce((s, r) => s + rungCounts(r).done, 0);
+    fill.style.height = `${(totalDone / TOTAL_EXERCISES) * 100}%`;
+  });
+
+  const totalDone = LADDER.reduce((s, r) => s + rungCounts(r).done, 0);
+  const pct = Math.round((totalDone / TOTAL_EXERCISES) * 100);
+  const circumference = 150.8;
+  const offset = circumference - (pct / 100) * circumference;
+
+  ["overallPct", "overallPctMobile"].forEach(id => document.getElementById(id).textContent = pct + "%");
+  ["overallCount", "overallCountMobile"].forEach(id => document.getElementById(id).textContent = `${totalDone} / ${TOTAL_EXERCISES} exercises`);
+  ["ringFill", "ringFillMobile"].forEach(id => document.getElementById(id).style.strokeDashoffset = offset);
+}
+
+function copyToClipboard(text, btn){
+  const label = btn.querySelector(".copy-label");
+  const original = label.textContent;
+  const done = () => {
+    btn.classList.add("copied");
+    label.textContent = "Copied";
+    setTimeout(() => { btn.classList.remove("copied"); label.textContent = original; }, 1400);
+  };
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, cb){
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand("copy"); }catch(e){}
+  document.body.removeChild(ta);
+  cb();
+}
+
+function renderMain(){
+  const container = document.getElementById("rungPanels");
+  container.innerHTML = "";
+
+  LADDER.forEach((rung, i) => {
+    const panel = document.createElement("div");
+    panel.className = "rung-panel" + (i === activeRungIndex ? " active" : "");
+
+    const { total, done } = rungCounts(rung);
+
+    let stepsHtml = "";
+    rung.steps.forEach((step, si) => {
+      const exercisesHtml = step.exercises.map(ex => {
+        const isDone = !!progress[ex.id];
+        return `
+          <div class="exercise${isDone ? " done" : ""}" data-ex="${ex.id}">
+            <button class="exercise-check" aria-label="Toggle exercise complete" data-ex="${ex.id}">${CHECK_ICON}</button>
+            <div class="exercise-text">
+              <span class="exercise-label">Exercise</span>
+              ${ex.text}
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const commandsHtml = (step.commands || []).map(cmd => `
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dots">
+              <span style="background:#ff5f57;"></span>
+              <span style="background:#febc2e;"></span>
+              <span style="background:#28c840;"></span>
+            </div>
+            <button class="copy-btn" data-code="${encodeURIComponent(cmd.code)}">
+              ${COPY_ICON}
+              <span class="copy-label">Copy</span>
+            </button>
+          </div>
+          <div class="terminal-body"><span class="prompt">$ </span>${cmd.code}</div>
+        </div>
+      `).join("");
+
+      stepsHtml += `
+        <div class="step${si === 0 ? " open" : ""}" data-step="${si}">
+          <button class="step-head">
+            <span class="step-index">${String(si+1).padStart(2,"0")}</span>
+            <span class="step-title">${step.title}</span>
+            ${CHEVRON_ICON}
+          </button>
+          <div class="step-panel">
+            <div class="step-panel-inner">
+              <div class="step-content">
+                <div class="prose-body">${step.body.map(p => `<p>${p}</p>`).join("")}</div>
+                ${commandsHtml}
+                ${exercisesHtml}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    panel.innerHTML = `
+      <div class="rung-header">
+        <div class="eyebrow">Rung ${String(i+1).padStart(2,"0")} / ${String(LADDER.length).padStart(2,"0")}</div>
+        <h1 class="rung-heading">${rung.title}</h1>
+        <p class="rung-tagline">${rung.tagline}</p>
+        <div class="rung-progress-row">
+          <div class="rung-progress-track"><div class="rung-progress-fill" style="width:${total ? (done/total*100) : 0}%;"></div></div>
+          <span class="rung-progress-label">${done}/${total} exercises done</span>
+        </div>
+      </div>
+      <div class="steps">${stepsHtml}</div>
+      <div class="rung-nav">
+        ${i > 0 ? `<button class="rung-nav-prev">${ARROW_LEFT_ICON} Rung ${String(i).padStart(2,"0")}</button>` : "<span></span>"}
+        ${i < LADDER.length - 1 ? `<button class="rung-nav-next">Rung ${String(i+2).padStart(2,"0")} ${ARROW_RIGHT_ICON}</button>` : "<span></span>"}
+      </div>
+    `;
+
+    container.appendChild(panel);
+  });
+
+  attachMainListeners();
+  observeSteps();
+}
+
+function observeSteps(){
+  const steps = document.querySelectorAll(".rung-panel.active .step");
+  if(!("IntersectionObserver" in window)){
+    steps.forEach(s => s.classList.add("revealed"));
+    return;
+  }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add("revealed");
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+  steps.forEach(s => io.observe(s));
+}
+
+function attachMainListeners(){
+  document.querySelectorAll(".step-head").forEach(head => {
+    head.addEventListener("click", () => head.closest(".step").classList.toggle("open"));
+  });
+
+  document.querySelectorAll(".copy-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const code = decodeURIComponent(btn.dataset.code);
+      copyToClipboard(code, btn);
+    });
+  });
+
+  document.querySelectorAll(".exercise-check").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.ex;
+      progress[id] = !progress[id];
+      saveProgress(progress);
+      render();
+    });
+  });
+
+  const prev = document.querySelector(".rung-nav-prev");
+  const next = document.querySelector(".rung-nav-next");
+  if(prev) prev.addEventListener("click", () => { activeRungIndex--; render(); window.scrollTo({top:0, behavior:"smooth"}); });
+  if(next) next.addEventListener("click", () => { activeRungIndex++; render(); window.scrollTo({top:0, behavior:"smooth"}); });
+}
+
+function render(){
+  renderSidebar();
+  renderMain();
+}
+
+document.getElementById("mobileMenuBtn").addEventListener("click", () => {
+  document.getElementById("mobileDrawer").classList.toggle("open");
+});
+document.getElementById("resetBtn").addEventListener("click", resetAll);
+document.getElementById("resetBtnMobile").addEventListener("click", resetAll);
+function resetAll(){
+  if(confirm("Reset all progress? This clears every checked exercise.")){
+    progress = {};
+    saveProgress(progress);
+    render();
+  }
+}
+
+// ---------- theme toggle ----------
+function applyThemeLabel(){
+  const isLight = document.documentElement.dataset.theme === "light";
+  ["themeLabel"].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = isLight ? "Light" : "Dark"; });
+}
+function toggleTheme(){
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === "dark" ? "light" : "dark";
+  try{ localStorage.setItem(THEME_KEY, html.dataset.theme); }catch(e){}
+  applyThemeLabel();
+}
+(function initTheme(){
+  try{
+    const saved = localStorage.getItem(THEME_KEY);
+    if(saved) document.documentElement.dataset.theme = saved;
+  }catch(e){}
+})();
+document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+document.getElementById("themeToggleMobile").addEventListener("click", toggleTheme);
+
+applyThemeLabel();
+render();
+</script>
+</body>
+</html>

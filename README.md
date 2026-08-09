@@ -35,6 +35,7 @@ Or jump directly to any guide:
 | **Loop Engineering** | `https://drodriguez74.github.io/visual-learning-guides/loop-engineering.html` |
 | **Claude Code — Signal Path** | `https://drodriguez74.github.io/visual-learning-guides/claude-code-mental-model.html` |
 | **Prompt Framework Field Guide** | `https://drodriguez74.github.io/visual-learning-guides/prompt-frameworks-field-guide.html` |
+| **Claude Code — The Ladder** | `https://drodriguez74.github.io/visual-learning-guides/claude-code-ladder.html` |
 
 ## Guides
 
@@ -380,6 +381,23 @@ Or jump directly to any guide:
 | **Reference Mode** | Every field defined (Role, Action, Context, Expectation, …) with a plain-language description |
 | **Build Mode** | Fill in each field and watch a ready-to-copy composed prompt assemble live, with copy-to-clipboard |
 | **When to Use Which** | Per-framework guidance — routine task vs. diagnosing a stuck process vs. recounting what happened vs. persuasion vs. coaching |
+
+---
+
+### 24 · Claude Code — The Ladder
+`claude-code-ladder.html` — Dark terminal (JetBrains Mono + Inter) · Progress-tracked exercises · Light/Dark mode
+
+| Section | Contents |
+|---------|----------|
+| **Sidebar ladder tracker** | Six rungs shown as a literal ladder rail that fills in as exercises are checked off, plus an overall completion ring |
+| **Rung 1 · Foundation & Initialization** | Launching `claude`, generating `CLAUDE.md` with `/init`, curating persistent memory with `/memory` |
+| **Rung 2 · Core Loop & Plan Mode** | The prompt → edit → verify loop, `/plan` for read-only design before code changes, `/compact` and `/clear` for context hygiene |
+| **Rung 3 · Context & Safety Controls** | Auditing token usage with `/context`, setting auto-accept boundaries with `/permissions`, running `/security-review` |
+| **Rung 4 · Review, Testing & Git** | Reading diffs with `/diff`, automated fixes via `/code-review --fix`, environment debugging with `/doctor` |
+| **Rung 5 · Subagents & Parallel Work** | Tracking delegated work with `/tasks`, offloading long-running commands with `/background` |
+| **Rung 6 · Multi-Agent Teams** | Enabling `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and directing a team lead across parallel sub-tasks |
+| **Exercises** | Each lesson ends in a hands-on exercise with a checkbox; state (and rung progress) persists via `localStorage` |
+| **Terminal command blocks** | Every command ships in a terminal-chrome block with one-click copy-to-clipboard |
 
 ---
 
