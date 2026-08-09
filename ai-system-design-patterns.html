@@ -474,8 +474,8 @@ body { transition: background-color .3s, color .3s; }
       and composable AI systems — from single-agent loops to multi-model pipelines.
     </p>
     <div class="pattern-count-row">
-      <div class="pcount"><span class="pcount-val">8<sup>×</sup></span><span class="pcount-label">Core Patterns</span></div>
-      <div class="pcount"><span class="pcount-val">4</span><span class="pcount-label">Pattern Categories</span></div>
+      <div class="pcount"><span class="pcount-val">11<sup>×</sup></span><span class="pcount-label">Core Patterns</span></div>
+      <div class="pcount"><span class="pcount-val">7</span><span class="pcount-label">Pattern Categories</span></div>
       <div class="pcount"><span class="pcount-val">∞</span><span class="pcount-label">Composable</span></div>
     </div>
   </div>
@@ -800,6 +800,120 @@ body { transition: background-color .3s, color .3s; }
     </div>
   </article>
 
+  <!-- 9. REACT -->
+  <article class="pattern-card" data-category="orchestration" data-pattern="8">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-orchestration">Orchestration</span>
+      <div class="pc-title-group">
+        <div class="pc-title">ReAct (Reason + Act)</div>
+        <div class="pc-tagline">Interleave a reasoning trace with tool calls and observations until the model is done</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-8" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">The model alternates between emitting a Thought (its reasoning about what to do next), an Action (a tool call), and receiving an Observation (the tool's result) — looping back into another Thought until it emits a final answer instead of another action. Introduced by Yao et al. (2022), this loop is the foundation nearly every modern tool-using agent is built on.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Any agent that calls external tools or APIs mid-task</li>
+            <li>Tasks where the right next step depends on a prior tool result</li>
+            <li>Open-ended investigations: search, inspect, then decide</li>
+            <li>The core loop behind Claude Code's own tool-use cycle</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Grounded in real tool output · Handles unknown-length tasks · Self-corrects via observations</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">Can loop without a stop condition · Each hop adds latency · Reasoning traces cost tokens</div></div>
+        </div>
+        <div class="code-hint"><span class="kw">let</span> scratchpad = <span class="str">''</span><br><span class="kw">while</span> (<span class="kw">true</span>) {<br>&nbsp;&nbsp;<span class="kw">const</span> thought = <span class="fn">await</span> llm(<span class="str">`${prompt}\n${scratchpad}\nThought:`</span>)<br>&nbsp;&nbsp;<span class="kw">if</span> (thought.isFinalAnswer) <span class="kw">return</span> thought.answer<br>&nbsp;&nbsp;<span class="kw">const</span> action = parseAction(thought)<br>&nbsp;&nbsp;<span class="kw">const</span> observation = <span class="fn">await</span> tools[action.name](action.input)<br>&nbsp;&nbsp;scratchpad += <span class="str">`\nThought: ${thought}\nAction: ${action.name}\nObservation: ${observation}`</span><br>}</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 10. REFLECTION / SELF-REFINE -->
+  <article class="pattern-card" data-category="evaluation" data-pattern="9">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-evaluation">Evaluation</span>
+      <div class="pc-title-group">
+        <div class="pc-title">Reflection / Self-Refine</div>
+        <div class="pc-tagline">The same model critiques its own draft and rewrites it — no external judge involved</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-9" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">After producing a draft, the model is prompted a second time to critique its own output against the task's requirements, listing concrete flaws. That critique is fed back into a revision prompt. Repeats for a fixed number of rounds, or until the self-critique reports no further issues. Unlike LLM-as-Evaluator, no second model or independent judge is involved.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Improving quality without paying for a separate evaluator model</li>
+            <li>Open-ended writing where "better" is self-assessable</li>
+            <li>Fast iteration during prototyping, before adding a real evaluator</li>
+            <li>Style and tone passes on an already-correct draft</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">No second model needed · Cheap to bolt onto any pipeline · Catches surface issues fast</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">Blind to its own blind spots · No independent quality signal · Can polish a wrong answer</div></div>
+        </div>
+        <div class="code-hint"><span class="kw">let</span> draft = <span class="fn">await</span> llm(prompt)<br><span class="kw">for</span> (<span class="kw">let</span> i = <span class="str">0</span>; i &lt; MAX_ROUNDS; i++) {<br>&nbsp;&nbsp;<span class="kw">const</span> critique = <span class="fn">await</span> llm(<span class="str">`Critique this against the brief:\n${draft}`</span>)<br>&nbsp;&nbsp;<span class="kw">if</span> (critique.includes(<span class="str">'No issues found'</span>)) <span class="kw">break</span><br>&nbsp;&nbsp;draft = <span class="fn">await</span> llm(<span class="str">`Revise using this critique:\n${critique}\n\nDraft:\n${draft}`</span>)<br>}<br><span class="kw">return</span> draft</div>
+      </div>
+    </div>
+  </article>
+
+  <!-- 11. MODEL FALLBACK / CASCADE -->
+  <article class="pattern-card" data-category="reliability" data-pattern="10">
+    <div class="pc-header" onclick="toggleCard(this)">
+      <span class="pc-badge badge-reliability">Reliability</span>
+      <div class="pc-title-group">
+        <div class="pc-title">Model Fallback / Cascade</div>
+        <div class="pc-tagline">Try a cheap or fast model first; escalate to a stronger one only on failure or timeout</div>
+      </div>
+      <span class="pc-toggle">+</span>
+    </div>
+    <div class="pc-body">
+      <div class="pc-diagram">
+        <div class="info-section-title">Live Flow Diagram</div>
+        <canvas id="canvas-10" width="480" height="200"></canvas>
+      </div>
+      <div class="pc-info">
+        <div>
+          <div class="info-section-title">What it does</div>
+          <div class="info-desc">A request first hits a fast or cheap tier. If the call errors, times out, or the response fails a validation check, the system automatically retries against a stronger, more expensive tier — up to a final backup — instead of failing the whole request outright.</div>
+        </div>
+        <div>
+          <div class="info-section-title">When to use</div>
+          <ul class="when-list">
+            <li>Cost optimization: most requests succeed on the cheap tier</li>
+            <li>Provider outages or rate limits — cascade to another vendor</li>
+            <li>Latency-sensitive paths that should degrade, not hard-fail</li>
+            <li>SLA-critical systems where "some answer" beats no answer</li>
+          </ul>
+        </div>
+        <div class="tradeoff-row">
+          <div class="tradeoff-box pros"><div class="tb-label">Strengths</div><div class="tb-items">Resilient to single-provider outages · Lower average cost · Degrades gracefully</div></div>
+          <div class="tradeoff-box cons"><div class="tb-label">Trade-offs</div><div class="tb-items">Failure detection can itself be wrong · Retries add tail latency · Tiers can behave inconsistently</div></div>
+        </div>
+        <div class="code-hint"><span class="kw">const</span> tiers = [fastModel, strongModel, backupProvider]<br><span class="kw">for</span> (<span class="kw">const</span> model <span class="kw">of</span> tiers) {<br>&nbsp;&nbsp;<span class="kw">try</span> {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">const</span> result = <span class="fn">await</span> withTimeout(model.call(prompt), TIMEOUT_MS)<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span> (isValid(result)) <span class="kw">return</span> result<br>&nbsp;&nbsp;} <span class="kw">catch</span> (err) { <span class="kw">continue</span> } <span class="cm">// fall through to next tier</span><br>}<br><span class="kw">throw new</span> Error(<span class="str">'All fallback tiers exhausted'</span>)</div>
+      </div>
+    </div>
+  </article>
+
 </main>
 
 <footer class="page-footer">
@@ -807,6 +921,20 @@ body { transition: background-color .3s, color .3s; }
 </footer>
 
 <script>
+// ── THEME TOGGLE ──
+const THEME_KEY = 'ai-patterns-theme';
+(function initTheme(){
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved) document.documentElement.dataset.theme = saved;
+  } catch(e) {}
+})();
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem(THEME_KEY, html.dataset.theme); } catch(e) {}
+});
+
 // ── CARD TOGGLE ──
 function toggleCard(header) {
   const card = header.closest('.pattern-card');
@@ -1273,6 +1401,98 @@ const patterns = [
     } else {
       drawParticle(ctx, voter.x+38, voter.y, out.x-27, out.y, (pT-0.85)/0.15, COLORS.teal);
     }
+  },
+
+  // 8 — ReAct loop
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const task     = { x: 50,           y: H/2 };
+    const thought  = { x: 175,          y: H/2 };
+    const action   = { x: 320,          y: H/2 };
+    const answer   = { x: W - 50,       y: H/2 };
+    const obs      = { x: (175+320)/2,  y: H - 32 };
+
+    drawNode(ctx, task.x,    task.y,    58, 32, 'TASK',     COLORS.muted2, 'goal');
+    drawNode(ctx, thought.x, thought.y, 84, 32, 'THOUGHT',  COLORS.violet, 'reason');
+    drawNode(ctx, action.x,  action.y,  80, 32, 'ACTION',   COLORS.amber,  'tool call');
+    drawNode(ctx, answer.x,  answer.y,  66, 32, 'ANSWER',   COLORS.teal,   'final');
+    drawNode(ctx, obs.x,     obs.y,     92, 28, 'OBSERVATION', COLORS.ember, 'tool result');
+
+    drawArrow(ctx, task.x+29, task.y, thought.x-42, thought.y, COLORS.violet);
+    drawArrow(ctx, thought.x+42, thought.y, action.x-40, action.y, COLORS.amber);
+    drawArrow(ctx, action.x+40, action.y, answer.x-33, answer.y, COLORS.teal);
+    drawCurvedArrow(ctx, action.x, action.y+16, thought.x, thought.y+16, obs.x, obs.y-14, COLORS.ember);
+
+    const phase = (t * 0.4) % 6;
+    if (phase < 1) drawParticle(ctx, task.x+29, task.y, thought.x-42, thought.y, phase, COLORS.violet);
+    else if (phase < 2) drawParticle(ctx, thought.x+42, thought.y, action.x-40, action.y, phase-1, COLORS.amber);
+    else if (phase < 3) {
+      const p = quadPoint(action.x, action.y+16, obs.x, obs.y-14, thought.x, thought.y+16, phase-2);
+      ctx.save(); ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=COLORS.ember; ctx.shadowColor=COLORS.ember; ctx.shadowBlur=8; ctx.fill(); ctx.restore();
+    } else if (phase < 4) drawParticle(ctx, thought.x+42, thought.y, action.x-40, action.y, phase-3, COLORS.amber);
+    else if (phase < 5) {
+      const p = quadPoint(action.x, action.y+16, obs.x, obs.y-14, thought.x, thought.y+16, phase-4);
+      ctx.save(); ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=COLORS.ember; ctx.shadowColor=COLORS.ember; ctx.shadowBlur=8; ctx.fill(); ctx.restore();
+    } else drawParticle(ctx, action.x+40, action.y, answer.x-33, answer.y, phase-5, COLORS.teal);
+  },
+
+  // 9 — Reflection / Self-Refine
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const prompt   = { x: 55,           y: H/2 };
+    const draft    = { x: 178,          y: H/2 };
+    const critique = { x: 310,          y: H/2 };
+    const out      = { x: W - 48,       y: H/2 };
+    const revise   = { x: (178+310)/2,  y: H - 32 };
+
+    drawNode(ctx, prompt.x,   prompt.y,   62, 32, 'PROMPT',   COLORS.muted2, 'task');
+    drawNode(ctx, draft.x,    draft.y,    76, 32, 'DRAFT',    COLORS.violet, 'same model');
+    drawNode(ctx, critique.x, critique.y, 92, 32, 'CRITIQUE', COLORS.violet, 'self-review');
+    drawNode(ctx, out.x,      out.y,      66, 32, 'OUTPUT',   COLORS.teal,   'final');
+    drawNode(ctx, revise.x,   revise.y,   80, 28, 'REVISE',   COLORS.ember,  'apply critique');
+
+    drawArrow(ctx, prompt.x+31, prompt.y, draft.x-38, draft.y, COLORS.violet);
+    drawArrow(ctx, draft.x+38, draft.y, critique.x-46, critique.y, COLORS.violet);
+    drawArrow(ctx, critique.x+46, critique.y, out.x-33, out.y, COLORS.teal);
+    drawCurvedArrow(ctx, critique.x, critique.y+16, draft.x, draft.y+16, revise.x, revise.y-14, COLORS.ember);
+
+    const phase = (t * 0.4) % 5;
+    if (phase < 1) drawParticle(ctx, prompt.x+31, prompt.y, draft.x-38, draft.y, phase, COLORS.violet);
+    else if (phase < 2) drawParticle(ctx, draft.x+38, draft.y, critique.x-46, critique.y, phase-1, COLORS.violet);
+    else if (phase < 3) {
+      const p = quadPoint(critique.x, critique.y+16, revise.x, revise.y-14, draft.x, draft.y+16, phase-2);
+      ctx.save(); ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=COLORS.ember; ctx.shadowColor=COLORS.ember; ctx.shadowBlur=8; ctx.fill(); ctx.restore();
+    } else if (phase < 4) drawParticle(ctx, draft.x+38, draft.y, critique.x-46, critique.y, phase-3, COLORS.violet);
+    else drawParticle(ctx, critique.x+46, critique.y, out.x-33, out.y, phase-4, COLORS.teal);
+  },
+
+  // 10 — Model Fallback / Cascade
+  (ctx, W, H, t) => {
+    ctx.clearRect(0, 0, W, H);
+    const req   = { x: 42,  y: 100 };
+    const tier1 = { x: 152, y: 42  };
+    const tier2 = { x: 276, y: 100 };
+    const tier3 = { x: 392, y: 158 };
+    const out   = { x: 452, y: 100 };
+
+    drawNode(ctx, req.x,   req.y,   58, 32, 'REQUEST', COLORS.muted2, 'incoming');
+    drawNode(ctx, tier1.x, tier1.y, 78, 32, 'TIER 1',  COLORS.teal,   'fast · cheap');
+    drawNode(ctx, tier2.x, tier2.y, 84, 32, 'TIER 2',  COLORS.amber,  'strong model');
+    drawNode(ctx, tier3.x, tier3.y, 88, 32, 'TIER 3',  COLORS.ember,  'backup vendor');
+    drawNode(ctx, out.x,   out.y,   58, 30, 'OUTPUT',  COLORS.teal,   null);
+
+    drawArrow(ctx, req.x+27, req.y-14, tier1.x-39, tier1.y+10, COLORS.teal);
+    drawArrow(ctx, tier1.x+39, tier1.y+10, tier2.x-42, tier2.y-10, COLORS.amber);
+    drawArrow(ctx, tier2.x+42, tier2.y+10, tier3.x-44, tier3.y-10, COLORS.ember);
+    drawArrow(ctx, tier3.x+44, tier3.y-10, out.x-29, out.y+8, COLORS.teal);
+    drawCurvedArrow(ctx, tier1.x+39, tier1.y-8, out.x-25, out.y-18, (tier1.x+out.x)/2, 10, COLORS.teal);
+    drawCurvedArrow(ctx, tier2.x+42, tier2.y-12, out.x-25, out.y, (tier2.x+out.x)/2, 50, COLORS.amber);
+
+    const phase = (t * 0.4) % 4;
+    if (phase < 1) drawParticle(ctx, req.x+27, req.y-14, tier1.x-39, tier1.y+10, phase, COLORS.teal);
+    else if (phase < 2) drawParticle(ctx, tier1.x+39, tier1.y+10, tier2.x-42, tier2.y-10, phase-1, COLORS.amber);
+    else if (phase < 3) drawParticle(ctx, tier2.x+42, tier2.y+10, tier3.x-44, tier3.y-10, phase-2, COLORS.ember);
+    else drawParticle(ctx, tier3.x+44, tier3.y-10, out.x-29, out.y+8, phase-3, COLORS.teal);
   },
 ];
 

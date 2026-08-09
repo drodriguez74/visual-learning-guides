@@ -312,7 +312,7 @@ Or jump directly to any guide:
 
 | Section | Contents |
 |---------|----------|
-| **Pattern Catalog** | 8 core patterns for reliable, observable, composable AI systems — single-agent loops through multi-model pipelines |
+| **Pattern Catalog** | 11 core patterns across 7 categories for reliable, observable, composable AI systems — single-agent loops through multi-model pipelines |
 | **Chain-of-Thought Pipeline** | Live flow diagram, what-it-does, when-to-use, strengths vs. trade-offs |
 | **Orchestrator / Sub-Agent** | Coordinator delegating bounded tasks to specialized sub-agents |
 | **Retrieval-Augmented Generation (RAG)** | Retrieve → ground → generate flow with strengths and trade-offs |
@@ -321,6 +321,9 @@ Or jump directly to any guide:
 | **Layered Memory Architecture** | Short-term, working, and long-term memory tiers |
 | **Input / Output Guardrails** | Pre- and post-inference validation and policy enforcement |
 | **Parallel Exploration + Voting** | Fan-out generation with consensus selection |
+| **ReAct (Reason + Act)** | Interleaved Thought → Action → Observation loop behind most tool-using agents |
+| **Reflection / Self-Refine** | Same-model self-critique and revision, no external evaluator |
+| **Model Fallback / Cascade** | Cheap-tier-first retries escalating to stronger models on failure |
 
 ---
 
