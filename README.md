@@ -36,6 +36,7 @@ Or jump directly to any guide:
 | **Claude Code — Signal Path** | `https://drodriguez74.github.io/visual-learning-guides/claude-code-mental-model.html` |
 | **Prompt Framework Field Guide** | `https://drodriguez74.github.io/visual-learning-guides/prompt-frameworks-field-guide.html` |
 | **Claude Code — The Ladder** | `https://drodriguez74.github.io/visual-learning-guides/claude-code-ladder.html` |
+| **Agent AI System Design** | `https://drodriguez74.github.io/visual-learning-guides/agent-ai-system-design.html` |
 
 ## Guides
 
@@ -401,6 +402,22 @@ Or jump directly to any guide:
 | **Rung 6 · Multi-Agent Teams** | Enabling `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and directing a team lead across parallel sub-tasks |
 | **Exercises** | Each lesson ends in a hands-on exercise with a checkbox; state (and rung progress) persists via `localStorage` |
 | **Terminal command blocks** | Every command ships in a terminal-chrome block with one-click copy-to-clipboard |
+
+---
+
+### 25 · Agent AI System Design
+`agent-ai-system-design.html` — Dark grid-paper editorial (Space Grotesk + JetBrains Mono) · Light/Dark mode
+
+A full visual breakdown and paragraph transcript of Aishwarya Srinivasan's YouTube video *"Agent AI System Design Explained in 27 Minutes."*
+
+| Section | Contents |
+|---------|----------|
+| **Overview** | The agentic loop (decompose → decide → call tool → inspect → update state → repeat until stopping condition), SVG diagram |
+| **Single vs Multi-Agent** | Two-panel topology comparison diagram, worked examples from the video, pros/cons of multi-agent complexity |
+| **Six Building Blocks** | Model Layer & Routing, Tools, Memory & State, Orchestration, Evaluation, Approval & Policy Control — each an expandable card with its own diagram, key mechanisms, and a verbatim example from the video |
+| **Four Production Principles** | Reliability, Cost & Latency, Context & RAG Design, Observability/Security/Privacy — same card format |
+| **Final Takeaway** | The video's closing 11-item checklist as a visual grid |
+| **Full Transcript** | Collapsible, timestamped, 68-paragraph transcript rebuilt from the video's own captions — nothing omitted |
 
 ---
 
