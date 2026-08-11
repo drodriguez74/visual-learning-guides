@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Vitals — Production Triage Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0D0C;
+    --bg-panel:#101513;
+    --bg-card:#131A18;
+    --border:#1E2B26;
+    --border-soft:#182420;
+    --text:#E4EBE7;
+    --text-dim:#8FA39A;
+    --text-faint:#5B6D66;
+    --mon-green:#39FF88;
+    --mon-green-dim:#1E7A4C;
+    --red:#FF5C5C;
+    --red-dim:#4A1F1F;
+    --amber:#F5A623;
+    --amber-dim:#4A3A17;
+    --blue:#5BA8D6;
+    --blue-dim:#1B3446;
+    --glow-1:rgba(57,255,136,0.05);
+    --glow-2:rgba(91,168,214,0.04);
+    --code-bg:#0C1210;
+    --code-text:#B9E8D2;
+    --code-string:#F5C97B;
+  }
+  [data-theme="light"]{
+    --bg:#F3F7F4;
+    --bg-panel:#FFFFFF;
+    --bg-card:#FFFFFF;
+    --border:#D6E3DB;
+    --border-soft:#E4EEE8;
+    --text:#12201A;
+    --text-dim:#48594F;
+    --text-faint:#7C8B83;
+    --mon-green:#0E8F4C;
+    --mon-green-dim:#16A34A;
+    --red:#C4291D;
+    --red-dim:#FBDEDA;
+    --amber:#9A6400;
+    --amber-dim:#FCEACB;
+    --blue:#1D6FA5;
+    --blue-dim:#DCEBF6;
+    --glow-1:rgba(14,143,76,0.06);
+    --glow-2:rgba(29,111,165,0.05);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    line-height:1.5;
+    background-image:
+      radial-gradient(circle at 15% 8%, var(--glow-1), transparent 40%),
+      radial-gradient(circle at 85% 92%, var(--glow-2), transparent 45%);
+    transition:background-color .2s ease, color .2s ease;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .code{font-family:'JetBrains Mono', monospace;}
+
+  /* ===== HEADER / VITALS MONITOR ===== */
+  header{
+    border-bottom:1px solid var(--border);
+    padding:28px 24px 0 24px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hdr-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    max-width:1180px; margin:0 auto;
+    flex-wrap:wrap; gap:12px;
+  }
+  .brand{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; letter-spacing:.18em; color:var(--mon-green);
+    display:flex; align-items:center; gap:8px;
+  }
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--mon-green); box-shadow:0 0 8px var(--mon-green); animation:pulse 1.6s infinite ease-in-out;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
+  .stamp{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint); text-align:right;}
+  h1{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:clamp(32px,5vw,54px);
+    letter-spacing:-0.01em;
+    margin:18px auto 6px auto;
+    max-width:1180px;
+  }
+  .subhead{
+    max-width:1180px; margin:0 auto 22px auto;
+    color:var(--text-dim); font-size:15px; max-width:640px;
+  }
+  .subhead b{color:var(--text); font-weight:600;}
+
+  /* waveform */
+  .scope-wrap{max-width:1180px; margin:0 auto; position:relative;}
+  svg.scope{width:100%; height:140px; display:block;}
+  .scope-labels{
+    display:flex; justify-content:space-between;
+    max-width:1180px; margin:0 auto; padding:6px 0 20px 0;
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em;
+  }
+  .scope-labels span{color:var(--text-faint);}
+  .scope-labels span.bad{color:var(--red);}
+  .scope-labels span.warn{color:var(--amber);}
+  .scope-labels span.ok{color:var(--mon-green-dim);}
+
+  /* ===== SECTION SHELLS ===== */
+  section{max-width:1180px; margin:0 auto; padding:56px 24px;}
+  .section-head{
+    display:flex; align-items:baseline; gap:14px;
+    border-bottom:1px dashed var(--border); padding-bottom:14px; margin-bottom:28px;
+  }
+  .section-num{font-family:'IBM Plex Mono',monospace; color:var(--mon-green); font-size:13px;}
+  .section-title{font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600;}
+  .section-desc{color:var(--text-dim); font-size:13.5px; margin-top:-14px; margin-bottom:26px; max-width:620px;}
+
+  /* ===== PROTOCOL FLOW ===== */
+  .protocol{
+    display:grid; grid-template-columns:repeat(6,1fr); gap:2px;
+    background:var(--border);
+    border:1px solid var(--border);
+  }
+  .phase{
+    background:var(--bg-panel); padding:18px 14px; min-height:150px;
+    display:flex; flex-direction:column; gap:8px; position:relative;
+  }
+  .phase .tag{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; color:var(--text-faint);}
+  .phase h4{font-family:'IBM Plex Mono',monospace; font-size:14px; letter-spacing:.02em;}
+  .phase p{font-size:12px; color:var(--text-dim); line-height:1.45;}
+  .phase.p1{border-top:2px solid var(--blue);}
+  .phase.p2{border-top:2px solid var(--amber);}
+  .phase.p3{border-top:2px solid var(--red);}
+  .phase.p4{border-top:2px solid var(--mon-green);}
+  .phase.p5{border-top:2px solid var(--mon-green);}
+  .phase.p6{border-top:2px solid var(--text-faint);}
+  @media (max-width:900px){.protocol{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:520px){.protocol{grid-template-columns:1fr;}}
+
+  /* ===== SEVERITY FILTER ===== */
+  .filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:26px;}
+  .filter-btn{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em;
+    padding:8px 14px; border-radius:2px; cursor:pointer;
+    background:var(--bg-panel); border:1px solid var(--border); color:var(--text-dim);
+    transition:all .15s ease;
+  }
+  .filter-btn:hover{border-color:var(--text-faint); color:var(--text);}
+  .filter-btn.active{color:var(--bg); font-weight:600;}
+  .filter-btn.active[data-sev="ALL"]{background:var(--text); border-color:var(--text);}
+  .filter-btn.active[data-sev="CRITICAL"]{background:var(--red); border-color:var(--red);}
+  .filter-btn.active[data-sev="DEGRADED"]{background:var(--amber); border-color:var(--amber);}
+  .filter-btn.active[data-sev="WARNING"]{background:var(--blue); border-color:var(--blue);}
+
+  /* ===== CHART CARDS ===== */
+  .board{display:grid; grid-template-columns:repeat(2,1fr); gap:16px;}
+  @media (max-width:820px){.board{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--bg-card); border:1px solid var(--border);
+    border-left:3px solid var(--text-faint);
+    padding:18px 20px; transition:opacity .2s ease, transform .2s ease;
+  }
+  .card[data-sev="CRITICAL"]{border-left-color:var(--red);}
+  .card[data-sev="DEGRADED"]{border-left-color:var(--amber);}
+  .card[data-sev="WARNING"]{border-left-color:var(--blue);}
+  .card.hide{display:none;}
+
+  .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;}
+  .case-id{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint);}
+  .sev-tag{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.08em; font-weight:700;
+    padding:3px 8px; border-radius:2px; white-space:nowrap;
+  }
+  .sev-tag.CRITICAL{background:var(--red-dim); color:var(--red);}
+  .sev-tag.DEGRADED{background:var(--amber-dim); color:var(--amber);}
+  .sev-tag.WARNING{background:var(--blue-dim); color:var(--blue);}
+
+  .card h3{font-family:'IBM Plex Mono',monospace; font-size:15.5px; margin-bottom:10px; line-height:1.35;}
+
+  .field{margin-bottom:9px;}
+  .field .k{font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.1em; color:var(--text-faint); display:block; margin-bottom:2px;}
+  .field .v{font-size:12.5px; color:var(--text-dim); line-height:1.5;}
+  .field .v.code{font-family:'JetBrains Mono',monospace; font-size:11.5px; background:var(--code-bg); padding:8px 10px; border-radius:3px; border:1px solid var(--border-soft); display:block; color:var(--code-text); overflow-x:auto; white-space:pre-wrap;}
+
+  /* ===== TOOLKIT ===== */
+  .toolkit-grid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:820px){.toolkit-grid{grid-template-columns:1fr;}}
+  .tool-card{background:var(--bg-panel); border:1px solid var(--border); padding:16px 18px;}
+  .tool-card h4{font-family:'IBM Plex Mono',monospace; font-size:13px; margin-bottom:8px; color:var(--mon-green);}
+  .tool-card p{font-size:12px; color:var(--text-dim); margin-bottom:10px;}
+  pre{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; background:var(--code-bg);
+    border:1px solid var(--border-soft); border-radius:3px; padding:12px 14px;
+    overflow-x:auto; color:var(--code-text); line-height:1.6;
+  }
+  pre .c{color:var(--text-faint);}
+  pre .s{color:var(--code-string);}
+  pre .k{color:var(--blue);}
+
+  /* ===== ESCALATION MATRIX ===== */
+  table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  th{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.08em;
+    text-align:left; color:var(--text-faint); padding:10px 12px; border-bottom:1px solid var(--border);
+  }
+  td{padding:12px; border-bottom:1px solid var(--border-soft); color:var(--text-dim); vertical-align:top;}
+  tr td:first-child{font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:12px;}
+  tr[data-row="CRITICAL"] td:first-child{color:var(--red);}
+  tr[data-row="DEGRADED"] td:first-child{color:var(--amber);}
+  tr[data-row="WARNING"] td:first-child{color:var(--blue);}
+
+  /* ===== LATENCY WALKTHROUGH ===== */
+  .walk{display:flex; flex-direction:column;}
+  .wstep{
+    display:grid; grid-template-columns:44px 1fr 1fr; gap:20px;
+    padding:22px 0; border-bottom:1px dashed var(--border);
+    align-items:start;
+  }
+  .wstep:last-child{border-bottom:none;}
+  .wnum{
+    font-family:'IBM Plex Mono',monospace; font-size:20px; font-weight:700;
+    color:var(--mon-green-dim); line-height:1;
+  }
+  .wbody h4{font-family:'IBM Plex Mono',monospace; font-size:15px; margin-bottom:8px;}
+  .wbody p{font-size:12.5px; color:var(--text-dim); line-height:1.55;}
+  .wstep pre{margin:0;}
+  @media (max-width:820px){
+    .wstep{grid-template-columns:32px 1fr; grid-template-areas:"num body" "pre pre";}
+    .wnum{grid-area:num; font-size:16px;}
+    .wbody{grid-area:body;}
+    .wstep pre{grid-area:pre; margin-top:12px;}
+  }
+
+  footer{
+    max-width:1180px; margin:0 auto; padding:30px 24px 60px 24px;
+    color:var(--text-faint); font-family:'IBM Plex Mono',monospace; font-size:11px;
+    border-top:1px dashed var(--border);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .brand .dot{animation:none;}
+    .scope path{animation:none !important;}
+  }
+
+  /* ===== THEME TOGGLE ===== */
+  .theme-toggle-fixed{
+    position:fixed; top:14px; right:16px; z-index:100;
+    display:flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--text-dim); background:var(--bg-panel);
+    border:1px solid var(--border); border-radius:999px;
+    padding:7px 12px 7px 10px; cursor:pointer;
+    transition:color .15s ease, border-color .15s ease;
+  }
+  .theme-toggle-fixed:hover{color:var(--mon-green); border-color:var(--mon-green-dim);}
+  .theme-toggle-fixed .icon{width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  @media (max-width:520px){
+    .theme-toggle-fixed{top:auto; bottom:14px; right:14px;}
+  }
+</style>
+</head>
+<body>
+
+<button id="themeToggle" class="theme-toggle-fixed" aria-label="Toggle light and dark theme">
+  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  <span id="themeLabel">Dark</span>
+</button>
+
+<header>
+  <div class="hdr-top">
+    <div class="brand"><span class="dot"></span>AGENT VITALS // PRODUCTION MONITORING</div>
+    <div class="stamp">CASE FILE: LC-LG-TRIAGE-01<br>STACK: LangChain + LangGraph</div>
+  </div>
+  <h1>Triaging Agents<br>in the Wild.</h1>
+  <p class="subhead">A field guide for when your <b>agentic system stops behaving in production</b> — how to read the trace, tell a critical bleed from a background murmur, and stabilize before you diagnose.</p>
+
+  <div class="scope-wrap">
+    <svg class="scope" viewBox="0 0 1180 140" preserveAspectRatio="none">
+      <line x1="0" y1="70" x2="1180" y2="70" stroke="var(--border-soft)" stroke-width="1"/>
+      <path id="wave" d="M0,70 L120,70 L140,20 L155,120 L170,70 L340,70 L355,55 L365,85 L375,70 L560,70 L575,10 L588,130 L600,40 L613,100 L625,70 L790,70 L800,60 L815,80 L825,70 L960,70 L985,15 L1000,125 L1015,45 L1030,95 L1045,70 L1180,70"
+        fill="none" stroke="var(--mon-green)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"
+        stroke-dasharray="2600" stroke-dashoffset="2600" style="animation:draw 3.4s ease-out forwards;"/>
+    </svg>
+  </div>
+  <div class="scope-labels">
+    <span class="ok">◼ STEADY STATE</span>
+    <span class="bad">◼ RECURSION SPIKE</span>
+    <span class="ok">◼ NOMINAL</span>
+    <span class="warn">◼ LATENCY DRIFT</span>
+    <span class="ok">◼ NOMINAL</span>
+    <span class="bad">◼ TOKEN RUNAWAY</span>
+  </div>
+</header>
+
+<style>@keyframes draw{to{stroke-dashoffset:0;}}</style>
+
+<!-- ===================== SECTION 1: PROTOCOL ===================== -->
+<section>
+  <div class="section-head">
+    <span class="section-num">01</span>
+    <span class="section-title">The Triage Protocol</span>
+  </div>
+  <p class="section-desc">Same order every time, whether the patient is a single ReAct loop or a twelve-node supervisor graph. Skipping straight to "diagnose" on a live incident is how a recursion loop burns your token budget while you're still reading logs.</p>
+
+  <div class="protocol">
+    <div class="phase p1"><span class="tag">01 — INTAKE</span><h4>Confirm it's real</h4><p>Pull the run/thread ID. Is it one bad trace or a fleet-wide pattern? Check error rate, not anecdote.</p></div>
+    <div class="phase p2"><span class="tag">02 — ASSESS</span><h4>Tag severity</h4><p>Is money/data/safety at risk right now (CRITICAL), quality degrading (DEGRADED), or a single odd trace (WARNING)?</p></div>
+    <div class="phase p3"><span class="tag">03 — STABILIZE</span><h4>Stop the bleed</h4><p>Kill switch, pause the thread, or cap recursion/tokens before you touch root cause. Stop damage first.</p></div>
+    <div class="phase p4"><span class="tag">04 — DIAGNOSE</span><h4>Read the trace</h4><p>LangSmith waterfall, <code class="code">get_state_history()</code>, checkpoint diffs. Find the node where reality diverged from intent.</p></div>
+    <div class="phase p5"><span class="tag">05 — TREAT</span><h4>Fix + verify</h4><p>Patch the node, reducer, or prompt. Replay against the exact failing input before calling it closed.</p></div>
+    <div class="phase p6"><span class="tag">06 — DEBRIEF</span><h4>Prevent recurrence</h4><p>Add the case to the eval set. A failure mode you can't re-trigger in CI will happen again.</p></div>
+  </div>
+</section>
+
+<!-- ===================== SECTION 2: SYMPTOM BOARD ===================== -->
+<section id="board-section">
+  <div class="section-head">
+    <span class="section-num">02</span>
+    <span class="section-title">Symptom Board</span>
+  </div>
+  <p class="section-desc">Fifteen failure modes seen in LangChain/LangGraph agents running in production, indexed by how they present. Filter by severity to work the board like an actual queue.</p>
+
+  <div class="filters">
+    <button class="filter-btn active" data-sev="ALL">ALL (15)</button>
+    <button class="filter-btn" data-sev="CRITICAL">CRITICAL</button>
+    <button class="filter-btn" data-sev="DEGRADED">DEGRADED</button>
+    <button class="filter-btn" data-sev="WARNING">WARNING</button>
+  </div>
+
+  <div class="board" id="board">
+
+    <div class="card" data-sev="CRITICAL">
+      <div class="card-top"><span class="case-id">CASE 01</span><span class="sev-tag CRITICAL">CRITICAL</span></div>
+      <h3>Recursion loop / non-termination</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">Graph keeps re-entering the same nodes; run finally dies on <code class="code">GraphRecursionError</code>, or worse, never dies.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Conditional edge with no real exit condition; the LLM keeps deciding "I need more info" and re-calling the same tool.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v code">for s in graph.get_state_history(config):
+    print(s.next, len(s.values["messages"]))
+# look for repeating node sequence</span></div>
+      <div class="field"><span class="k">STABILIZE</span><span class="v">Lower <code class="code">recursion_limit</code> to fail fast; kill the thread.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Add an explicit loop counter to state; route to END past N iterations regardless of LLM's opinion.</span></div>
+    </div>
+
+    <div class="card" data-sev="WARNING">
+      <div class="card-top"><span class="case-id">CASE 02</span><span class="sev-tag WARNING">WARNING</span></div>
+      <h3>Tool call failure / malformed args</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v"><code class="code">ToolException</code>, invalid JSON args, or a 4xx bounced back from a downstream API.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Tool schema drifted from what the model was trained/prompted on, or the API contract changed underneath you.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">In the trace, compare the emitted <code class="code">tool_call.args</code> against the tool's actual Pydantic schema — the mismatch is usually one field.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Catch, return the error as a string back into state so the model self-corrects, instead of raising.</span></div>
+      <div class="field"><span class="k">PREVENT</span><span class="v">Strict schemas via <code class="code">with_structured_output</code>; contract tests on the underlying API.</span></div>
+    </div>
+
+    <div class="card" data-sev="CRITICAL">
+      <div class="card-top"><span class="case-id">CASE 03</span><span class="sev-tag CRITICAL">CRITICAL</span></div>
+      <h3>State corruption / bad reducer</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">A state field gets silently overwritten, or a list field duplicates/loses entries after parallel branches merge.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Missing or wrong <code class="code">Annotated</code> reducer — default channel behavior overwrites instead of merging.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v code">history = list(graph.get_state_history(config))
+# diff .values between consecutive checkpoints
+# to see exactly which node wrote which key</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Define the reducer explicitly, e.g. <code class="code">Annotated[list, add_messages]</code>, and own each key by exactly one node.</span></div>
+    </div>
+
+    <div class="card" data-sev="DEGRADED">
+      <div class="card-top"><span class="case-id">CASE 04</span><span class="sev-tag DEGRADED">DEGRADED</span></div>
+      <h3>Context window overflow</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">"Maximum context length" errors, or worse — silent truncation and steadily degrading answer quality mid-run.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Unbounded message history in a long-lived loop; raw tool output dumped into state instead of summarized.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Log token count per node call; inspect message list length in the state snapshot at the failing step.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Use <code class="code">trim_messages</code> or a summarization node; cap tool-output size before it's appended.</span></div>
+    </div>
+
+    <div class="card" data-sev="CRITICAL">
+      <div class="card-top"><span class="case-id">CASE 05</span><span class="sev-tag CRITICAL">CRITICAL</span></div>
+      <h3>Provider outage / rate limit</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">429s and 5xxs from the model API, timeouts cascading across many concurrent runs at once.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">No backoff strategy; single-provider dependency; a traffic burst above your negotiated rate limit.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Correlate error timestamps across traces — a shared spike means it's the provider, not your graph.</span></div>
+      <div class="field"><span class="k">STABILIZE</span><span class="v">Exponential backoff + jitter; circuit breaker; fail over to a secondary model.</span></div>
+    </div>
+
+    <div class="card" data-sev="CRITICAL">
+      <div class="card-top"><span class="case-id">CASE 06</span><span class="sev-tag CRITICAL">CRITICAL</span></div>
+      <h3>Token / cost runaway</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">A spend alert fires, or one run's token count is orders of magnitude above the norm.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">A loop combined with large context re-sent on every turn — often riding alongside Case 01 or 04.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Sort LangSmith runs by token count, isolate the outlier trace, walk its node sequence.</span></div>
+      <div class="field"><span class="k">STABILIZE</span><span class="v">A budget-guard node that halts the run once it crosses a per-thread token threshold.</span></div>
+    </div>
+
+    <div class="card" data-sev="DEGRADED">
+      <div class="card-top"><span class="case-id">CASE 07</span><span class="sev-tag DEGRADED">DEGRADED</span></div>
+      <h3>Latency degradation</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">p95 run time creeping up over days/weeks; downstream services start timing out waiting on the agent.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Sequential LLM calls that could run in parallel; a slow tool/API call; cold-started infra.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Read the trace waterfall — find the single longest span, not the average.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Fan-out independent nodes and fan-in the results; cache repeat retrieval calls.</span></div>
+    </div>
+
+    <div class="card" data-sev="WARNING">
+      <div class="card-top"><span class="case-id">CASE 08</span><span class="sev-tag WARNING">WARNING</span></div>
+      <h3>Hallucinated tool selection</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">Agent invokes a tool that doesn't exist, or calls the right tool for the wrong purpose.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Too many tools exposed at once, ambiguous tool descriptions, or a weak routing prompt.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Compare the emitted <code class="code">tool_call.name</code> against the tool list actually bound at that node.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Narrow the tool surface per step (role-scoped toolsets); sharpen descriptions with concrete examples.</span></div>
+    </div>
+
+    <div class="card" data-sev="CRITICAL">
+      <div class="card-top"><span class="case-id">CASE 09</span><span class="sev-tag CRITICAL">CRITICAL</span></div>
+      <h3>Checkpointer / persistence failure</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">Resume fails with "no state found for thread_id," or a checkpoint comes back corrupted.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Checkpointer backend (Postgres/Redis) connectivity issue, or a custom object in state that isn't serializable.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v code">config = {"configurable": {"thread_id": tid}}
+state = graph.get_state(config)
+print(state)  # None or error → backend issue</span></div>
+      <div class="field"><span class="k">STABILIZE</span><span class="v">Fail over to a backup checkpointer; ensure every state field is plain-serializable.</span></div>
+    </div>
+
+    <div class="card" data-sev="DEGRADED">
+      <div class="card-top"><span class="case-id">CASE 10</span><span class="sev-tag DEGRADED">DEGRADED</span></div>
+      <h3>Stuck human-in-the-loop interrupt</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">A thread has been sitting at <code class="code">interrupt()</code> for hours; nobody resumed it.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">No timeout on pending approvals, or the UI never actually surfaced the interrupt payload to a human.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Query threads by status for anything parked past its expected review SLA.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Resume with a safe default via <code class="code">Command(resume=...)</code>, or auto-escalate past a timer.</span></div>
+    </div>
+
+    <div class="card" data-sev="WARNING">
+      <div class="card-top"><span class="case-id">CASE 11</span><span class="sev-tag WARNING">WARNING</span></div>
+      <h3>Silent wrong output</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">No exception at all — the run completes cleanly, but the answer is wrong or off-policy. The scariest failure mode.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Eval coverage gap, missing guardrail node, or silent drift after a prompt or model version bump.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Diff the run against your golden eval set; walk the reasoning trace, not just the final answer.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Add an output-validation node; roll back the prompt/model change that shipped closest to the regression.</span></div>
+    </div>
+
+    <div class="card" data-sev="CRITICAL">
+      <div class="card-top"><span class="case-id">CASE 12</span><span class="sev-tag CRITICAL">CRITICAL</span></div>
+      <h3>Multi-agent handoff failure</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">Orchestrator and sub-agent deadlock; a message never routes back, or the same work runs twice.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Mismatched handoff schema between agents, a missing routing edge, or two agents writing the same state key.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Trace every inter-agent <code class="code">Command(goto=...)</code> call; map which agent owns which state key.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Define an explicit handoff contract; namespace state keys per agent so writes can't collide.</span></div>
+    </div>
+
+    <div class="card" data-sev="CRITICAL">
+      <div class="card-top"><span class="case-id">CASE 13</span><span class="sev-tag CRITICAL">CRITICAL</span></div>
+      <h3>Prompt injection / unsafe output</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">Agent follows instructions embedded in a retrieved doc or tool output — leaks data, takes an unauthorized action.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Untrusted content (web page, email, doc) flowed straight into the planning context, unsanitized.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Trace which node first ingested the untrusted content, and what tool calls followed it.</span></div>
+      <div class="field"><span class="k">STABILIZE</span><span class="v">Kill the run. Sandbox tool execution; require human approval on any sensitive tool.</span></div>
+    </div>
+
+    <div class="card" data-sev="WARNING">
+      <div class="card-top"><span class="case-id">CASE 14</span><span class="sev-tag WARNING">WARNING</span></div>
+      <h3>Non-deterministic / flaky output</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">Identical input, different output across runs; eval suite passes and fails on the same case unpredictably.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Temperature above 0 with no seed, or a parallel fan-in whose merge order isn't fixed.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Rerun at <code class="code">temperature=0</code> with a fixed seed; compare traces side by side.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Pin seed for debugging sessions; make the fan-in merge logic order-independent.</span></div>
+    </div>
+
+    <div class="card" data-sev="CRITICAL">
+      <div class="card-top"><span class="case-id">CASE 15</span><span class="sev-tag CRITICAL">CRITICAL</span></div>
+      <h3>Cache staleness / cross-thread leakage</h3>
+      <div class="field"><span class="k">SYMPTOM</span><span class="v">Agent returns an answer that was true last week but not now, or — far worse — one user's cached response surfaces in another user's thread.</span></div>
+      <div class="field"><span class="k">LIKELY CAUSE</span><span class="v">Semantic/response cache keyed on a similarity threshold instead of exact context; cache key missing <code class="code">thread_id</code>/tenant scope; TTL longer than the underlying data's real shelf life.</span></div>
+      <div class="field"><span class="k">DIAGNOSE</span><span class="v">Reproduce with cache disabled and diff the output; check the cache key actually built for the failing call — look for what scope it's missing.</span></div>
+      <div class="field"><span class="k">STABILIZE</span><span class="v">Flush the cache or disable it for the affected route/tenant immediately if there's any cross-user exposure — this is a data-leak incident, not a quality bug.</span></div>
+      <div class="field"><span class="k">FIX</span><span class="v">Scope cache keys to tenant + thread + a hash of the exact input; set TTL to match true data volatility, not convenience.</span></div>
+      <div class="field"><span class="k">PREVENT</span><span class="v">Cache-key unit tests asserting isolation across tenants/threads; alert on cache hit-rate anomalies as a security signal, not just a performance one.</span></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== SECTION 3: DIAGNOSTIC TOOLKIT ===================== -->
+<section>
+  <div class="section-head">
+    <span class="section-num">03</span>
+    <span class="section-title">Diagnostic Toolkit</span>
+  </div>
+  <p class="section-desc">The instruments you actually reach for once a case is stabilized and you're working root cause.</p>
+
+  <div class="toolkit-grid">
+    <div class="tool-card">
+      <h4>Turn on tracing before you need it</h4>
+      <p>Every run should already be shipping to LangSmith. If it isn't, this is step zero of every future incident.</p>
+      <pre><span class="c"># .env</span>
+LANGCHAIN_TRACING_V2=<span class="s">"true"</span>
+LANGCHAIN_API_KEY=<span class="s">"..."</span>
+LANGCHAIN_PROJECT=<span class="s">"agent-prod"</span></pre>
+    </div>
+
+    <div class="tool-card">
+      <h4>Walk state history, not just the final state</h4>
+      <p>The bug is almost always in a transition, not a snapshot.</p>
+      <pre><span class="k">for</span> step <span class="k">in</span> graph.get_state_history(config):
+    print(step.next, step.metadata[<span class="s">"step"</span>])
+    <span class="c"># inspect step.values at the point it diverges</span></pre>
+    </div>
+
+    <div class="tool-card">
+      <h4>Stream in debug mode for a live incident</h4>
+      <p>Full event stream, not just final output — see every node enter/exit as it happens.</p>
+      <pre><span class="k">for</span> event <span class="k">in</span> graph.stream(
+    inputs, config, stream_mode=<span class="s">"debug"</span>
+):
+    print(event)</pre>
+    </div>
+
+    <div class="tool-card">
+      <h4>Cap the blast radius by default</h4>
+      <p>Recursion and token limits are cheap insurance against Cases 01 and 06.</p>
+      <pre>graph.invoke(
+    inputs,
+    config={
+        <span class="s">"recursion_limit"</span>: <span class="c">25</span>,
+        <span class="s">"configurable"</span>: {<span class="s">"thread_id"</span>: tid},
+    },
+)</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SECTION 4: ESCALATION MATRIX ===================== -->
+<section>
+  <div class="section-head">
+    <span class="section-num">04</span>
+    <span class="section-title">Escalation Matrix</span>
+  </div>
+  <p class="section-desc">Severity determines urgency, not effort. A CRITICAL case can have a one-line fix; the escalation speed is about the blast radius while it's open.</p>
+
+  <table>
+    <thead>
+      <tr><th>Severity</th><th>Definition</th><th>Response</th><th>Owner</th></tr>
+    </thead>
+    <tbody>
+      <tr data-row="CRITICAL">
+        <td>CRITICAL</td>
+        <td>Money, data, or safety actively at risk — runaway cost, corrupted state, unsafe tool execution.</td>
+        <td>Page on-call now. Stabilize (kill switch / cap) before diagnosing.</td>
+        <td>On-call engineer</td>
+      </tr>
+      <tr data-row="DEGRADED">
+        <td>DEGRADED</td>
+        <td>System still functioning but quality, latency, or throughput is measurably worse than baseline.</td>
+        <td>Monitor the trend; fix within the current sprint.</td>
+        <td>Owning team</td>
+      </tr>
+      <tr data-row="WARNING">
+        <td>WARNING</td>
+        <td>Single odd trace or edge case with no fleet-wide signal yet.</td>
+        <td>Log it, add to the eval backlog, watch for recurrence.</td>
+        <td>Backlog</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===================== SECTION 5: 5-SECOND LATENCY WALKTHROUGH ===================== -->
+<section>
+  <div class="section-head">
+    <span class="section-num">05</span>
+    <span class="section-title">The 5-Second Walkthrough</span>
+  </div>
+  <p class="section-desc">A flat ~5s tax on every call is specific enough to have a short list of usual suspects. Work this list top to bottom before you go spelunking — check them in order, stop at the first one that accounts for most of the time.</p>
+
+  <div class="walk">
+
+    <div class="wstep">
+      <div class="wnum">01</div>
+      <div class="wbody">
+        <h4>Read the waterfall, not the total</h4>
+        <p>Pull the trace and look at individual span durations. If one node eats 4+ of the 5 seconds, that's the whole investigation — everything else is noise.</p>
+      </div>
+      <pre><span class="k">for</span> event <span class="k">in</span> graph.stream(
+    inputs, config, stream_mode=<span class="s">"debug"</span>
+):
+    print(event[<span class="s">"type"</span>], event.get(<span class="s">"timestamp"</span>))
+<span class="c"># diff consecutive timestamps → find the gap</span></pre>
+    </div>
+
+    <div class="wstep">
+      <div class="wnum">02</div>
+      <div class="wbody">
+        <h4>Sequential LLM calls that could be parallel</h4>
+        <p>Plan → select-tool → call-tool → synthesize run in series adds up fast even at ~1s a hop. If the nodes don't depend on each other's output, they shouldn't be chained.</p>
+      </div>
+      <pre><span class="c"># serial — 4 hops, 4x latency</span>
+plan → select_tool → call_tool → synth
+
+<span class="c"># parallel — fan out independent branches</span>
+graph.add_edge(<span class="s">"plan"</span>, [<span class="s">"tool_a"</span>, <span class="s">"tool_b"</span>])
+<span class="c"># fan-in on a shared reducer</span></pre>
+    </div>
+
+    <div class="wstep">
+      <div class="wnum">03</div>
+      <div class="wbody">
+        <h4>Cold start</h4>
+        <p>First call after idle time — serverless endpoint spin-up, lazy-loaded vector store, a fresh connection pool — is often the entire 5s by itself. Check whether it's every call or only the first in a burst.</p>
+      </div>
+      <pre><span class="c"># quick test: fire two calls back to back,</span>
+<span class="c"># compare call #1 vs call #2 latency</span>
+t0 = time.time(); graph.invoke(inputs, config)
+t1 = time.time(); graph.invoke(inputs, config)
+print(t1 - t0)  <span class="c"># call 1 (cold)</span></pre>
+    </div>
+
+    <div class="wstep">
+      <div class="wnum">04</div>
+      <div class="wbody">
+        <h4>Retrieval or re-embedding on every turn</h4>
+        <p>A vector store query or a document re-embed that runs on each node visit is a common silent 1-3s tax, especially once it's no longer being cached from an earlier design pass.</p>
+      </div>
+      <pre><span class="c"># check: is this node re-embedding</span>
+<span class="c"># the same content it embedded last turn?</span>
+retriever.invoke(query)  <span class="c"># time this in isolation</span></pre>
+    </div>
+
+    <div class="wstep">
+      <div class="wnum">05</div>
+      <div class="wbody">
+        <h4>Hidden retry / backoff</h4>
+        <p>If exponential backoff was added for rate limits (Case 05), a single silent retry can be 2-4s on its own — and it won't show up as an error, just as slowness.</p>
+      </div>
+      <pre><span class="c"># check retry logs/counters for this run —</span>
+<span class="c"># a "successful" call may have retried once</span>
+logger.info(<span class="s">f"attempt=</span>{attempt} elapsed=<span class="s">{elapsed}"</span>)</pre>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  AGENT VITALS — production triage reference for LangChain / LangGraph systems. Every case card assumes tracing is already on; if it isn't, that's case zero.
+</footer>
+
+<script>
+  const buttons = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.card');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const sev = btn.dataset.sev;
+      cards.forEach(c => {
+        c.classList.toggle('hide', sev !== 'ALL' && c.dataset.sev !== sev);
+      });
+    });
+  });
+
+  // ---------- theme toggle ----------
+  const THEME_KEY = 'agent-triage-theme';
+  function applyThemeLabel(){
+    const isLight = document.documentElement.dataset.theme === 'light';
+    const el = document.getElementById('themeLabel');
+    if(el) el.textContent = isLight ? 'Light' : 'Dark';
+  }
+  function toggleTheme(){
+    const html = document.documentElement;
+    html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+    try{ localStorage.setItem(THEME_KEY, html.dataset.theme); }catch(e){}
+    applyThemeLabel();
+  }
+  (function initTheme(){
+    try{
+      const saved = localStorage.getItem(THEME_KEY);
+      if(saved) document.documentElement.dataset.theme = saved;
+    }catch(e){}
+  })();
+  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+  applyThemeLabel();
+</script>
+
+</body>
+</html>

@@ -37,6 +37,7 @@ Or jump directly to any guide:
 | **Prompt Framework Field Guide** | `https://drodriguez74.github.io/visual-learning-guides/prompt-frameworks-field-guide.html` |
 | **Claude Code — The Ladder** | `https://drodriguez74.github.io/visual-learning-guides/claude-code-ladder.html` |
 | **Agent AI System Design** | `https://drodriguez74.github.io/visual-learning-guides/agent-ai-system-design.html` |
+| **Agent Vitals — Production Triage** | `https://drodriguez74.github.io/visual-learning-guides/agent_triage.html` |
 
 ## Guides
 
@@ -391,17 +392,26 @@ Or jump directly to any guide:
 ### 24 · Claude Code — The Ladder
 `claude-code-ladder.html` — Dark terminal (JetBrains Mono + Inter) · Progress-tracked exercises · Light/Dark mode
 
-| Section | Contents |
-|---------|----------|
-| **Sidebar ladder tracker** | Six rungs shown as a literal ladder rail that fills in as exercises are checked off, plus an overall completion ring |
-| **Rung 1 · Foundation & Initialization** | Launching `claude`, generating `CLAUDE.md` with `/init`, curating persistent memory with `/memory` |
-| **Rung 2 · Core Loop & Plan Mode** | The prompt → edit → verify loop, `/plan` for read-only design before code changes, `/compact` and `/clear` for context hygiene |
-| **Rung 3 · Context & Safety Controls** | Auditing token usage with `/context`, setting auto-accept boundaries with `/permissions`, running `/security-review` |
-| **Rung 4 · Review, Testing & Git** | Reading diffs with `/diff`, automated fixes via `/code-review --fix`, environment debugging with `/doctor` |
-| **Rung 5 · Subagents & Parallel Work** | Tracking delegated work with `/tasks`, offloading long-running commands with `/background` |
-| **Rung 6 · Multi-Agent Teams** | Enabling `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and directing a team lead across parallel sub-tasks |
-| **Exercises** | Each lesson ends in a hands-on exercise with a checkbox; state (and rung progress) persists via `localStorage` |
-| **Terminal command blocks** | Every command ships in a terminal-chrome block with one-click copy-to-clipboard |
+Restructured around four explicit skill tiers — Beginner, Intermediate, Advanced, Superuser — rather than one flat sequence, since things like hooks, MCP, and headless scripting aren't linear prerequisites of each other. 14 rungs, 35 exercises, each tier with its own mini progress rail in the sidebar.
+
+| Tier | Rung | Contents |
+|------|------|----------|
+| **Beginner** | 1 · The 10% → 100% Mindset | The vibe-coding vs. engineering-partner framing, the four pillars overview, a 10%-vs-100% summary matrix, and a worked Stripe-webhook-pipeline example with a sample `CLAUDE.md` |
+| **Beginner** | 2 · Foundation & Initialization | Launching `claude`, generating `CLAUDE.md` with `/init`, curating persistent memory with `/memory` |
+| **Beginner** | 3 · The Core Loop & Plan Mode | The prompt → edit → verify loop, `/plan` for read-only design before code changes, `/compact` and `/clear` for context hygiene |
+| **Intermediate** | 4 · Context Management & Safety Controls | Auditing token usage with `/context`, setting boundaries with `/permissions`, running `/security-review`, and rolling back instantly with `/rewind`/checkpointing |
+| **Intermediate** | 5 · Code Review, Testing & Git Workflows | Reading diffs with `/diff`, automated fixes via `/code-review --fix`, environment debugging with `/doctor` |
+| **Intermediate** | 6 · Subagents & Parallel Workflows | Using Claude's built-in Explore/Plan subagents, tracking delegated work with `/tasks`, offloading long-running commands with `/background` |
+| **Advanced** | 7 · Custom Subagents | Writing your own `.claude/agents/*.md` files (frontmatter, project vs. user scope) instead of just using the built-in ones |
+| **Advanced** | 8 · Skills & Custom Commands | `SKILL.md` files, `.claude/skills/`, how skills superseded `.claude/commands/` |
+| **Advanced** | 9 · Hooks | `PreToolUse`/`PostToolUse` lifecycle events, `settings.json` hook config, a concrete destructive-command-blocking example |
+| **Advanced** | 10 · MCP (Model Context Protocol) | Connecting external tools/data (Jira, Slack, Google Drive) via `claude mcp` |
+| **Superuser** | 11 · Advanced Multi-Agent Teams | Enabling `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` and directing a team lead across parallel sub-tasks |
+| **Superuser** | 12 · Headless Mode, Scripting & Background Agents | `claude -p`, `--output-format`, piping, `--max-turns`/`--max-budget-usd`, managing background sessions (`claude --bg`/`agents`/`attach`/`logs`) |
+| **Superuser** | 13 · CI/CD & Scheduled Automation | GitHub Actions/GitLab CI for automated PR review, `/schedule` + cloud Routines, `/loop` for in-session polling |
+| **Superuser** | 14 · The Agent SDK & Plugins | Building fully custom agents with the Agent SDK, packaging skills/agents/hooks as installable plugins |
+| **Exercises** | — | Each lesson ends in a hands-on exercise with a checkbox; state (and rung/tier progress) persists via `localStorage` |
+| **Terminal command blocks** | — | Every command ships in a terminal-chrome block with one-click copy-to-clipboard |
 
 ---
 
@@ -418,6 +428,21 @@ A full visual breakdown and paragraph transcript of Aishwarya Srinivasan's YouTu
 | **Four Production Principles** | Reliability, Cost & Latency, Context & RAG Design, Observability/Security/Privacy — same card format |
 | **Final Takeaway** | The video's closing 11-item checklist as a visual grid |
 | **Full Transcript** | Collapsible, timestamped, 68-paragraph transcript rebuilt from the video's own captions — nothing omitted |
+
+---
+
+### 26 · Agent Vitals — Production Triage
+`agent_triage.html` — Dark phosphor-monitor terminal (IBM Plex Mono/Sans + JetBrains Mono) · Light/Dark mode
+
+A field guide for triaging LangChain/LangGraph agents when they misbehave in production — the same order every time, so a live incident doesn't turn into diagnosing while a recursion loop burns the token budget.
+
+| Section | Contents |
+|---------|----------|
+| **The Triage Protocol** | 6-phase flow — Intake, Assess, Stabilize, Diagnose, Treat, Debrief — as a horizontal phase strip |
+| **Symptom Board** | 15 production failure-mode case cards (recursion loops, tool call failures, state corruption, context overflow, provider outages, token runaway, latency degradation, hallucinated tool selection, checkpointer failure, stuck HITL interrupts, silent wrong output, multi-agent handoff failure, prompt injection, non-determinism, cache staleness/leakage), each with symptom/cause/diagnose/stabilize/fix/prevent fields; filterable by CRITICAL/DEGRADED/WARNING severity |
+| **Diagnostic Toolkit** | Four ready-to-run snippets — enabling LangSmith tracing, walking `get_state_history()`, streaming in `stream_mode="debug"`, capping recursion/token blast radius |
+| **Escalation Matrix** | Severity → definition → response → owner table |
+| **The 5-Second Walkthrough** | Ordered checklist for a flat per-call latency tax — trace waterfall, serial vs. parallel LLM calls, cold starts, uncached retrieval, hidden retries |
 
 ---
 

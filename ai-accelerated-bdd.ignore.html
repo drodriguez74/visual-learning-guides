@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Accelerated BDD Automation Framework (Playwright & Java)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b;
+            --border-color: #475569;
+            --code-bg: #0b0f19;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        h1 span {
+            color: var(--accent-blue);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 20px 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid var(--accent-blue);
+            padding-left: 15px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px 0;
+            color: var(--text-main);
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+        }
+
+        strong {
+            color: var(--text-main);
+        }
+
+        /* Nav Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background-color: var(--bg-secondary);
+            color: var(--text-main);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Flow Diagram */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-secondary);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+
+        .flow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            width: 100%;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .flow-steps {
+                flex-direction: column;
+                align-items: center;
+            }
+            .flow-arrow-horizontal {
+                display: none;
+            }
+            .flow-arrow-vertical {
+                display: block !important;
+                margin: 10px 0;
+            }
+        }
+
+        .flow-node {
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 20px;
+            flex: 1;
+            text-align: center;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .flow-node:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .flow-node.gherkin { border-color: var(--accent-green); }
+        .flow-node.cucumber { border-color: var(--accent-purple); }
+        .flow-node.steps { border-color: var(--accent-orange); }
+        .flow-node.playwright { border-color: var(--accent-blue); }
+
+        .flow-node i {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+        .gherkin i { color: var(--accent-green); }
+        .cucumber i { color: var(--accent-purple); }
+        .steps i { color: var(--accent-orange); }
+        .playwright i { color: var(--accent-blue); }
+
+        .flow-node h4 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .flow-node p {
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        .flow-arrow-horizontal {
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+        }
+
+        .flow-arrow-vertical {
+            display: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+        }
+
+        .flow-details-box {
+            background-color: var(--code-bg);
+            border-left: 4px solid var(--accent-blue);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            width: 100%;
+            min-height: 100px;
+        }
+
+        /* Two Column Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            height: 100%;
+        }
+
+        .card.accent-new { border-top: 4px solid var(--accent-green); }
+        .card.accent-existing { border-top: 4px solid var(--accent-purple); }
+
+        /* Code Window Formatting */
+        .code-window {
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            margin-bottom: 20px;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .code-header {
+            background-color: #131924;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .code-header .lang-badge {
+            background-color: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: var(--text-main);
+            font-weight: bold;
+        }
+
+        .code-header .lang-badge.gherkin-badge { color: var(--accent-green); }
+        .code-header .lang-badge.java-badge { color: var(--accent-orange); }
+
+        .code-body {
+            padding: 18px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            white-space: pre;
+            color: #e2e8f0;
+        }
+
+        /* Code Highlighting Token Mocking */
+        .token.keyword { color: #ff79c6; font-weight: bold; }
+        .token.string { color: #f1fa8c; }
+        .token.annotation { color: #bd93f9; font-weight: bold; }
+        .token.class { color: #8be9fd; }
+        .token.comment { color: #6272a4; font-style: italic; }
+        .token.function { color: #50fa7b; }
+
+        /* Prompt Template Styling */
+        .prompt-box {
+            background-color: #0f172a;
+            border: 1px dashed var(--accent-blue);
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            margin-top: 15px;
+        }
+
+        .prompt-box::before {
+            content: "AI PROMPT TEMPLATE";
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background-color: var(--accent-blue);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+        }
+
+        .prompt-text {
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            white-space: pre-wrap;
+        }
+
+        .copy-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--text-main);
+            border-color: var(--text-main);
+        }
+
+        /* Recipe steps */
+        .recipe-list {
+            list-style: none;
+        }
+
+        .recipe-step {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .recipe-num {
+            background-color: var(--accent-blue);
+            color: white;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .recipe-content h4 {
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>AI-Accelerated BDD Architecture</h1>
+        <div class="subtitle">Interactive Blueprint for Playwright + Java + Cucumber Automation Ecosystems</div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('core-machinery')"><i class="fas fa-cogs"></i> Core Machinery</button>
+        <button class="tab-btn" onclick="openTab('acceleration-strategies')"><i class="fas fa-bolt"></i> AI Acceleration Strategies</button>
+        <button class="tab-btn" onclick="openTab('framework-recipe')"><i class="fas fa-receipt"></i> E2E Suite Recipe</button>
+        <button class="tab-btn" onclick="openTab('build-skills')"><i class="fas fa-microchip"></i> Code Extraction Prompts</button>
+    </div>
+
+    <div id="core-machinery" class="tab-content active">
+        <h2>The BDD Execution Lifecycle</h2>
+        <p>Click on any structural element below to inspect how Cucumber parses high-level Gherkin syntax, translates it via matching Regular Expression annotations inside Step Definitions, and fires native operations against the UI using Playwright Java.</p>
+
+        <div class="flow-container">
+            <div class="flow-steps">
+                <div class="flow-node gherkin" onclick="showMachineryDetail('gherkin')">
+                    <i class="fas fa-file-alt"></i>
+                    <h4>1. Gherkin Feature</h4>
+                    <p>Human-readable user journey description</p>
+                </div>
+                <div class="flow-arrow-horizontal"><i class="fas fa-chevron-right"></i></div>
+                <div class="flow-arrow-vertical"><i class="fas fa-chevron-down"></i></div>
+
+                <div class="flow-node cucumber" onclick="showMachineryDetail('cucumber')">
+                    <i class="fas fa-network-wired"></i>
+                    <h4>2. Cucumber Engine</h4>
+                    <p>Regex matching & runtime orchestration</p>
+                </div>
+                <div class="flow-arrow-horizontal"><i class="fas fa-chevron-right"></i></div>
+                <div class="flow-arrow-vertical"><i class="fas fa-chevron-down"></i></div>
+
+                <div class="flow-node steps" onclick="showMachineryDetail('steps')">
+                    <i class="fas fa-code"></i>
+                    <h4>3. Step Definitions</h4>
+                    <p>Java code capturing parameters from text</p>
+                </div>
+                <div class="flow-arrow-horizontal"><i class="fas fa-chevron-right"></i></div>
+                <div class="flow-arrow-vertical"><i class="fas fa-chevron-down"></i></div>
+
+                <div class="flow-node playwright" onclick="showMachineryDetail('playwright')">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <h4>4. Playwright Browser</h4>
+                    <p>Fast execution through CDP protocol</p>
+                </div>
+            </div>
+
+            <div class="flow-details-box" id="machinery-details-content">
+                <p><em>Click on a step above to inspect the exact component design and operational execution layer.</em></p>
+            </div>
+        </div>
+
+        <h3>Clean Rendering Component Reference</h3>
+        <p>A production-ready visual guide avoiding unformatted code clumps. Notice the synchronization matching logic between feature hooks and Java parameter mapping expressions.</p>
+
+        <div class="grid-2">
+            <div class="code-window">
+                <div class="code-header">
+                    <span>/src/test/resources/features/user_billing.feature</span>
+                    <span class="lang-badge gherkin-badge">GHERKIN</span>
+                </div>
+                <div class="code-body"><span class="token keyword">Feature:</span> Enterprise Invoicing Interface Management
+
+  <span class="token keyword">Scenario Outline:</span> Successful verification of statement extraction runs
+    <span class="token keyword">Given</span> the user is authenticated and on the invoice dashboard
+    <span class="token keyword">When</span> the user filters records targeting client <span class="token string">"<span class="token function">&lt;clientName&gt;</span>"</span>
+    <span class="token keyword">And</span> triggers a CSV export command for the current statement line
+    <span class="token keyword">Then</span> an extraction payload record is emitted with status <span class="token string">"COMPLETED"</span>
+
+    <span class="token keyword">Examples:</span>
+      | <span class="token function">clientName</span>  |
+      | <span class="token string">Fiserv_Global</span>|
+      | <span class="token string">Apex_Holdings</span>|</div>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <span>/src/test/java/stepdefs/BillingSteps.java</span>
+                    <span class="lang-badge java-badge">JAVA</span>
+                </div>
+                <div class="code-body"><span class="token keyword">package</span> stepdefs;
+
+<span class="token keyword">import</span> io.cucumber.java.en.*;
+<span class="token keyword">import</span> com.microsoft.playwright.Page;
+<span class="token keyword">import</span> pages.InvoiceDashboardPage;
+
+<span class="token keyword">public class</span> <span class="token class">BillingSteps</span> {
+    <span class="token keyword">private</span> InvoiceDashboardPage invoicePage = <span class="token keyword">new</span> InvoiceDashboardPage();
+
+    <span class="token annotation">@Given</span>(<span class="token string">"^the user is authenticated and on the invoice dashboard$"</span>)
+    <span class="token keyword">public void</span> <span class="token function">verifyDashboardLanding</span>() {
+        invoicePage.navigateToDashboard();
+    }
+
+    <span class="token annotation">@When</span>(<span class="token string">"^the user filters records targeting client \"([^\"]*)\"$"</span>)
+    <span class="token keyword">public void</span> <span class="token function">executeClientFilter</span>(String clientName) {
+        invoicePage.filterByClient(clientName);
+    }
+}</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="acceleration-strategies" class="tab-content">
+        <h2>Dual-Context AI Acceleration Mechanics</h2>
+        <p>How to utilize advanced LLM workflows to construct or augment your automation coverage depending on baseline maturity.</p>
+        
+        <div class="grid-2">
+            <div class="card accent-new">
+                <h3><i class="fas fa-sparkles" style="color: var(--accent-green)"></i> Context A: Green Field (New UI)</h3>
+                <p><strong>Baseline Scenario:</strong> Brand new user workflows or missing automation coverage. Zero pre-existing code bindings.</p>
+                <p><strong>Acceleration Vectors:</strong></p>
+                <ul style="margin-left: 20px; margin-bottom: 15px; color: var(--text-muted);">
+                    <li style="margin-bottom: 5px;"><strong>DOM Structural Parsing:</strong> Feed clean outerHTML snapshots of the view layer to the AI to auto-extract layout maps.</li>
+                    <li style="margin-bottom: 5px;"><strong>Locators Engine Isolation:</strong> Instruct the LLM to output highly resilient Playwright text-based CSS selectors or user-visible accessible locators (e.g., <code>getByRole</code>), avoiding raw, fragile absolute paths.</li>
+                    <li style="margin-bottom: 5px;"><strong>Page Object Initialization:</strong> Simultaneously synthesize the Gherkin feature along with the underlying structural Page Object shell in a single design turn.</li>
+                </ul>
+            </div>
+
+            <div class="card accent-existing">
+                <h3><i class="fas fa-layer-group" style="color: var(--accent-purple)"></i> Context B: Brown Field (Existing UI)</h3>
+                <p><strong>Baseline Scenario:</strong> Established framework patterns exist. New screens or components need testing while preserving established structures.</p>
+                <p><strong>Acceleration Vectors:</strong></p>
+                <ul style="margin-left: 20px; margin-bottom: 15px; color: var(--text-muted);">
+                    <li style="margin-bottom: 5px;"><strong>Pattern Inheritance Modeling:</strong> Provide existing base classes, abstract hooks, and base utilities to train the LLM context pool on your internal style guidelines.</li>
+                    <li style="margin-bottom: 5px;"><strong>Missing Step Discovery:</strong> Feed the AI a collection of unmatched Gherkin scenarios to parse existing step libraries and map missing actions without rewriting existing routines.</li>
+                    <li style="margin-bottom: 5px;"><strong>Refactoring Optimization loops:</strong> Submit raw, fragile UI test flows to auto-convert them into highly stable Playwright constructs with explicit assertion timeouts.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="framework-recipe" class="tab-content">
+        <h2>Production-Grade Test Suite Layout</h2>
+        <p>This structural schematic shows a scalable layout for organizing an enterprise BDD repository using Maven/Gradle, standard cucumber bindings, and strict Page Object boundaries.</p>
+
+        <div class="grid-2">
+            <div class="code-window" style="grid-column: 1 / -1;">
+                <div class="code-header">
+                    <span>Target Project File Trees Template</span>
+                    <span class="lang-badge" style="color: var(--accent-blue)">STRUCTURE</span>
+                </div>
+                <div class="code-body" style="font-family: monospace; white-space: pre;">src/
+├── main/
+│   └── java/
+│       └── com/enterprise/automation/
+│           ├── driver/             # ThreadLocal Playwright Engine managers
+│           │   └── PlaywrightDriverFactory.java
+│           └── pages/              # strict application UI encapsulation objects
+│               ├── BasePage.java
+│               ├── InvoiceDashboardPage.java
+│               └── AccountSettingsPage.java
+└── test/
+    ├── java/
+    │   └── com/enterprise/automation/
+    │       ├── hooks/              # Before / After execution flow listeners
+    │       │   └── HooksHandler.java
+    │       ├── runners/            # JUnit/TestNG suite runner configs
+    │       │   └── EnterpriseTestRunner.java
+    │       └── stepdefs/           # Pure translation hooks routing into page objects
+    │           ├── BillingStepDefinitions.java
+    │           └── IdentityStepDefinitions.java
+    └── resources/
+        ├── features/               # Business readable requirement scripts
+        │   ├── billing_clearance.feature
+        │   └── user_onboarding.feature
+        └── cucumber.properties     # Parallel execution and formatting settings</div>
+            </div>
+        </div>
+
+        <h2>Recipe: Extracting Enterprise End-to-End User Journeys</h2>
+        <p>Follow this formal process matrix to systematically extract behavior paths out of application screens and build out clean tests.</p>
+        
+        <ul class="recipe-list">
+            <li class="recipe-step">
+                <div class="recipe-num">1</div>
+                <div class="recipe-content">
+                    <h4>Isolate the Critical Path Target</h4>
+                    <p>Ignore fragmented single UI operations. Identify core functional objectives (e.g., "Authenticate account, update invoice run configurations, evaluate target file export resolution metrics").</p>
+                </div>
+            </li>
+            <li class="recipe-step">
+                <div class="recipe-num">2</div>
+                <div class="recipe-content">
+                    <h4>Map State Machine Boundaries</h4>
+                    <p>Track mutations explicitly. Identify precisely what represents state initialization (<strong>Given</strong>), structural operational parameters (<strong>When</strong>), and the verified terminal state values (<strong>Then</strong>).</p>
+                </div>
+            </li>
+            <li class="recipe-step">
+                <div class="recipe-num">3</div>
+                <div class="recipe-content">
+                    <h4>Normalize Shared Language Bindings</h4>
+                    <p>Ensure business and engineering teams align on parameters. Design your Gherkin definitions to leverage parameters cleanly (e.g., matching strings or integers) to maximize code reuse across test scripts.</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div id="build-skills" class="tab-content">
+        <h2>Operational Prompt Blueprints</h2>
+        <p>Deploy these prompts in your AI environments to systematically convert raw requirements and legacy application patterns into resilient automation suites.</p>
+
+        <div class="card accent-new" style="margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>Skill 1: Green Field Auto-Generation</h3>
+                <button class="copy-btn" onclick="copyPrompt('prompt1')"><i class="far fa-copy"></i> Copy Prompt</button>
+            </div>
+            <p>Use this prompt to quickly build clean, well-structured Page Objects and Step Definitions when starting from a fresh UI mock or an undocumented screen.</p>
+            
+            <div class="prompt-box">
+                <div class="prompt-text" id="prompt1">You are an expert SDET working with Playwright Java and Cucumber BDD. 
+Analyze the provided user interface description/HTML snapshot below:
+[INSERT HTML SNAPSHOT OR DETAILED STEP FLOW HERE]
+
+Generate the following matching assets:
+1. A Gherkin .feature file containing standard scenario paths. Ensure it uses structural parameters cleanly.
+2. A clean Playwright-based Java Page Object class implementing the Page Object Model (POM) pattern. Leverage explicit waiting criteria, avoid raw thread sleeps, and select robust locator strategies like "page.getByRole" or text-based selectors.
+3. A Java Step Definition class that explicitly maps the Gherkin statements to operations within your new Page Object class.
+
+Ensure code elements are syntactically valid and use clean formatting rules. Do not truncate the output.</div>
+            </div>
+        </div>
+
+        <div class="card accent-existing">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>Skill 2: Legacy Inheritance & Style Integration</h3>
+                <button class="copy-btn" onclick="copyPrompt('prompt2')"><i class="far fa-copy"></i> Copy Prompt</button>
+            </div>
+            <p>Use this prompt to generate new automated test components that seamlessly match and inherit from your existing codebase patterns and architectural standards.</p>
+            
+            <div class="prompt-box">
+                <div class="prompt-text" id="prompt2">You are an expert QA Automation Architect analyzing an enterprise Java BDD framework. 
+Review these reference implementation baseline modules to understand our internal coding style, helper classes, and architectural conventions:
+---
+BASE UTILITY REFERENCE CODE:
+[INSERT BasePage.java OR PlaywrightDriverFactory.java]
+
+EXISTING STEP DEF REFERENCE MODULE:
+[INSERT AN EXISTING BillingSteps.java FILE]
+---
+
+Now, review this new requirement or system UI flow explanation:
+[INSERT NEW UI DESCRIPTION OR FUNCTIONAL REQUIREMENT HERE]
+
+Generate an extended test suite component including:
+1. Gherkin Feature definitions targeting this behavior.
+2. A new Page Object class that explicitly extends our core framework patterns, utilizing our existing wrapper utilities.
+3. Matching Step Definitions built out to inherit our current step naming conventions and regex architectures.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openTab(tabId) {
+        // Hide all tab content
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => content.classList.remove('active'));
+
+        // Deactivate all tab buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        // Show selected tab and activate its button
+        document.getElementById(tabId).classWithAnimation = true;
+        document.getElementById(tabId).classList.add('active');
+        
+        // Find button that has the matching onclick function parameter
+        const targetBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabId));
+        if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    const machineryMetadata = {
+        gherkin: `<h4>Gherkin Feature Execution Specification Layer</h4>
+                  <p style="margin-top:10px; color:#cbd5e1;">Written by cross-functional teams (Product, QA, Engineering). Acts as a single source of truth document. Cucumber reads these files sequentially, identifying matching statements using text-based regular expressions.</p>`,
+        cucumber: `<h4>Cucumber Parsing & Regex Binding Lifecycle Engine</h4>
+                  <p style="margin-top:10px; color:#cbd5e1;">The coordination engine. It scans step definition classes at runtime for matching annotations (<code>@Given</code>, <code>@When</code>, <code>@Then</code>). It then parses dynamic variables from the text line and passes them directly into Java method arguments.</p>`,
+        steps: `<h4>Step Definitions Structural Code Engine Mapping</h4>
+                  <p style="margin-top:10px; color:#cbd5e1;">Pure translation layer components. They should contain minimal logic. Their primary responsibility is to unpack arguments extracted from text statements, verify conditions using testing libraries, and forward UI actions to underlying Page Objects.</p>`,
+        playwright: `<h4>Playwright Native Browser Driver Context Layer</h4>
+                     <p style="margin-top:10px; color:#cbd5e1;">Communicates natively with browser contexts over the Chrome DevTools Protocol (CDP). Executes ultra-fast element actions, dynamically handles auto-waiting configurations, and maintains isolation between automated browser sessions.</p>`
+    };
+
+    function showMachineryDetail(key) {
+        const targetElement = document.getElementById('machinery-details-content');
+        targetElement.style.opacity = 0;
+        setTimeout(() => {
+            targetElement.innerHTML = machineryMetadata[key];
+            targetElement.style.opacity = 1;
+        }, 150);
+    }
+
+    function copyPrompt(id) {
+        const textElement = document.getElementById(id);
+        const textToCopy = textElement.innerText;
+        
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert('Prompt template successfully copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+        });
+    }
+
+    // Load initial context details
+    window.onload = function() {
+        showMachineryDetail('gherkin');
+    }
+</script>
+
+</body>
+</html>

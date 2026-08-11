@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Hardness & Complexity Explorer</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-canvas: #0b0f19;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent-solved: #10b981;
+            --accent-frontier: #f59e0b;
+            --accent-hard: #f43f5e;
+            --primary: #38bdf8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1150px;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            gap: 25px;
+            background-color: var(--bg-card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+            color: #fff;
+        }
+
+        p.intro {
+            color: var(--text-muted);
+            margin: 0 0 20px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .controls {
+            background-color: #0f172a;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            margin-bottom: 15px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        #eraLabel {
+            color: var(--primary);
+            font-size: 1.05rem;
+        }
+
+        #eraDesc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        input[type=range] {
+            width: 100%;
+            height: 6px;
+            background: #334155;
+            border-radius: 5px;
+            outline: none;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        canvas {
+            background-color: var(--bg-canvas);
+            border-radius: 10px;
+            border: 1px solid #334155;
+            cursor: crosshair;
+        }
+
+        .side-panel {
+            width: 340px;
+            background-color: #0f172a;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            justify-content:间;
+        }
+
+        .panel-header {
+            border-bottom: 1px solid #334155;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-solved { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid var(--accent-solved); }
+        .badge-frontier { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid var(--accent-frontier); }
+        .badge-hard { background-color: rgba(244, 63, 94, 0.2); color: #f87171; border: 1px solid var(--accent-hard); }
+
+        .detail-body h3 {
+            margin: 5px 0;
+            color: #fff;
+            font-size: 1.3rem;
+        }
+
+        .detail-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .detail-desc {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .legend {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-box {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+            .side-panel {
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="main-panel">
+        <h1>AI Hardness & Complexity Spectrum</h1>
+        <p class="intro">Explore how different computer science problems rank based on computational constraints and semantic complexity. Move the timeline slider to witness how the shifting "Capability Frontier" reclassifies what is possible.</p>
+        
+        <div class="controls">
+            <div class="slider-header">
+                <span>Technological Era:</span>
+                <span id="eraLabel">2026 (Foundation Models)</span>
+            </div>
+            <input type="range" id="eraSlider" min="0" max="4" value="3" step="1">
+            <div id="eraDesc">Transformers and Multi-modal Models handle reasoning pipelines and coding efficiently, but robust edge cases remain challenging.</div>
+        </div>
+        
+        <canvas id="hardnessCanvas" width="720" height="480"></canvas>
+    </div>
+
+    <div class="side-panel">
+        <div id="detailContent">
+            <div class="panel-header">
+                <span class="badge badge-frontier" id="nodeStatus">Interactive Guide</span>
+            </div>
+            <div class="detail-body">
+                <h3 id="nodeName">Click/Hover a Task</h3>
+                <div class="detail-meta" id="nodeCategory">Select points on the map</div>
+                <p class="detail-desc" id="nodeDesc">Hover over or click the node clusters on the coordinate landscape to explore why certain milestones were easily conquered by computations, while others represent the core of AI-Completeness.</p>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="color-box" style="background-color: var(--accent-solved);"></div>
+                <span><strong>AI-Easy / Solved:</strong> Well within algorithmic scope.</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: var(--accent-frontier);"></div>
+                <span>-- <strong>Active Frontier:</strong> The current bleeding edge.</span>
+            </div>
+            <div class="legend-item">
+                <div class="color-box" style="background-color: var(--accent-hard);"></div>
+                <span><strong>AI-Complete / Hard:</strong> Bounded by General Intelligence.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('hardnessCanvas');
+    const ctx = canvas.getContext('2d');
+    const eraSlider = document.getElementById('eraSlider');
+    const eraLabel = document.getElementById('eraLabel');
+    const eraDesc = document.getElementById('eraDesc');
+
+    // Graph Layout Constants
+    const X0 = 90; 
+    const Y0 = 410;
+    const graphWidth = 590;
+    const graphHeight = 360;
+
+    // Timeline Configuration
+    const eras = [
+        { name: "1970s (Symbolic AI)", radius: 100, desc: "Good Old-Fashioned AI (GOFAI) focused on hardcoded logic rules. Simple discrete math problems were easily solved." },
+        { name: "1997 (Heuristic Search)", radius: 210, desc: "Brute-force and alpha-beta pruning allow machines to defeat grandmasters in closed-world combinatorial math games like Chess." },
+        { name: "2015 (Deep Learning Wave)", radius: 340, desc: "Convolutional Nets and Reinforcement Learning excel at high-dimensional perception (ImageNet) and complex intuition-based gaming (Go)." },
+        { name: "2026 (Foundation Era)", radius: 490, desc: "Massive scaled Transformers absorb world text, handling code generation and surface dialogues fluently. Deep context barriers remain." },
+        { name: "Future (AGI Systems)", radius: 660, desc: "Machines attain highly integrated causal reasoning models, fluid adaptation, and common-sense synthesis, conquering AI-Complete spaces." }
+    ];
+
+    // Node Dataset Map
+    const nodes = [
+        { name: "Tic-Tac-Toe", x: 150, y: 380, category: "Combinatorial Logic", desc: "Solved perfectly using basic Minimax trees. With only 3,000 distinct game positions, it represents an 'AI-Easy' problem easily dominated by simple loops." },
+        { name: "Deep Blue Chess", x: 230, y: 320, category: "Heuristic Game Tree", desc: "Features a massive search space ($10^{120}$ combinations), yet relies on strict, unambiguous rules. Conquered through sheer calculation matrixes and alpha-beta evaluation frameworks." },
+        { name: "Image Classification", x: 310, y: 280, category: "Statistical Perception", desc: "Mapping raw pixel arrays to fixed tags (e.g., ImageNet). Solved efficiently via deep spatial feature representations (CNNs). Robust pattern detection without conceptual understanding." },
+        { name: "AlphaGo (Go)", x: 340, y: 210, category: "Intuitive Search Spaces", desc: "Possesses more states than atoms in the universe ($10^{170}$). Solved using deep policy/value networks matching Monte Carlo Tree Search, treating pattern intuition as mathematical probability vectors." },
+        { name: "Speech-to-Text", x: 420, y: 250, category: "Sequential Acoustic Models", desc: "Translating human vocal soundwaves into string sequences. Solved effectively using self-attention mechanisms, converting acoustic variances into heavily optimized tokens." },
+        { name: "LLM Code Generation", x: 490, y: 170, category: "Generative Context", desc: "Writing syntactically valid code blocks based on natural language intent. Highly refined in 2026 via Transformer architectures tracking long-range dependencies, though brittle under complex unique math logic." },
+        { name: "Open-World Driving", x: 550, y: 120, category: "Dynamic Autonomy", desc: "Navigating unconstrained infrastructure in real time. Highly challenging due to open-ended physical anomalies, edge-case causal reasoning, and the critical need to predict volatile human intention." },
+        { name: "Common Sense Reasoning", x: 610, y: 90, category: "Causal Cognition", desc: "Understanding non-codified physical and social reality frameworks (e.g., 'A wet floor is slippery'). Requires a holistic, contextual world-model rather than superficial text distribution matching." },
+        { name: "Turing Test / Full NLU", x: 660, y: 50, category: "AI-Complete Core", desc: "True, multi-modal Natural Language Understanding. This is the definition of AI-Completeness. It requires adapting fluidly to any arbitrary human context, humor, deception, or meta-logic." }
+    ];
+
+    let currentEraIdx = 3;
+    let hoveredNode = null;
+    let selectedNode = null;
+    let pulseAnim = 0;
+
+    // Mouse Movement Tracking
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        let found = null;
+        for (let node of nodes) {
+            const dist = Math.sqrt((mouseX - node.x)**2 + (mouseY - node.y)**2);
+            if (dist < 14) {
+                found = node;
+                break;
+            }
+        }
+        hoveredNode = found;
+    });
+
+    canvas.addEventListener('click', () => {
+        if (hoveredNode) {
+            selectedNode = hoveredNode;
+            updateSidePanel(selectedNode);
+        }
+    });
+
+    eraSlider.addEventListener('input', (e) => {
+        currentEraIdx = parseInt(e.target.value);
+        eraLabel.textContent = eras[currentEraIdx].name;
+        eraDesc.textContent = eras[currentEraIdx].desc;
+        if (selectedNode) {
+            updateSidePanel(selectedNode);
+        }
+    });
+
+    function getNodeState(node, eraIdx) {
+        const radius = eras[eraIdx].radius;
+        const dist = Math.sqrt((node.x - X0)**2 + (node.y - Y0)**2);
+        
+        if (dist <= radius - 40) return 'solved';
+        if (dist <= radius + 30) return 'frontier';
+        return 'hard';
+    }
+
+    function updateSidePanel(node) {
+        const state = getNodeState(node, currentEraIdx);
+        const statusBadge = document.getElementById('nodeStatus');
+        
+        document.getElementById('nodeName').textContent = node.name;
+        document.getElementById('nodeCategory').textContent = node.category;
+        document.getElementById('nodeDesc').innerHTML = node.desc;
+
+        if (state === 'solved') {
+            statusBadge.textContent = "AI-Easy / Solved";
+            statusBadge.className = "badge badge-solved";
+        } else if (state === 'frontier') {
+            statusBadge.textContent = "Active Frontier";
+            statusBadge.className = "badge badge-frontier";
+        } else {
+            statusBadge.textContent = "AI-Complete / Unsolved";
+            statusBadge.className = "badge badge-hard";
+        }
+    }
+
+    // Main Draw Engine
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pulseAnim += 0.04;
+
+        const activeRadius = eras[currentEraIdx].radius;
+
+        // Draw Ambient Background Grids
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 1;
+        for (let i = X0 + 50; i < X0 + graphWidth; i += 60) {
+            ctx.beginPath(); ctx.moveTo(i, Y0); ctx.lineTo(i, Y0 - graphHeight); ctx.stroke();
+        }
+        for (let j = Y0 - 50; j > Y0 - graphHeight; j -= 50) {
+            ctx.beginPath(); ctx.moveTo(X0, j); ctx.lineTo(X0 + graphWidth, j); ctx.stroke();
+        }
+
+        // Draw Capability Frontier Area Gradient
+        let grad = ctx.createRadialGradient(X0, Y0, 10, X0, Y0, activeRadius);
+        grad.addColorStop(0, 'rgba(16, 185, 129, 0.04)');
+        grad.addColorStop(0.7, 'rgba(56, 189, 248, 0.03)');
+        grad.addColorStop(0.95, 'rgba(245, 158, 11, 0.05)');
+        grad.addColorStop(1, 'rgba(244, 63, 94, 0)');
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(X0, Y0);
+        ctx.arc(X0, Y0, activeRadius, Math.PI * 1.5, 0, false);
+        ctx.closePath();
+        ctx.fill();
+
+        // Draw Frontier Edge Stroke
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.3)';
+        ctx.setLineDash([6, 6]);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(X0, Y0, activeRadius, Math.PI * 1.5, 0, false);
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset line dash
+
+        // Draw Primary Axes
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        // Y-axis
+        ctx.moveTo(X0, Y0 + 10); ctx.lineTo(X0, Y0 - graphHeight - 10);
+        // X-axis
+        ctx.moveTo(X0 - 10, Y0); ctx.lineTo(X0 + graphWidth + 10, Y0);
+        ctx.stroke();
+
+        // Axis Label Arrows
+        ctx.fillStyle = '#64748b';
+        ctx.beginPath();
+        ctx.moveTo(X0, Y0 - graphHeight - 15); ctx.lineTo(X0 - 5, Y0 - graphHeight - 5); ctx.lineTo(X0 + 5, Y0 - graphHeight - 5); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(X0 + graphWidth + 15, Y0); ctx.lineTo(X0 + graphWidth + 5, Y0 - 5); ctx.lineTo(X0 + graphWidth + 5, Y0 + 5); ctx.fill();
+
+        // Axis Titles
+        ctx.font = '11px sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'center';
+        ctx.fillText("ENVIRONMENTAL OPENNESS & CONTEXT CONTEXT →", X0 + graphWidth / 2, Y0 + 25);
+        
+        ctx.save();
+        ctx.translate(X0 - 30, Y0 - graphHeight / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("COGNITIVE DEPTH & HARDNESS →", 0, 0);
+        ctx.restore();
+
+        // Render Problems/Nodes
+        nodes.forEach(node => {
+            const state = getNodeState(node, currentEraIdx);
+            let color = '#fff';
+            let shadowColor = '#fff';
+
+            if (state === 'solved') { color = varColor('--accent-solved'); shadowColor = 'rgba(16, 185, 129, 0.5)'; }
+            else if (state === 'frontier') { color = varColor('--accent-frontier'); shadowColor = 'rgba(245, 158, 11, 0.6)'; }
+            else { color = varColor('--accent-hard'); shadowColor = 'rgba(244, 63, 94, 0.4)'; }
+
+            const isCurrentHovered = (hoveredNode === node);
+            const isCurrentSelected = (selectedNode === node);
+
+            // Glowing feedback on focus
+            if (isCurrentHovered || isCurrentSelected) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color;
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 9 + Math.sin(pulseAnim) * 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // Central Core Core Node
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Inner core design
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Text Rendering
+            ctx.font = isCurrentSelected ? 'bold 12px sans-serif' : '11px sans-serif';
+            ctx.fillStyle = (isCurrentHovered || isCurrentSelected) ? '#ffffff' : '#cbd5e1';
+            ctx.textAlign = 'left';
+            ctx.fillText(node.name, node.x + 12, node.y + 4);
+        });
+
+        requestAnimationFrame(draw);
+    }
+
+    // Helper to retrieve CSS variable color hexes inside canvas
+    function varColor(varName) {
+        return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    }
+
+    // Bootstrap canvas loop
+    draw();
+</script>
+</body>
+</html>

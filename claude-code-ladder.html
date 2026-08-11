@@ -133,23 +133,41 @@
 
   .ladder-rail{
     position: relative;
-    padding: 1.4rem 1.5rem 1.4rem 2.85rem;
+    padding: 1.4rem 1.5rem 0.6rem;
     flex: 1;
   }
-  .ladder-rail::before{
+
+  /* ---------- Tier grouping ---------- */
+  .tier-group{ margin-bottom: 1.6rem; }
+  .tier-group:last-child{ margin-bottom: 0; }
+  .tier-header{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding: 0 0.7rem 0.55rem;
+  }
+  .tier-label{
+    font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-faint);
+  }
+  .tier-progress{ font-family: var(--mono); font-size: 0.66rem; color: var(--text-faint); }
+  .tier-progress.done{ color: var(--success); }
+  .tier-rail{
+    position: relative;
+    padding: 0.2rem 0 0.2rem 2.85rem;
+  }
+  .tier-rail::before{
     content:"";
     position:absolute;
     left: 1.55rem;
-    top: 1.8rem;
-    bottom: 1.8rem;
+    top: 1.25rem;
+    bottom: 1.25rem;
     width: 2px;
     background: var(--border);
     z-index: 0;
   }
-  .ladder-rail-fill{
+  .tier-rail-fill{
     position:absolute;
     left: 1.55rem;
-    top: 1.8rem;
+    top: 1.25rem;
     width: 2px;
     background: linear-gradient(to bottom, var(--accent), var(--accent-2));
     box-shadow: 0 0 10px var(--accent-line);
@@ -210,6 +228,22 @@
     flex: 1;
   }
   .ghost-btn:hover{ color: var(--text); border-color: var(--accent-line); }
+
+  /* ---------- Fixed theme toggle ---------- */
+  .theme-toggle-fixed{
+    position: fixed; top: 14px; right: 16px; z-index: 100;
+    display:flex; align-items:center; gap: 0.4rem;
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--text-dim); background: var(--bg-raised);
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 0.4rem 0.75rem 0.4rem 0.6rem; cursor:pointer;
+    transition: color 150ms ease, border-color 150ms ease;
+  }
+  .theme-toggle-fixed:hover{ color: var(--accent); border-color: var(--accent-line); }
+  .theme-toggle-fixed .icon{ width: 0.85rem; height: 0.85rem; }
+  @media (max-width: 959px){
+    .theme-toggle-fixed{ top: auto; bottom: 14px; right: 14px; }
+  }
 
   /* ---------- Mobile topbar ---------- */
   .mobile-topbar{
@@ -288,12 +322,34 @@
     padding: 0.08rem 0.4rem; border-radius: 0.3rem; font-size: 0.85em; color: var(--accent);
   }
 
+  /* ---------- Summary table (10% vs 100%) ---------- */
+  .summary-table{ width:100%; border-collapse:collapse; margin: 0.4rem 0 1rem; font-size: 0.86rem; }
+  .summary-table th{
+    text-align:left; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-faint); padding: 0.55rem 0.85rem; border-bottom: 1px solid var(--border);
+  }
+  .summary-table td{ padding: 0.75rem 0.85rem; border-bottom: 1px solid var(--border-soft); color: var(--text-dim); vertical-align: top; line-height: 1.55; }
+  .summary-table tr:last-child td{ border-bottom:none; }
+  .summary-table td:first-child{ color: var(--text); font-weight:600; white-space:nowrap; }
+  .summary-table code{
+    font-family: var(--mono); background: var(--surface-2); border: 1px solid var(--border);
+    padding: 0.06rem 0.35rem; border-radius: 0.3rem; font-size: 0.85em; color: var(--accent);
+  }
+
+  /* ---------- File snippet (CLAUDE.md example, etc.) ---------- */
+  .file-snippet{
+    background: var(--term-bg); border: 1px solid var(--term-border); border-radius: 0.65rem;
+    padding: 0.9rem 1.1rem; margin: 0.4rem 0 1rem; overflow-x:auto;
+  }
+  .file-snippet .fs-label{ font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 0.5rem; display:block; }
+  .file-snippet pre{ font-family: var(--mono); font-size: 0.82rem; color: var(--term-text); line-height: 1.65; white-space: pre-wrap; word-break: break-word; margin:0; }
+
   /* ---------- Terminal chrome ---------- */
   .terminal{ background: var(--term-bg); border: 1px solid var(--term-border); border-radius: 0.65rem; overflow:hidden; margin: 0.9rem 0; }
   .terminal-bar{ display:flex; align-items:center; justify-content:space-between; padding: 0.55rem 0.85rem; background: var(--term-bar-bg); border-bottom: 1px solid var(--term-border); }
   .terminal-dots{ display:flex; gap:0.4rem; }
   .terminal-dots span{ width:0.6rem; height:0.6rem; border-radius:999px; display:block; }
-  .terminal-body{ padding: 0.9rem 1.1rem; font-family: var(--mono); font-size: 0.84rem; color: var(--term-text); line-height: 1.7; overflow-x:auto; white-space: pre; }
+  .terminal-body{ padding: 0.9rem 1.1rem; font-family: var(--mono); font-size: 0.84rem; color: var(--term-text); line-height: 1.7; overflow-x:auto; white-space: pre-wrap; word-break: break-word; }
   .terminal-body .prompt{ color: var(--text-faint); user-select:none; }
   .copy-btn{
     display:flex; align-items:center; gap:0.35rem;
@@ -347,6 +403,11 @@
 </head>
 <body>
 
+<button id="themeToggle" class="theme-toggle-fixed" aria-label="Toggle light and dark theme">
+  <svg class="icon" id="themeIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  <span id="themeLabel">Dark</span>
+</button>
+
 <svg width="0" height="0" style="position:absolute;">
   <defs>
     <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -377,22 +438,16 @@
       </svg>
       <div>
         <div class="progress-pct font-mono" id="overallPct">0%</div>
-        <div class="progress-count" id="overallCount">0 / 16 exercises</div>
+        <div class="progress-count" id="overallCount">0 / 35 exercises</div>
       </div>
     </div>
 
-    <nav class="ladder-rail" id="ladderNav" aria-label="Ladder rungs">
-      <div class="ladder-rail-fill" id="railFill" style="height:0%;"></div>
-    </nav>
+    <nav class="ladder-rail" id="ladderNav" aria-label="Ladder rungs"></nav>
 
     <div class="sidebar-footer">
-      <button id="themeToggle" class="ghost-btn" aria-label="Toggle light and dark theme">
-        <svg class="icon" id="themeIcon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-        <span id="themeLabel">Dark</span>
-      </button>
-      <button id="resetBtn" class="ghost-btn">
+      <button id="resetBtn" class="ghost-btn" style="flex:1;">
         <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-        Reset
+        Reset progress
       </button>
     </div>
   </aside>
@@ -405,14 +460,9 @@
       </div>
       Claude Code Ladder
     </div>
-    <div style="display:flex; gap:0.5rem;">
-      <button id="themeToggleMobile" class="icon-btn" aria-label="Toggle light and dark theme">
-        <svg class="icon" id="themeIconMobile" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-      </button>
-      <button id="mobileMenuBtn" class="icon-btn" aria-label="Open ladder menu">
-        <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-    </div>
+    <button id="mobileMenuBtn" class="icon-btn" aria-label="Open ladder menu">
+      <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
   </div>
   <div class="mobile-drawer" id="mobileDrawer">
     <div class="sidebar-progress" style="border:1px solid var(--border); border-radius:0.9rem; background:var(--surface); margin-bottom:1.2rem;">
@@ -422,12 +472,10 @@
       </svg>
       <div>
         <div class="progress-pct font-mono" id="overallPctMobile">0%</div>
-        <div class="progress-count" id="overallCountMobile">0 / 16 exercises</div>
+        <div class="progress-count" id="overallCountMobile">0 / 35 exercises</div>
       </div>
     </div>
-    <nav class="ladder-rail" id="ladderNavMobile" aria-label="Ladder rungs">
-      <div class="ladder-rail-fill" id="railFillMobile" style="height:0%;"></div>
-    </nav>
+    <nav class="ladder-rail" id="ladderNavMobile" aria-label="Ladder rungs"></nav>
     <button id="resetBtnMobile" class="ghost-btn" style="width:100%; margin-top:1rem;">
       <svg class="icon" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
       Reset progress
@@ -441,9 +489,75 @@
 </div>
 
 <script>
+const TIERS = [
+  { id: "beginner",     label: "Beginner" },
+  { id: "intermediate", label: "Intermediate" },
+  { id: "advanced",     label: "Advanced" },
+  { id: "superuser",    label: "Superuser" }
+];
+
 const LADDER = [
   {
+    id: "mindset",
+    tier: "beginner",
+    title: "The 10% → 100% Mindset",
+    tagline: "The gap between vibe coding and running Claude Code as an embedded engineer isn't tool knowledge — it's how much lifecycle you enforce around it.",
+    steps: [
+      {
+        title: "10% vs 100%: two ways to drive",
+        body: [
+          "Using Claude Code at a <strong>10% (zero-shot / vibe coding) level</strong> looks like opening your terminal, typing <code>claude</code>, writing a vague prompt like &ldquo;Add user auth to this app,&rdquo; letting it run wild, and then scrambling to fix whatever broken files, missing environment variables, or hallucinated database schemas it left behind.",
+          "Using Claude Code at a <strong>100% level</strong> treats the tool not as an autocomplete oracle, but as a junior-to-mid level software engineer embedded in your repository &mdash; one that requires an explicit engineering lifecycle, strict boundaries, architecture context, and rigorous verification. The rest of this ladder teaches the habits that close that gap.",
+          `<table class="summary-table">
+            <tr><th>Metric</th><th>10% &mdash; Vibe Coding</th><th>100% &mdash; Engineering Partner</th></tr>
+            <tr><td>Context</td><td>Zero-shot prompt in a blank window.</td><td>Pre-configured <code>CLAUDE.md</code>, scoped git branch, and deep repository inspection.</td></tr>
+            <tr><td>Process</td><td>Immediate code generation and hoping for the best.</td><td>Strict Explore &rarr; Plan &rarr; Code separation.</td></tr>
+            <tr><td>Safety</td><td>Unconstrained permissions; high risk of breaking changes.</td><td>Scoped permissions, command allow/deny lists, and human review gates.</td></tr>
+            <tr><td>Verification</td><td>Human manually debugs whatever error the agent threw.</td><td>Agent runs local tests, reads failure traces, self-corrects, and proves execution.</td></tr>
+          </table>`
+        ],
+        commands: [],
+        exercises: [
+          { id: "m1", text: "Pick a real task you'd normally hand to Claude Code with a one-line prompt. Write one sentence describing what would break if you ran it at the 10% level &mdash; then read on for the habits that prevent it." }
+        ]
+      },
+      {
+        title: "The four pillars",
+        body: [
+          "Four pillars separate 10% usage from 100% usage: <strong>Context Engineering</strong>, the <strong>Explore &rarr; Plan &rarr; Code lifecycle</strong>, <strong>tool &amp; permission boundaries</strong>, and <strong>autonomous loop verification</strong>. Each one maps directly onto a rung later in this ladder.",
+          "<strong>Context Engineering</strong> (next rung) primes the repo with a <code>CLAUDE.md</code> blueprint and a scoped branch before Claude touches code. <strong>Explore &rarr; Plan &rarr; Code</strong> forces investigation and an approved plan before a single line ships. <strong>Tool &amp; permission boundaries</strong> replace <code>--dangerously-skip-permissions</code> with explicit allow/deny rules. <strong>Autonomous loop verification</strong> makes Claude run its own tests, read the failure trace, and self-correct instead of handing you a broken diff."
+        ],
+        commands: [],
+        exercises: [
+          { id: "m2", text: "For each of the four pillars, name the specific Claude Code command or habit you expect to use to practice it &mdash; you'll meet all four over the next few rungs." }
+        ]
+      },
+      {
+        title: "Worked example: a Stripe webhook pipeline",
+        body: [
+          "Take a real task: implementing a secure, rate-limited webhook pipeline that syncs Stripe subscription events into a PostgreSQL database. A 100% workflow starts before any code is written &mdash; a <code>CLAUDE.md</code> blueprint sets architectural constraints, and the session opens on a clean, scoped branch.",
+          `<div class="file-snippet"><span class="fs-label">CLAUDE.md</span><pre># Engineering Standards for This Repo
+- Backend: Node.js with TypeScript and Prisma ORM.
+- Testing: Vitest. Never write code without a corresponding unit/integration test.
+- Logging: Use structured JSON logging via Winston. Do not use console.log.
+- Error Handling: Always wrap async route handlers in the standard \`catchAsync\` wrapper.</pre></div>`,
+          "Exploration comes next, with code generation explicitly deferred &mdash; Claude uses <code>grep</code>, <code>glob</code>, and file reads to map real dependencies instead of hallucinating modules. Once the resulting plan is reviewed and corrected (catching mistakes like parsing JSON bodies before signature verification), Claude executes the sub-tasks and is told to prove its own work: run the tests, diagnose failures, fix them, and re-run until everything passes."
+        ],
+        commands: [
+          { code: "git checkout -b feature/stripe-webhooks" },
+          { code: "Explore our existing database schema in prisma/schema.prisma and our current webhook implementation in src/routes/webhooks.ts. Do not write any code yet. Just summarize how we handle signature verification currently." },
+          { code: "Write a step-by-step implementation plan for adding Stripe subscription sync. Detail which models need to be added to Prisma, what middleware is required for raw body parsing, and how idempotency will be handled." },
+          { code: "Run the test suite using npm test. If any integration tests fail because of database mocking issues, diagnose the logs, fix the test configuration, and re-run until 100% of tests pass." }
+        ],
+        exercises: [
+          { id: "m3", text: "Draft a 4-line <code>CLAUDE.md</code> for one of your own repos: one line each for framework/ORM, testing tool, logging convention, and error-handling pattern. That file is Pillar 1 in practice." }
+        ]
+      }
+    ]
+  },
+  {
     id: "foundation",
+    tier: "beginner",
     title: "Foundation & Initialization",
     tagline: "Get Claude Code running, and teach it about your codebase before you ask it for anything.",
     steps: [
@@ -484,6 +598,7 @@ const LADDER = [
   },
   {
     id: "core-loop",
+    tier: "beginner",
     title: "The Core Loop & Plan Mode",
     tagline: "Stop guessing at code — architect the approach before a single file changes.",
     steps: [
@@ -524,6 +639,7 @@ const LADDER = [
   },
   {
     id: "context-safety",
+    tier: "intermediate",
     title: "Context Management & Safety Controls",
     tagline: "Know exactly what's in the window, and decide what Claude can do without asking first.",
     steps: [
@@ -559,11 +675,23 @@ const LADDER = [
         exercises: [
           { id: "s3", text: "Before your next commit, run <code>/security-review</code> on the diff and resolve — or consciously dismiss — every finding it raises." }
         ]
+      },
+      {
+        title: "Roll back instantly with /rewind",
+        body: [
+          "Claude Code automatically checkpoints your files before every prompt &mdash; no git required. Press <code>Esc</code> twice quickly, or run <code>/rewind</code>, to restore the conversation, the code, or both back to an earlier point.",
+          "Checkpoints only track edits made through Claude's own file-editing tools, and Claude Code keeps the 100 most recent ones per session. They're for rapid experimentation, not a replacement for git &mdash; commit your real progress separately."
+        ],
+        commands: [{ code: "/rewind" }],
+        exercises: [
+          { id: "s4", text: "Let Claude make a change you don't like, then use <code>/rewind</code> to restore just the code (keeping the conversation) back to before that change." }
+        ]
       }
     ]
   },
   {
     id: "review-git",
+    tier: "intermediate",
     title: "Code Review, Testing & Git Workflows",
     tagline: "Turn Claude into a reviewer and a debugger, not just a writer of code.",
     steps: [
@@ -604,6 +732,7 @@ const LADDER = [
   },
   {
     id: "subagents",
+    tier: "intermediate",
     title: "Subagents & Parallel Workflows",
     tagline: "Delegate side quests instead of doing everything in one linear thread.",
     steps: [
@@ -632,7 +761,137 @@ const LADDER = [
     ]
   },
   {
+    id: "custom-subagents",
+    tier: "advanced",
+    title: "Custom Subagents",
+    tagline: "Stop re-explaining the same specialist role every session — write it down once.",
+    steps: [
+      {
+        title: "Explore and Plan: the subagents you already have",
+        body: [
+          "Claude Code ships two built-in subagents you're already using without naming them: <strong>Explore</strong>, a fast read-only agent for searching and analyzing a codebase, and <strong>Plan</strong>, the research agent that gathers context during Plan Mode. Both keep search results and file contents out of your main conversation, so your own context window stays clean.",
+          "You reach for a custom subagent once you notice yourself spawning the same kind of worker, with the same instructions, over and over — that repetition is the signal it's worth writing down."
+        ],
+        commands: [],
+        exercises: [
+          { id: "as1", text: "Next time you delegate a broad search to Claude, notice whether it silently uses Explore. Ask it directly: &ldquo;did you use a subagent for that?&rdquo;" }
+        ]
+      },
+      {
+        title: "Write a subagent file",
+        body: [
+          "A subagent is a Markdown file with YAML frontmatter — <code>name</code>, <code>description</code>, <code>tools</code>, and <code>model</code> — followed by its system prompt. The easiest way to create one is to just ask Claude to write it.",
+          "Where the file lives sets its scope: <code>.claude/agents/</code> is project-only and safe to commit so your team shares it; <code>~/.claude/agents/</code> is personal and follows you into every project on your machine."
+        ],
+        commands: [{ code: "Create a personal code-improver subagent in ~/.claude/agents/ that scans files and suggests improvements for readability, performance, and best practices. Make it read-only and have it use Sonnet." }],
+        exercises: [
+          { id: "as2", text: "Create one real subagent for a role you keep re-explaining (a reviewer, a test writer, a doc updater). Give it a narrow tools list and confirm Claude delegates to it by name." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "skills-commands",
+    tier: "advanced",
+    title: "Skills & Custom Commands",
+    tagline: "Package a repeatable procedure once, and stop pasting the same instructions into chat.",
+    steps: [
+      {
+        title: "From CLAUDE.md entry to skill",
+        body: [
+          "A skill is a <code>SKILL.md</code> file — instructions Claude adds to its toolkit, invoked directly with <code>/skill-name</code> or loaded automatically when relevant. The signal it's time for one: a section of <code>CLAUDE.md</code> has grown from a fact into a multi-step procedure, or you keep pasting the same checklist into chat.",
+          "Unlike <code>CLAUDE.md</code>, which loads in full every session, a skill's body only loads when it's actually used — so long reference material costs you nothing until the moment you need it."
+        ],
+        commands: [],
+        exercises: [
+          { id: "as3", text: "Find one procedure you've explained to Claude more than twice this month. That's your first skill candidate." }
+        ]
+      },
+      {
+        title: "Create and invoke a skill",
+        body: [
+          "Skills live at <code>.claude/skills/&lt;name&gt;/SKILL.md</code> (project) or the user-level equivalent. Older-style custom commands at <code>.claude/commands/&lt;name&gt;.md</code> still work and create the same <code>/name</code> invocation — skills just add an optional folder for supporting files and frontmatter controlling whether you or Claude invokes it.",
+          "Once created, a skill behaves like any other slash command: type <code>/</code> and its name to run it explicitly, or let Claude reach for it on its own when the task matches."
+        ],
+        commands: [{ code: "/skill-name" }],
+        exercises: [
+          { id: "as4", text: "Turn your skill candidate from the previous step into a real SKILL.md, then invoke it explicitly with its slash command to confirm it fires correctly." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "hooks",
+    tier: "advanced",
+    title: "Hooks",
+    tagline: "Deterministic checkpoints Claude can't reason its way around.",
+    steps: [
+      {
+        title: "What a hook is",
+        body: [
+          "Hooks are shell commands, HTTP endpoints, or LLM prompts that fire automatically at defined points in Claude Code's lifecycle — before or after a tool runs, at session start, on every user prompt, and more. <code>PreToolUse</code> is the one that matters most for safety: it runs before any tool executes and can outright deny it.",
+          "The point of a hook is that it's deterministic. A system-prompt instruction is a strong suggestion a model usually follows; a hook is code that runs every time, with no judgment call involved."
+        ],
+        commands: [],
+        exercises: [
+          { id: "as5", text: "Name one action you'd want blocked no matter how confidently Claude proposes it (a force-push, a prod deploy, a rm -rf). That's a PreToolUse candidate." }
+        ]
+      },
+      {
+        title: "Configure one in settings.json",
+        body: [
+          "Hooks are defined in JSON at three scopes: <code>~/.claude/settings.json</code> (all your projects), <code>.claude/settings.json</code> (this project, shareable), or <code>.claude/settings.local.json</code> (this project, gitignored). A <code>PreToolUse</code> hook matching <code>Bash</code> can inspect the proposed command and return a deny decision before it ever runs.",
+          "Exit code 0 with no output means &ldquo;let it proceed&rdquo; — the hook only has to speak up when it's blocking something."
+        ],
+        commands: [{ code: `{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": ".claude/hooks/block-rm.sh" }]
+      }
+    ]
+  }
+}` }],
+        exercises: [
+          { id: "as6", text: "Write a PreToolUse hook that blocks the risky action you named above, and confirm Claude actually gets stopped when it tries." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "mcp",
+    tier: "advanced",
+    title: "MCP (Model Context Protocol)",
+    tagline: "The open standard for handing Claude tools and data that don't live in your repo.",
+    steps: [
+      {
+        title: "What MCP connects",
+        body: [
+          "MCP is an open standard for connecting AI tools to external data sources — Jira tickets, Slack messages, Google Drive docs, or your own internal services. Once a server is configured, Claude can read and act on that data the same way it reads a file in your repo.",
+          "The design principle underneath MCP is the same one that governs any tool you'd hand an agent: contracts, permissions, boundaries, and logs. MCP just standardizes how those get exposed."
+        ],
+        commands: [],
+        exercises: [
+          { id: "as7", text: "List one piece of context you manually copy-paste into Claude today (a ticket, a doc, a Slack thread). That's a candidate MCP server." }
+        ]
+      },
+      {
+        title: "Add and manage a server",
+        body: [
+          "<code>claude mcp</code> configures MCP servers for a project or your user profile. Servers that require authentication get their own login flow — <code>claude mcp login &lt;name&gt;</code> runs it, <code>claude mcp logout &lt;name&gt;</code> clears it.",
+          "Once added, ask Claude what it can see through the new server before asking it to act — the same explore-before-act habit from earlier in this ladder applies here too."
+        ],
+        commands: [{ code: "claude mcp" }, { code: "claude mcp login <name>" }],
+        exercises: [
+          { id: "as8", text: "Connect one real MCP server relevant to your work, then ask Claude a read-only question through it before letting it write anything." }
+        ]
+      }
+    ]
+  },
+  {
     id: "agent-teams",
+    tier: "superuser",
     title: "Advanced Multi-Agent Teams",
     tagline: "Direct multiple Claude instances working the same problem at once.",
     steps: [
@@ -656,6 +915,107 @@ const LADDER = [
         commands: [],
         exercises: [
           { id: "t2", text: "Give a team lead a goal with 2–3 independent sub-parts (e.g. &ldquo;add tests for these three separate modules&rdquo;). Review how it splits the work before letting it run." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "headless-scripting",
+    tier: "superuser",
+    title: "Headless Mode, Scripting & Background Agents",
+    tagline: "Claude Code without a human watching — piped, scripted, and running unattended.",
+    steps: [
+      {
+        title: "Headless mode with -p",
+        body: [
+          "<code>claude -p</code> (or <code>--print</code>) runs a single prompt to completion and prints the result — no interactive session, no TTY required. It follows the Unix philosophy: pipe logs into it, chain it with other tools, or run it from cron.",
+          "Headless mode reuses the exact same settings, hooks, and permission rules as your interactive CLI — nothing about safety changes just because no one's watching the terminal."
+        ],
+        commands: [{ code: `tail -200 app.log | claude -p "Slack me if you see any anomalies"` }],
+        exercises: [
+          { id: "su1", text: "Pipe some real output (logs, a diff, test results) into <code>claude -p</code> with a specific one-line instruction, and read the printed result." }
+        ]
+      },
+      {
+        title: "Structured output and spend limits",
+        body: [
+          "<code>--output-format json</code> or <code>stream-json</code> returns machine-parseable output instead of prose — essential once another program is reading Claude's response instead of a person. <code>--max-turns</code> and <code>--max-budget-usd</code> cap how far a headless run can go before it's forced to stop.",
+          "Treat these caps as required, not optional, on anything unattended — a runaway headless loop with no turn or budget limit is the scripted equivalent of walking away from an agent with unconstrained permissions."
+        ],
+        commands: [{ code: `claude -p "..." --output-format json --max-turns 8 --max-budget-usd 2` }],
+        exercises: [
+          { id: "su2", text: "Run one headless task with both --max-turns and --max-budget-usd set, and confirm it actually stops at the limit rather than running unattended forever." }
+        ]
+      },
+      {
+        title: "Managing background sessions",
+        body: [
+          "<code>claude --bg</code> starts a full session as a background agent and returns immediately; <code>claude agents</code> opens a view of everything running, <code>claude attach &lt;id&gt;</code> jumps back into one, and <code>claude logs &lt;id&gt;</code> / <code>claude stop &lt;id&gt;</code> check output or shut one down.",
+          "This is a different tool than the in-session <code>/background</code> from earlier in this ladder — that offloads one long-running command inside a session you're still watching; this runs an entire independent session you can walk away from."
+        ],
+        commands: [{ code: "claude --bg" }, { code: "claude agents" }, { code: "claude logs <id>" }],
+        exercises: [
+          { id: "su3", text: "Start a background session with <code>claude --bg</code>, do something else, then come back and check on it with <code>claude logs &lt;id&gt;</code>." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "ci-automation",
+    tier: "superuser",
+    title: "CI/CD & Scheduled Automation",
+    tagline: "Move Claude Code from something you run to something that runs on its own.",
+    steps: [
+      {
+        title: "Automated review in your pipeline",
+        body: [
+          "GitHub Actions and GitLab CI/CD can run Claude Code directly in your pipeline — automated PR review, issue triage, and checks that fire on every push instead of waiting for a human to remember to ask for them.",
+          "The same permission boundaries from earlier in this ladder still apply in CI — arguably more so, since there's no human in the loop to catch an over-broad allow rule before it runs against real infrastructure."
+        ],
+        commands: [],
+        exercises: [
+          { id: "su4", text: "Find one review or triage step your team does manually on every PR. Sketch what a CI job asking Claude to do that step first-pass would look like." }
+        ]
+      },
+      {
+        title: "Scheduling recurring work",
+        body: [
+          "<code>/schedule</code> creates a cloud Routine — recurring work that keeps running even when your machine is off, and can trigger on API calls or GitHub events, not just a clock. For quick in-session polling instead of a standing schedule, <code>/loop</code> repeats a prompt at an interval within the current session.",
+          "Reach for a Routine when the task needs to survive your laptop closing; reach for <code>/loop</code> when you just want to keep an eye on something while you're actively working."
+        ],
+        commands: [{ code: "/schedule" }, { code: "/loop" }],
+        exercises: [
+          { id: "su5", text: "Pick one recurring task you do on a schedule today (a morning PR review, a weekly dependency check) and set up a Routine or /loop to do the first pass for you." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "agent-sdk-plugins",
+    tier: "superuser",
+    title: "The Agent SDK & Plugins",
+    tagline: "Beyond the CLI: build your own agent, or ship what you've built for others to install.",
+    steps: [
+      {
+        title: "The Agent SDK",
+        body: [
+          "The Agent SDK lets you build fully custom agents powered by Claude Code's own tools and capabilities, with full control over orchestration, tool access, and permissions — this is the layer underneath Claude Code itself, not a wrapper around the CLI.",
+          "Reach for it when you need an agent embedded in your own product rather than run interactively — the CLI, the IDE extensions, and the desktop app are all just different surfaces on top of the same underlying engine you can build on directly."
+        ],
+        commands: [],
+        exercises: [
+          { id: "su6", text: "Read through one real use case for the Agent SDK relevant to you, and write one sentence on why it needs to be embedded in your own product rather than run as an interactive session." }
+        ]
+      },
+      {
+        title: "Plugins: packaging what you've built",
+        body: [
+          "A plugin is a versioned bundle that ships one or more skills, subagents, slash commands, hooks, output styles, and MCP server definitions together as a single installable unit — it's the canonical way to distribute the custom subagents, skills, and hooks you built earlier in this ladder to anyone else.",
+          "Once you've built a subagent or skill you'd reuse across projects or share with a team, packaging it as a plugin beats copy-pasting the files into every new repo."
+        ],
+        commands: [{ code: "claude plugin install <name>@<marketplace>" }],
+        exercises: [
+          { id: "su7", text: "Take the custom subagent or skill you built earlier in this ladder and outline what it would take to package it as a plugin someone else could install." }
         ]
       }
     ]
@@ -690,36 +1050,57 @@ const ARROW_RIGHT_ICON = '<svg class="icon" viewBox="0 0 24 24"><line x1="5" y1=
 
 function renderSidebar(){
   const navTargets = [
-    { nav: document.getElementById("ladderNav"), fill: document.getElementById("railFill") },
-    { nav: document.getElementById("ladderNavMobile"), fill: document.getElementById("railFillMobile") }
+    document.getElementById("ladderNav"),
+    document.getElementById("ladderNavMobile")
   ];
 
-  navTargets.forEach(({nav, fill}) => {
-    [...nav.querySelectorAll(".rung-btn")].forEach(n => n.remove());
-    LADDER.forEach((rung, i) => {
-      const { total, done } = rungCounts(rung);
-      const complete = done === total;
-      const btn = document.createElement("button");
-      btn.className = "rung-btn" + (i === activeRungIndex ? " active" : "");
-      btn.dataset.index = i;
-      btn.innerHTML = `
-        <span class="rung-node${complete ? " complete" : ""}">${complete ? CHECK_ICON : String(i+1).padStart(2,"0")}</span>
-        <span class="rung-body">
-          <span class="rung-title">${rung.title}</span>
-          <span class="rung-meta${complete ? " done" : ""}">${done} / ${total} complete</span>
-        </span>
-      `;
-      btn.addEventListener("click", () => {
-        activeRungIndex = i;
-        render();
-        document.getElementById("mobileDrawer").classList.remove("open");
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      });
-      nav.appendChild(btn);
-    });
+  navTargets.forEach(nav => {
+    nav.innerHTML = "";
+    TIERS.forEach(tier => {
+      const tierRungs = LADDER.map((r, i) => ({ r, i })).filter(x => x.r.tier === tier.id);
+      if(!tierRungs.length) return;
 
-    const totalDone = LADDER.reduce((s, r) => s + rungCounts(r).done, 0);
-    fill.style.height = `${(totalDone / TOTAL_EXERCISES) * 100}%`;
+      const tierTotal = tierRungs.reduce((s, x) => s + rungCounts(x.r).total, 0);
+      const tierDone  = tierRungs.reduce((s, x) => s + rungCounts(x.r).done, 0);
+      const tierComplete = tierTotal > 0 && tierDone === tierTotal;
+
+      const group = document.createElement("div");
+      group.className = "tier-group";
+      group.innerHTML = `
+        <div class="tier-header">
+          <span class="tier-label">${tier.label}</span>
+          <span class="tier-progress${tierComplete ? " done" : ""}">${tierDone}/${tierTotal}</span>
+        </div>
+        <div class="tier-rail">
+          <div class="tier-rail-fill" style="height:${tierTotal ? (tierDone / tierTotal * 100) : 0}%;"></div>
+        </div>
+      `;
+      const rail = group.querySelector(".tier-rail");
+
+      tierRungs.forEach(({ r: rung, i }, localIdx) => {
+        const { total, done } = rungCounts(rung);
+        const complete = total > 0 && done === total;
+        const btn = document.createElement("button");
+        btn.className = "rung-btn" + (i === activeRungIndex ? " active" : "");
+        btn.dataset.index = i;
+        btn.innerHTML = `
+          <span class="rung-node${complete ? " complete" : ""}">${complete ? CHECK_ICON : String(localIdx+1).padStart(2,"0")}</span>
+          <span class="rung-body">
+            <span class="rung-title">${rung.title}</span>
+            <span class="rung-meta${complete ? " done" : ""}">${done} / ${total} complete</span>
+          </span>
+        `;
+        btn.addEventListener("click", () => {
+          activeRungIndex = i;
+          render();
+          document.getElementById("mobileDrawer").classList.remove("open");
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        rail.appendChild(btn);
+      });
+
+      nav.appendChild(group);
+    });
   });
 
   const totalDone = LADDER.reduce((s, r) => s + rungCounts(r).done, 0);
@@ -767,6 +1148,9 @@ function renderMain(){
     panel.className = "rung-panel" + (i === activeRungIndex ? " active" : "");
 
     const { total, done } = rungCounts(rung);
+    const tierMeta = TIERS.find(t => t.id === rung.tier);
+    const tierRungs = LADDER.filter(r => r.tier === rung.tier);
+    const tierPos = tierRungs.indexOf(rung) + 1;
 
     let stepsHtml = "";
     rung.steps.forEach((step, si) => {
@@ -810,7 +1194,7 @@ function renderMain(){
           <div class="step-panel">
             <div class="step-panel-inner">
               <div class="step-content">
-                <div class="prose-body">${step.body.map(p => `<p>${p}</p>`).join("")}</div>
+                <div class="prose-body">${step.body.map(p => /^<(table|pre|div)/.test(p.trim()) ? p : `<p>${p}</p>`).join("")}</div>
                 ${commandsHtml}
                 ${exercisesHtml}
               </div>
@@ -822,7 +1206,7 @@ function renderMain(){
 
     panel.innerHTML = `
       <div class="rung-header">
-        <div class="eyebrow">Rung ${String(i+1).padStart(2,"0")} / ${String(LADDER.length).padStart(2,"0")}</div>
+        <div class="eyebrow">${tierMeta.label} &middot; Rung ${tierPos} of ${tierRungs.length}</div>
         <h1 class="rung-heading">${rung.title}</h1>
         <p class="rung-tagline">${rung.tagline}</p>
         <div class="rung-progress-row">
@@ -832,8 +1216,8 @@ function renderMain(){
       </div>
       <div class="steps">${stepsHtml}</div>
       <div class="rung-nav">
-        ${i > 0 ? `<button class="rung-nav-prev">${ARROW_LEFT_ICON} Rung ${String(i).padStart(2,"0")}</button>` : "<span></span>"}
-        ${i < LADDER.length - 1 ? `<button class="rung-nav-next">Rung ${String(i+2).padStart(2,"0")} ${ARROW_RIGHT_ICON}</button>` : "<span></span>"}
+        ${i > 0 ? `<button class="rung-nav-prev">${ARROW_LEFT_ICON} ${LADDER[i-1].title}</button>` : "<span></span>"}
+        ${i < LADDER.length - 1 ? `<button class="rung-nav-next">${LADDER[i+1].title} ${ARROW_RIGHT_ICON}</button>` : "<span></span>"}
       </div>
     `;
 
@@ -884,8 +1268,8 @@ function attachMainListeners(){
     });
   });
 
-  const prev = document.querySelector(".rung-nav-prev");
-  const next = document.querySelector(".rung-nav-next");
+  const prev = document.querySelector(".rung-panel.active .rung-nav-prev");
+  const next = document.querySelector(".rung-panel.active .rung-nav-next");
   if(prev) prev.addEventListener("click", () => { activeRungIndex--; render(); window.scrollTo({top:0, behavior:"smooth"}); });
   if(next) next.addEventListener("click", () => { activeRungIndex++; render(); window.scrollTo({top:0, behavior:"smooth"}); });
 }
@@ -926,7 +1310,6 @@ function toggleTheme(){
   }catch(e){}
 })();
 document.getElementById("themeToggle").addEventListener("click", toggleTheme);
-document.getElementById("themeToggleMobile").addEventListener("click", toggleTheme);
 
 applyThemeLabel();
 render();
